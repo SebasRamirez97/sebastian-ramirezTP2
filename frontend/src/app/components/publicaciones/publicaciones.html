@@ -1,1 +1,42 @@
-<p>publicaciones works!</p>
+<div class="publicaciones-container">
+  <header class="navbar">
+    <h2>Red Social de Recetas</h2>
+    <nav class="nav">
+      <button class="btn-nav active">Publicaciones</button>
+      <button class="btn-nav" (click)="irMiPerfil()">Mi Perfil</button>
+    </nav>
+  </header>
+
+  <main class="content">
+    <div class="feed-header">
+      <h3>Muro de Publicaciones</h3>
+      <p class="subtitle">Descubre lo que la comunidad está cocinando</p>
+    </div>
+
+    @if (errorMessage) {
+      <div class="alert alert-danger">{{ errorMessage }}</div>
+    }
+
+    @if (loading) {
+      <p class="loading-text">Cargando publicaciones desde la base de datos...</p>
+    } @else {
+      <div class="grid-publicaciones">
+        @for (pub of publicaciones; track pub._id) {
+          <div class="card-publicacion">
+            <h4>{{ pub.titulo }}</h4>
+            <p class="pub-desc">{{ pub.descripcion }}</p>
+            @if (pub.imagenUrl) {
+              <img [src]="pub.imagenUrl" alt="Imagen de receta" class="pub-img" />
+            }
+            <div class="pub-footer">
+              <span class="autor">Por: <strong>&#64;{{ pub.usuario?.usuario || 'Anónimo' }}</strong></span>
+              <span class="fecha">{{ pub.createdAt | date:'shortDate' }}</span>
+            </div>
+          </div>
+        } @empty {
+          <p class="no-data">No hay publicaciones todavía en la base de datos.</p>
+        }
+      </div>
+    }
+  </main>
+</div>

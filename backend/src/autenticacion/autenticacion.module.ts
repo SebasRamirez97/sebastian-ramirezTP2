@@ -5,6 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AutenticacionController } from './autenticacion.controller.js';
 import { AutenticacionService } from './autenticacion.service.js';
 import { Usuario, UsuarioSchema } from '../usuarios/entities/usuario.entity.js';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module.js';
 
 @Module({
   imports: [
@@ -17,7 +18,7 @@ import { Usuario, UsuarioSchema } from '../usuarios/entities/usuario.entity.js';
       secret: process.env.JWT_SECRET || 'clave-secreta-super-segura-recetas',
       signOptions: { expiresIn: '30m' }, // Tiempo de sesión abierta (ej: 2 horas)
     }),
-  ],
+  CloudinaryModule],
   controllers: [AutenticacionController],
   providers: [AutenticacionService],
 })

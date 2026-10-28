@@ -1,5 +1,4 @@
-// backend/src/autenticacion/guards/jwt-auth.guard.ts
-import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
@@ -8,23 +7,22 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers.authorization;
+    const token = this.extractTokenFromCookie(request);
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('No se proporcionó un token de acceso');
+    if (!token) {
+      throw new UnauthorizedException('No token found in cookies');
     }
-
-    const token = authHeader.split(' ')[1];
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET || 'clave-secreta-super-segura-recetas',
-      });
-      request.user = payload; // Inyecta la información del usuario (sub, correo, perfil) en la request
-    } catch (error) {
-      throw new UnauthorizedException('El token ha expirado o es inválido');
+      const payload = await this.jwtService.verifyAsync(token);
+      request.user = payload; // Adjunta los datos del usuario al request
+    } catch {
+      throw new UnauthorizedException('Invalid token');
     }
-
     return true;
+  }
+
+  private extractTokenFromCookie(request: any): string | null {
+    return request.cookies?.token || null;
   }
 }

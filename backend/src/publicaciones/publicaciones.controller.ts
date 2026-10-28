@@ -2,7 +2,7 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Req } from '@nestjs/common';
 import { PublicacionesService } from './publicaciones.service.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
-import { JwtAuthGuard } from '../autenticacion/guards/jwt-auth.guard.js';
+import { JwtAuthGuard } from '../autenticacion/guards/jwt-auth.guard.js'
 
 @Controller('publicaciones')
 export class PublicacionesController {

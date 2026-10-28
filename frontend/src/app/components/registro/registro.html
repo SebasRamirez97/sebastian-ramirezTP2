@@ -1,1 +1,109 @@
-<p>registro works!</p>
+<div class="registro-container">
+  <div class="registro-card">
+    <h2>Crear Cuenta</h2>
+    <p class="subtitle">Únete a nuestra red social de recetas</p>
+
+    @if (errorMessage) {
+      <div class="alert alert-danger">
+        {{ errorMessage }}
+      </div>
+    }
+
+    <form [formGroup]="registroForm" (ngSubmit)="onSubmit()">
+      
+      <!-- Nombre -->
+      <div class="form-group">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" formControlName="nombre" appInputError placeholder="Tu nombre" />
+        @if (registroForm.get('nombre')?.touched && registroForm.get('nombre')?.errors) {
+          <small class="error-text">{{ registroForm.get('nombre')?.errors | formError }}</small>
+        }
+      </div>
+
+      <!-- Apellido -->
+      <div class="form-group">
+        <label for="apellido">Apellido</label>
+        <input id="apellido" type="text" formControlName="apellido" appInputError placeholder="Tu apellido" />
+        @if (registroForm.get('apellido')?.touched && registroForm.get('apellido')?.errors) {
+          <small class="error-text">{{ registroForm.get('apellido')?.errors | formError }}</small>
+        }
+      </div>
+
+      <!-- Correo -->
+      <div class="form-group">
+        <label for="correo">Correo Electrónico</label>
+        <input id="correo" type="email" formControlName="correo" appInputError placeholder="correo@ejemplo.com" />
+        @if (registroForm.get('correo')?.touched && registroForm.get('correo')?.errors) {
+          <small class="error-text">{{ registroForm.get('correo')?.errors | formError }}</small>
+        }
+      </div>
+
+      <!-- Nombre de usuario -->
+      <div class="form-group">
+        <label for="usuario">Nombre de Usuario</label>
+        <input id="usuario" type="text" formControlName="usuario" appInputError placeholder="usuario123" />
+        @if (registroForm.get('usuario')?.touched && registroForm.get('usuario')?.errors) {
+          <small class="error-text">{{ registroForm.get('usuario')?.errors | formError }}</small>
+        }
+      </div>
+
+      <!-- Contraseña -->
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <input id="password" type="password" formControlName="password" appInputError placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número" />
+        @if (registroForm.get('password')?.touched && registroForm.get('password')?.errors) {
+          <small class="error-text">{{ registroForm.get('password')?.errors | formError }}</small>
+        }
+      </div>
+
+      <!-- Repetir Contraseña -->
+      <div class="form-group">
+        <label for="repetirPassword">Confirmar Contraseña</label>
+        <input id="repetirPassword" type="password" formControlName="repetirPassword" appInputError placeholder="Repite tu contraseña" />
+        @if (registroForm.get('repetirPassword')?.touched && (registroForm.get('repetirPassword')?.errors || registroForm.errors?.['passwordMismatch'])) {
+          <small class="error-text">
+            {{ registroForm.get('repetirPassword')?.errors ? (registroForm.get('repetirPassword')?.errors | formError) : 'Las contraseñas no coinciden.' }}
+          </small>
+        }
+      </div>
+
+      <!-- Fecha de Nacimiento -->
+      <div class="form-group">
+        <label for="fechaNacimiento">Fecha de Nacimiento</label>
+        <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento" appInputError />
+        @if (registroForm.get('fechaNacimiento')?.touched && registroForm.get('fechaNacimiento')?.errors) {
+          <small class="error-text">{{ registroForm.get('fechaNacimiento')?.errors | formError }}</small>
+        }
+      </div>
+
+      <!-- Descripción Breve -->
+      <div class="form-group">
+        <label for="descripcionBreve">Descripción Breve (Opcional)</label>
+        <textarea id="descripcionBreve" formControlName="descripcionBreve" rows="2" placeholder="Cuéntanos algo sobre ti..."></textarea>
+      </div>
+
+      <!-- Avatar (File) -->
+      <div class="form-group">
+        <label for="avatar">Imagen de Perfil</label>
+        <input id="avatar" type="file" (change)="onFileSelected($event)" accept="image/*" />
+      </div>
+
+      <!-- Tipo de Perfil (Usuario / Administrador) -->
+      <div class="form-group">
+        <label for="perfil">Tipo de Perfil</label>
+        <select id="perfil" formControlName="perfil" class="form-select">
+          <option value="usuario">Usuario</option>
+          <option value="administrador">Administrador</option>
+        </select>
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn-submit">
+        {{ loading ? 'Registrando...' : 'Registrarse' }}
+      </button>
+    </form>
+
+    <div class="card-footer">
+      <p>¿Ya tienes una cuenta? <a routerLink="/login">Inicia sesión</a></p>
+    </div>
+  </div>
+</div>

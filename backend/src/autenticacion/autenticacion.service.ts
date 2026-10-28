@@ -1,103 +1,120 @@
+// backend/src/autenticacion/autenticacion.service.ts
 import {
   Injectable,
   UnauthorizedException,
-  ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { PasswordHasher } from '@nestjs/authentication';
-import { JwtService } from '@nestjs/jwt';
 import {
   Usuario,
   UsuarioDocument,
 } from '../usuarios/entities/usuario.entity.js';
 import { RegistroDto } from './dto/registro.dto.js';
 import { LoginDto } from './dto/login.dto.js';
-import { PasswordHelper } from './helpers/password.helper.js';
+import type { Response } from 'express';
+import * as bcrypt from 'bcrypt';
+import { CloudinaryService } from '../cloudinary/cloudinary.service.js';
 
 @Injectable()
 export class AutenticacionService {
   constructor(
-    @InjectModel(Usuario.name)
-    private readonly usuarioModel: Model<UsuarioDocument>,
-    private readonly JwtService: JwtService, // Inyectamos JwtService
+    @InjectModel(Usuario.name) private usuarioModel: Model<Usuario>,
+    private readonly jwtService: JwtService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
-  async registrar(registroDto: RegistroDto, avatarUrl?: string) {
+  async registrar(registroDto: RegistroDto, file?: Express.Multer.File) {
     // 1. Validar que las contraseñas coincidan
     if (registroDto.password !== registroDto.repetirPassword) {
-      throw new ConflictException('Las contraseñas no coinciden');
+      throw new BadRequestException('Las contraseñas no coinciden.');
     }
 
-    // 2. Validar si el correo o usuario ya se encuentran registrados
-    const usuarioExistente = await this.usuarioModel.findOne({
-      $or: [{ correo: registroDto.correo }, { usuario: registroDto.usuario }],
+    // 2. Verificar si el correo o el nombre de usuario ya existen en la base de datos
+    const existingUser = await this.usuarioModel.findOne({
+      $or: [{ email: registroDto.correo }, { username: registroDto.usuario }],
     });
 
-    if (usuarioExistente) {
-      throw new ConflictException(
-        'El correo electrónico o el nombre de usuario ya están registrados',
+    if (existingUser) {
+      throw new BadRequestException(
+        'El correo o el nombre de usuario ya están registrados.',
       );
     }
 
-    // 3. Hashear la contraseña utilizando scrypt
-   const hashedPassword = await PasswordHelper.hash(registroDto.password);
+    // 3. Subir la imagen a Cloudinary si se adjuntó un archivo
+    let avatarUrl = '';
+    if (file) {
+      const uploadResult = await this.cloudinaryService.uploadImage(file);
+      avatarUrl = uploadResult.secure_url;
+    }
 
-    // 4. Crear el nuevo usuario con perfil por defecto 'usuario'
-    const nuevoUsuario = new this.usuarioModel({
-      ...registroDto,
+    // 4. Hashear la contraseña
+    const hashedPassword = await bcrypt.hash(registroDto.password, 10);
+
+    // 5. Crear el usuario mapeando los campos del DTO a la estructura de la base de datos
+    const newUser = await this.usuarioModel.create({
+      nombre: registroDto.nombre,
+      apellido: registroDto.apellido,
+      correo: registroDto.correo, // Mapea 'correo' del DTO a 'email' del modelo
+      usuario: registroDto.usuario, // Mapea 'usuario' del DTO a 'username' del modelo
       password: hashedPassword,
-      avatarUrl: avatarUrl || '',
-      perfil: 'usuario',
+      fechaNacimiento: registroDto.fechaNacimiento,
+      descripcionBreve: registroDto.descripcionBreve,
+      avatarUrl: avatarUrl,
+      perfil: 'usuario', // Por defecto 'usuario' según los requisitos
     });
 
-    const usuarioGuardado = await nuevoUsuario.save();
-    // 5. Retornar el objeto sin la contraseña usando desestructuración
-    const { password, ...usuarioObj } = usuarioGuardado.toObject();
+    if (!newUser) {
+      throw new BadRequestException('No se pudo registrar el usuario.');
+    }
 
-    // Generamos el token JWT para que quede logueado automáticamente al registrarse
-    const payload = {
-      sub: usuarioObj._id,
-      correo: usuarioObj.correo,
-      perfil: usuarioObj.perfil,
-    };
-    const token = this.JwtService.sign(payload);
-
-    return { access_token: token, usuario: usuarioObj };
+    // 6. Generar el token JWT
+    return this.generateToken(newUser);
   }
 
   async login(loginDto: LoginDto) {
-    // 1. Buscar al usuario por correo o nombre de usuario
-    const usuario = await this.usuarioModel.findOne({
+    // 1. Busca por correo o por nombre de usuario usando la propiedad 'identificador' del LoginDto
+    const user = await this.usuarioModel.findOne({
       $or: [
         { correo: loginDto.identificador },
         { usuario: loginDto.identificador },
       ],
     });
 
-    if (!usuario) {
-      throw new UnauthorizedException('Credenciales inválidas');
+    // 2. Validar si el usuario existe y si la contraseña es correcta
+    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+      throw new UnauthorizedException('Credenciales incorrectas');
     }
 
-    // 2. Verificar la contraseña plana contra el hash almacenado
-    const esPasswordValida = await PasswordHelper.verify(loginDto.password, usuario.password);
+    // 3. Generar el token JWT
+    return this.generateToken(user);
+  }
 
-    if (!esPasswordValida) {
-      throw new UnauthorizedException('Credenciales inválidas');
+  async getPerfil(id: string) {
+    const user = await this.usuarioModel.findById(id).select('-password');
+    if (!user) {
+      throw new UnauthorizedException('No se pudo obtener el perfil');
     }
+    return user;
+  }
 
-    // 3. Retornar todos los datos del usuario sin la contraseña usando desestructuración
-    const { password, ...usuarioObj } = usuario.toObject();
-
-
-    // Creamos el payload con la información esencial del usuario que viajará cifrada en el token
-    const payload = { sub: usuarioObj._id, correo: usuarioObj.correo, perfil: usuarioObj.perfil };
-    const token = this.JwtService.sign(payload);
-
-    // Retornamos el token junto a los datos del usuario para que Angular los almacene
-    return {
-      access_token: token,
-      usuario: usuarioObj,
+  async generateToken(usuario: UsuarioDocument) {
+    const payload = { 
+      correo: usuario.correo, 
+      usuario: usuario.usuario, 
+      sub: usuario._id, 
+      perfil: usuario.perfil 
     };
+    return this.jwtService.signAsync(payload);
+  }
+
+  setTokenCookie(res: Response, token: string) {
+    res.cookie('token', token, {
+      httpOnly: true, // Evita ataques XSS
+      sameSite: 'strict', // Evita ataques CSRF
+      secure: false, // Cambiar a true si usas HTTPS en producción
+      maxAge: 1000 * 60 * 60 * 24, // 1 día de expiración
+    });
   }
 }

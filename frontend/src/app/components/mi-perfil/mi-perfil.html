@@ -1,1 +1,53 @@
-<p>mi-perfil works!</p>
+<div class="perfil-container">
+  <header class="navbar">
+    <h2>Red Social de Recetas</h2>
+    <nav class="nav">
+      <button class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
+      <button class="btn-nav active">Mi Perfil</button>
+    </nav>
+  </header>
+
+  <main class="content">
+    @if (errorMessage) {
+      <div class="alert alert-danger">{{ errorMessage }}</div>
+    }
+
+    @if (loading) {
+      <p class="loading-text">Cargando perfil...</p>
+    } @else if (usuario) {
+      <div class="perfil-card">
+        <div class="perfil-header">
+          @if (usuario.avatarUrl) {
+            <img [src]="usuario.avatarUrl" alt="Avatar de perfil" class="avatar-img" />
+          } @else {
+            <div class="avatar-placeholder">
+              {{ usuario.nombre?.charAt(0) | uppercase }}
+            </div>
+          }
+          <div class="perfil-titles">
+            <h3>{{ usuario.nombre }} {{ usuario.apellido }}</h3>
+            <p class="username">&#64;{{ usuario.usuario }}</p>
+            <span class="badge" [class.admin]="usuario.perfil === 'administrador'">
+              {{ usuario.perfil | titlecase }}
+            </span>
+          </div>
+        </div>
+
+        <div class="perfil-details">
+          <div class="detail-item">
+            <span class="label">Correo Electrónico:</span>
+            <span class="value">{{ usuario.correo }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Fecha de Nacimiento:</span>
+            <span class="value">{{ usuario.fechaNacimiento | date:'longDate' }}</span>
+          </div>
+          <div class="detail-item descripcion-box">
+            <span class="label">Descripción Breve:</span>
+            <p class="value">{{ usuario.descripcionBreve || 'Sin descripción por el momento.' }}</p>
+          </div>
+        </div>
+      </div>
+    }
+  </main>
+</div>
