@@ -20,7 +20,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['http://localhost:4200', 'https://tu-frontend.vercel.app'],
+    origin: ['http://localhost:4200', 'https://sebastian-ramirez-tp-2-nest.vercel.app/'],
     credentials: true,
   });
 
