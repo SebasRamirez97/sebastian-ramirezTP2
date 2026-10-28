@@ -10,7 +10,7 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
-
+  app.enableCors();
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -18,11 +18,6 @@ async function bootstrap() {
       transform: true,
     }),
   );
-
-  app.enableCors({
-    origin: ['http://localhost:4200', 'https://sebastian-ramirez-tp-2-nest.vercel.app/'],
-    credentials: true,
-  });
 
   app.use(cookieParser());
 
