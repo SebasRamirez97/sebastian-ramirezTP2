@@ -20,9 +20,6 @@ async function bootstrap() {
   );
 
   app.use(cookieParser());
-
-  // ¡Adiós a useStaticAssets! Ya no necesitamos la carpeta local 'uploads' gracias a Cloudinary.
-
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
