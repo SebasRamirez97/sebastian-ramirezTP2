@@ -9,8 +9,15 @@ import cookieParser from 'cookie-parser';
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
-  app.enableCors();
+  // 1. Creamos la app sin activar el cors genérico aquí
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  
+  // 2. Configuramos el CORS una sola vez y de forma correcta
+  app.enableCors({
+    origin: ['http://localhost:4200'],
+    credentials: true, 
+  });
+  
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

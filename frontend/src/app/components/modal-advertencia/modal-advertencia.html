@@ -1,0 +1,16 @@
+<div class="modal-overlay">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3>⚠️ Advertencia de Inactividad</h3>
+    </div>
+    <div class="modal-body">
+      <p>Tu sesión está a punto de expirar por inactividad.</p>
+      <p class="tiempo-aviso">Tiempo aproximado restante: <strong>{{ tiempoRestante() }}</strong></p>
+      <p>¿Deseas continuar navegando o cerrar sesión?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secundario" (click)="cerrarSesion()">Cerrar Sesión</button>
+      <button class="btn-primario" (click)="continuar()">Continuar en la página</button>
+    </div>
+  </div>
+</div>

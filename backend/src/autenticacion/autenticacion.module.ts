@@ -16,7 +16,7 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module.js';
     JwtModule.register({
       global: true, // Hace que el servicio JWT esté disponible en toda la aplicación si se requiere
       secret: process.env.JWT_SECRET || 'clave-secreta-super-segura-recetas',
-      signOptions: { expiresIn: '30m' }, // Tiempo de sesión abierta (ej: 2 horas)
+      signOptions: { expiresIn: '1m' }, // Tiempo de sesión abierta (ej: 2 horas)
     }),
   CloudinaryModule],
   controllers: [AutenticacionController],

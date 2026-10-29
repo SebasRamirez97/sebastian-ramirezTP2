@@ -1,0 +1,74 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-card {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.modal-header h3 {
+  margin-top: 0;
+  color: #d97706; /* Tono de advertencia */
+}
+
+.modal-body {
+  margin: 16px 0;
+  color: #374151;
+}
+
+.tiempo-aviso {
+  margin: 10px 0;
+  font-size: 1.1rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-primario {
+  background-color: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  flex: 1;
+}
+
+.btn-secundario {
+  background-color: #e5e7eb;
+  color: #374151;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  flex: 1;
+}
+
+.btn-primario:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-secundario:hover {
+  background-color: #d1d5db;
+}

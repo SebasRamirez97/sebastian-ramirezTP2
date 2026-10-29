@@ -1,1 +1,11 @@
-<router-outlet />
+<!-- Tus rutas principales -->
+<router-outlet></router-outlet>
+
+<!-- Modal global de advertencia de inactividad -->
+@if (inactivityService.showModal()) {
+  <app-modal-advertencia
+    [tiempoRestante]="inactivityService.tiempoRestante()"
+    (onContinuar)="inactivityService.continuarSesion()"
+    (onCerrarSesion)="inactivityService.cerrarSesionPorInactividad()"
+  />
+}

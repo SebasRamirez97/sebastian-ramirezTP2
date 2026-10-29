@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PublicacionService } from '../../services/publicacion.service';
@@ -14,24 +14,27 @@ export class Publicaciones implements OnInit {
   private router = inject(Router);
   private publicacionService = inject(PublicacionService);
 
-  publicaciones: any[] = [];
-  loading: boolean = true;
-  errorMessage: string | null = null;
+  // Definición de estados con Signals
+  publicaciones = signal<any[]>([]);
+  loading = signal<boolean>(true);
+  errorMessage = signal<string | null>(null);
 
   ngOnInit(): void {
     this.cargarPublicaciones();
   }
 
   cargarPublicaciones(): void {
-    this.loading = true;
+    this.loading.set(true);
+    
     this.publicacionService.obtenerPublicaciones().subscribe({
       next: (data) => {
-        this.publicaciones = data;
-        this.loading = false;
+        console.log('Datos recibidos del backend:', data);
+        this.publicaciones.set(data); // Actualizamos las publicaciones
+        this.loading.set(false);      // Apagamos el indicador de carga
       },
       error: (err) => {
-        this.errorMessage = 'No se pudieron cargar las publicaciones del servidor.';
-        this.loading = false;
+        this.errorMessage.set('No se pudieron cargar las publicaciones del servidor.');
+        this.loading.set(false);
         console.error(err);
       }
     });

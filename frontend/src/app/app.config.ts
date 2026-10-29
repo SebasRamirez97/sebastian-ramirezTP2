@@ -1,14 +1,18 @@
 // src/app/app.config.ts
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient, withInterceptors } from '@angular/common/http'; // <--- 1. Importamos HttpClient e interceptores
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
-import { credentialsInterceptor } from './interceptors/credentials.interceptor'; // <--- 2. Importamos tu interceptor de cookies
+import { credentialsInterceptor } from './interceptors/credentials.interceptor';
+import { authInterceptor } from './interceptors/auth.interceptor'; // <--- 1. Importa tu nuevo interceptor
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([credentialsInterceptor])) // <--- 3. Añadimos esto para habilitar peticiones HTTP y el envío automático de cookies
+    provideHttpClient(withInterceptors([
+      credentialsInterceptor, // 2. Primero añade las credenciales/cookies
+      authInterceptor         // 3. Luego intercepta los errores 401 para redirigir al login
+    ]))
   ]
 };

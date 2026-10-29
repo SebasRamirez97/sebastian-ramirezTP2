@@ -1,10 +1,11 @@
 // backend/src/publicaciones/publicaciones.controller.ts
-import { Controller, Get, Post, Body, Param, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, Req, Header } from '@nestjs/common';
 import { PublicacionesService } from './publicaciones.service.js';
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
 import { JwtAuthGuard } from '../autenticacion/guards/jwt-auth.guard.js'
 
 @Controller('publicaciones')
+@UseGuards(JwtAuthGuard)
 export class PublicacionesController {
   constructor(private readonly publicacionesService: PublicacionesService) {}
 
@@ -17,6 +18,9 @@ export class PublicacionesController {
   }
 
   @Get()
+  @Header('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  @Header('Pragma', 'no-cache')
+  @Header('Expires', '0')
   async findAll() {
     return await this.publicacionesService.findAll();
   }

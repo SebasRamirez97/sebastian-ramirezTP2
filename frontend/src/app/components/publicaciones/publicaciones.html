@@ -13,15 +13,18 @@
       <p class="subtitle">Descubre lo que la comunidad está cocinando</p>
     </div>
 
-    @if (errorMessage) {
-      <div class="alert alert-danger">{{ errorMessage }}</div>
+    <!-- Invocamos errorMessage() con paréntesis -->
+    @if (errorMessage()) {
+      <div class="alert alert-danger">{{ errorMessage() }}</div>
     }
 
-    @if (loading) {
+    <!-- Invocamos loading() con paréntesis -->
+    @if (loading()) {
       <p class="loading-text">Cargando publicaciones desde la base de datos...</p>
     } @else {
       <div class="grid-publicaciones">
-        @for (pub of publicaciones; track pub._id) {
+        <!-- Invocamos publicaciones() con paréntesis -->
+        @for (pub of publicaciones(); track pub._id) {
           <div class="card-publicacion">
             <h4>{{ pub.titulo }}</h4>
             <p class="pub-desc">{{ pub.descripcion }}</p>

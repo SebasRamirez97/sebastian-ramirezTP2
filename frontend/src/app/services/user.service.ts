@@ -11,6 +11,8 @@ export class UserService {
   private API_URL = 'http://localhost:3000/usuarios'; 
 
   obtenerPerfil(): Observable<any> {
-    return this.http.get(`${this.API_URL}/perfil`);
+    return this.http.get(`${this.API_URL}/perfil`, {
+      withCredentials: true
+    });
   }
 }
