@@ -46,6 +46,7 @@ export class ModalCrearPublicacion implements OnInit {
   limpiarFormulario() {
     this.titulo.set('');
     this.contenido.set('');
+    this.tiempoPreparacion.set(''); // <-- Limpiamos el tiempo de preparación
     this.imagenSeleccionada.set(null);
     this.previewUrl.set(null);
   }

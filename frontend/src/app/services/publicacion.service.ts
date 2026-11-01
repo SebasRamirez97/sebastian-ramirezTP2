@@ -10,15 +10,25 @@ export class PublicacionService {
   private API_URL = 'http://localhost:3000/publicaciones'; 
 
   // Obtiene todas las publicaciones para el muro general
-  obtenerPublicaciones(): Observable<any[]> {
+  obtenerPublicaciones(limit: number = 10, offset: number = 0, orden: string = 'fecha', usuarioId?: string): Observable<any[]> {
+    let params: any = {
+      limit: limit.toString(),
+      offset: offset.toString(),
+      orden: orden
+    };
+
+    if (usuarioId) {
+      params.usuarioId = usuarioId;
+    }
+
     return this.http.get<any[]>(this.API_URL, {
-      withCredentials: true
+      withCredentials: true,
+      params: params
     });
   }
 
   // Obtiene únicamente las publicaciones del usuario logueado (para el perfil)
   obtenerMisPublicaciones(): Observable<any[]> {
-    // Corregido: se usa `${this.API_URL}/mis-publicaciones` para evitar duplicar la ruta
     return this.http.get<any[]>(`${this.API_URL}/mis-publicaciones`, {
       withCredentials: true
     });
@@ -27,6 +37,27 @@ export class PublicacionService {
   // Crea una nueva publicación enviando el FormData (texto + imagen)
   crearPublicacion(formData: FormData): Observable<any> {
     return this.http.post(this.API_URL, formData, {
+      withCredentials: true
+    });
+  }
+
+  // Dar Me Gusta a una publicación
+  darLike(id: string): Observable<any> {
+    return this.http.post(`${this.API_URL}/${id}/like`, {}, {
+      withCredentials: true
+    });
+  }
+
+  // Quitar Me Gusta de una publicación
+  quitarLike(id: string): Observable<any> {
+    return this.http.delete(`${this.API_URL}/${id}/like`, {
+      withCredentials: true
+    });
+  }
+
+  // Baja lógica de una publicación (Eliminar)
+  eliminarPublicacion(id: string): Observable<any> {
+    return this.http.delete(`${this.API_URL}/${id}`, {
       withCredentials: true
     });
   }

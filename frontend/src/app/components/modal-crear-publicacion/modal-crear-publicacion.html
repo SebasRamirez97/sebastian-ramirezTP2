@@ -38,6 +38,19 @@
           />
         </div>
 
+        <!-- NUEVO: Campo para el tiempo de preparación -->
+        <div class="form-group">
+          <label for="tiempoPreparacion">Tiempo de preparación</label>
+          <input 
+            type="text" 
+            id="tiempoPreparacion"
+            [ngModel]="tiempoPreparacion()" 
+            (ngModelChange)="tiempoPreparacion.set($event)"
+            name="tiempoPreparacion" 
+            placeholder="Ej: 30 minutos" 
+          />
+        </div>
+
         <div class="form-group">
           <label for="descripcion">Descripción de la receta</label>
           <textarea 
@@ -45,7 +58,7 @@
             [ngModel]="contenido()" 
             (ngModelChange)="contenido.set($event)"
             name="descripcion" 
-            rows="6" 
+            rows="5" 
             placeholder="Escribe aquí los ingredientes, pasos y detalles de tu plato..." 
             required
           ></textarea>

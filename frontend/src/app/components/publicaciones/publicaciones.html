@@ -15,8 +15,10 @@
       <p class="subtitle">Descubre lo que la comunidad está cocinando</p>
     </div>
 
-    <!-- 👇 AQUÍ AGREGAMOS EL MODAL DE CREACIÓN -->
-    <app-modal-crear-publicacion></app-modal-crear-publicacion>
+    <!-- Modal de creación de publicaciones -->
+    <app-modal-crear-publicacion
+      (onPublicado)="cargarPublicaciones()"
+    ></app-modal-crear-publicacion>
 
     <!-- Si hay error, lo mostramos -->
     @if (errorMessage()) {
@@ -28,41 +30,49 @@
       <p class="loading-text">Cargando publicaciones desde la base de datos...</p>
     } @else {
       <div class="grid-publicaciones">
-        @for (pub of publicaciones(); track pub._id) {
-          <div class="card-publicacion">
-            
-            <!-- Encabezado del autor con avatar y nombres -->
-            <div class="pub-header-autor">
-              @if (pub.autor?.avatarUrl) {
-                <img [src]="pub.autor.avatarUrl" alt="Avatar" class="autor-avatar" />
-              } @else {
-                <div class="avatar-default">👤</div>
-              }
-              <div class="autor-info">
-                <span class="autor-nombre">{{ pub.autor?.nombre || 'Usuario' }}</span>
-                <span class="autor-usuario">&#64;{{ pub.autor?.usuario || 'anonimo' }}</span>
-              </div>
-            </div>
-
-            <!-- Contenido de la receta -->
-            <h4>{{ pub.titulo }}</h4>
-            <p class="pub-desc">{{ pub.descripcion }}</p>
-
-            @if (pub.imagenUrl) {
-              <img [src]="pub.imagenUrl" alt="Imagen de receta" class="pub-img" />
-            }
-
-            <!-- Pie de tarjeta -->
-            <div class="pub-footer">
-              <span class="autor">Publicado por <strong>&#64;{{ pub.autor?.usuario || 'Anónimo' }}</strong></span>
-              <span class="fecha">{{ pub.createdAt | date:'shortDate' }}</span>
-            </div>
-            
-          </div>
+        @for (pub of publicaciones(); track (pub._id || pub.id)) {
+          <!-- 👇 Escuchamos la solicitud de eliminación que emite la tarjeta -->
+          <app-publicacion-card
+            [publicacion]="pub"
+            [usuarioActualId]="usuarioActualId()"
+            (solicitarEliminacion)="abrirConfirmacionEliminacion(pub)"
+          >
+          </app-publicacion-card>
         } @empty {
           <p class="no-data">No hay publicaciones todavía en la base de datos.</p>
         }
       </div>
     }
   </main>
+
+  <!-- Modal Global de Eliminación (Flota perfectamente sobre toda la ventana) -->
+  @if (publicacionAEliminar()) {
+    <div class="modal-overlay-eliminar" (click)="cerrarConfirmacionEliminacion()">
+      <div class="modal-box-eliminar" (click)="$event.stopPropagation()">
+        <h4>¿Eliminar publicación?</h4>
+        <p>Esta acción no se puede deshacer y se borrará la receta de forma permanente.</p>
+        
+        <div class="modal-botones">
+          <button
+            class="btn-secundario"
+            (click)="cerrarConfirmacionEliminacion()"
+            [disabled]="cargandoEliminacion()"
+          >
+            Cancelar
+          </button>
+          <button
+            class="btn-peligro"
+            (click)="confirmarEliminacionGlobal()"
+            [disabled]="cargandoEliminacion()"
+          >
+            @if (cargandoEliminacion()) {
+              Eliminando...
+            } @else {
+              Sí, eliminar
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

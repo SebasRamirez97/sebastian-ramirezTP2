@@ -1,0 +1,130 @@
+.card-publicacion {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  overflow: hidden;
+  border: 1px solid #eaeaea;
+  transition: transform 0.2s ease;
+}
+
+.card-publicacion:hover {
+  transform: translateY(-2px);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.autor-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.autor-nombre {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+}
+
+.fecha {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+.btn-eliminar {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.btn-eliminar:hover {
+  background: #ffebee;
+}
+
+.card-body {
+  padding: 16px 18px;
+}
+
+.titulo {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+.descripcion {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.tiempo-prep {
+  font-size: 0.85rem;
+  color: #e65100;
+  background: #fff3e0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.imagen-container {
+  width: 100%;
+  max-height: 400px;         /* Limita la altura máxima para que no ocupe toda la pantalla */
+  background-color: #f8f9fa; /* Color de fondo sutil por si la imagen es más pequeña o alargada */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.imagen-container img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;       /* Mantiene la proporción original de la foto completa sin recortarla */
+  display: block;
+}
+
+.card-footer {
+  padding: 12px 18px;
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
+}
+
+.btn-like {
+  background: #f1f3f5;
+  border: 1px solid #dcedc8;
+  color: #495057;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-like:hover {
+  background: #e9ecef;
+}
+
+.btn-like.liked {
+  background: #ffebee;
+  border-color: #ffcdd2;
+  color: #d32f2f;
+}
