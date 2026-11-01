@@ -1,9 +1,11 @@
 <div class="publicaciones-container">
+  <!-- Barra de navegación superior -->
   <header class="navbar">
     <h2>Red Social de Recetas</h2>
     <nav class="nav">
       <button class="btn-nav active">Publicaciones</button>
       <button class="btn-nav" (click)="irMiPerfil()">Mi Perfil</button>
+      <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
     </nav>
   </header>
 
@@ -13,28 +15,49 @@
       <p class="subtitle">Descubre lo que la comunidad está cocinando</p>
     </div>
 
-    <!-- Invocamos errorMessage() con paréntesis -->
+    <!-- 👇 AQUÍ AGREGAMOS EL MODAL DE CREACIÓN -->
+    <app-modal-crear-publicacion></app-modal-crear-publicacion>
+
+    <!-- Si hay error, lo mostramos -->
     @if (errorMessage()) {
       <div class="alert alert-danger">{{ errorMessage() }}</div>
     }
 
-    <!-- Invocamos loading() con paréntesis -->
+    <!-- Estado de carga -->
     @if (loading()) {
       <p class="loading-text">Cargando publicaciones desde la base de datos...</p>
     } @else {
       <div class="grid-publicaciones">
-        <!-- Invocamos publicaciones() con paréntesis -->
         @for (pub of publicaciones(); track pub._id) {
           <div class="card-publicacion">
+            
+            <!-- Encabezado del autor con avatar y nombres -->
+            <div class="pub-header-autor">
+              @if (pub.autor?.avatarUrl) {
+                <img [src]="pub.autor.avatarUrl" alt="Avatar" class="autor-avatar" />
+              } @else {
+                <div class="avatar-default">👤</div>
+              }
+              <div class="autor-info">
+                <span class="autor-nombre">{{ pub.autor?.nombre || 'Usuario' }}</span>
+                <span class="autor-usuario">&#64;{{ pub.autor?.usuario || 'anonimo' }}</span>
+              </div>
+            </div>
+
+            <!-- Contenido de la receta -->
             <h4>{{ pub.titulo }}</h4>
             <p class="pub-desc">{{ pub.descripcion }}</p>
+
             @if (pub.imagenUrl) {
               <img [src]="pub.imagenUrl" alt="Imagen de receta" class="pub-img" />
             }
+
+            <!-- Pie de tarjeta -->
             <div class="pub-footer">
-              <span class="autor">Por: <strong>&#64;{{ pub.usuario?.usuario || 'Anónimo' }}</strong></span>
+              <span class="autor">Publicado por <strong>&#64;{{ pub.autor?.usuario || 'Anónimo' }}</strong></span>
               <span class="fecha">{{ pub.createdAt | date:'shortDate' }}</span>
             </div>
+            
           </div>
         } @empty {
           <p class="no-data">No hay publicaciones todavía en la base de datos.</p>

@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { InputErrorDirective } from '../../directives/input-error.directive.ts';
 import { FormErrorPipe } from '../../pipes/form-error.pipe';
+import { InactivityService } from '../../services/inactivity.service';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,8 @@ export class Login {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-
+  private inactivityService = inject(InactivityService);
+  
   errorMessage: string | null = null;
   loading: boolean = false;
 
@@ -47,6 +49,10 @@ export class Login {
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
         this.loading = false;
+        
+        // 👇 ¡Aquí arranca el monitoreo de inactividad al iniciar sesión con éxito!
+        this.inactivityService.initInactivityMonitor();
+        
         this.router.navigate(['/publicaciones']);
       },
       error: (err) => {

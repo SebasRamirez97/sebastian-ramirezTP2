@@ -9,9 +9,8 @@ export class InactivityService {
   private router = inject(Router);
 
   // Configuramos los tiempos:
-  // 25 minutos de inactividad antes de mostrar el aviso (dejando 5 min antes de los 30 del token)
-  private readonly INACTIVITY_LIMIT = 50* 1000; 
-  private readonly WARNING_DURATION = 10 * 1000;   
+  private readonly INACTIVITY_LIMIT = 25* 60 * 1000; 
+  private readonly WARNING_DURATION = 5 * 60 * 1000;   
 
   private inactivityTimer: any;
   private warningTimer: any;
@@ -21,18 +20,22 @@ export class InactivityService {
   showModal = signal<boolean>(false);
   tiempoRestante = signal<string>('5:00');
 
-  // Método público que faltaba por declarar
+  // Guardamos la referencia de la función bound para poder removerla luego
+  private boundHandleActivity = () => this.handleUserActivity();
+
   initInactivityMonitor(): void {
     this.resetTimers();
 
     const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
     events.forEach(event => {
-      window.addEventListener(event, () => this.handleUserActivity());
+      window.removeEventListener(event, this.boundHandleActivity); // Evita duplicar listeners
+      window.addEventListener(event, this.boundHandleActivity);
     });
   }
 
   private handleUserActivity(): void {
-    if (this.showModal()) return; // Si el modal ya está abierto, no reiniciamos con movimientos comunes
+    // Si estamos en el login o el modal ya está abierto, ignoramos la actividad común
+    if (this.router.url.includes('/login') || this.showModal()) return; 
     this.resetTimers();
   }
 
@@ -40,15 +43,18 @@ export class InactivityService {
     clearTimeout(this.inactivityTimer);
     clearTimeout(this.warningTimer);
 
+    if (this.router.url.includes('/login')) return; // No iniciamos timers en el login
+
     this.inactivityTimer = setTimeout(() => {
       this.triggerWarning();
     }, this.INACTIVITY_LIMIT);
   }
 
   private triggerWarning(): void {
+    if (this.router.url.includes('/login')) return;
+
     this.showModal.set(true);
     
-    // Usamos la constante WARNING_DURATION para calcular los segundos totales de forma dinámica
     let secondsLeft = Math.floor(this.WARNING_DURATION / 1000); 
 
     this.countdownInterval = setInterval(() => {
@@ -73,7 +79,21 @@ export class InactivityService {
   public cerrarSesionPorInactividad(): void {
     this.showModal.set(false);
     clearInterval(this.countdownInterval);
+    this.detenerMonitoreo(); // <--- Limpiamos listeners y temporizadores
     console.warn('Sesión cerrada por inactividad.');
     this.router.navigate(['/login']);
+  }
+
+  // 👇 NUEVO MÉTODO PÚBLICO PARA DETENER EL MONITOREO AL HACER LOGOUT MANUAL
+  public detenerMonitoreo(): void {
+    clearTimeout(this.inactivityTimer);
+    clearTimeout(this.warningTimer);
+    clearInterval(this.countdownInterval);
+    this.showModal.set(false);
+
+    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+    events.forEach(event => {
+      window.removeEventListener(event, this.boundHandleActivity);
+    });
   }
 }

@@ -1,56 +1,107 @@
 <div class="perfil-container">
+  <!-- Barra de navegación superior -->
   <header class="navbar">
     <h2>Red Social de Recetas</h2>
     <nav class="nav">
       <button class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
       <button class="btn-nav active">Mi Perfil</button>
+      <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
     </nav>
   </header>
 
-  <main class="content">
-    <!-- Usamos errorMessage() con paréntesis -->
-    @if (errorMessage()) {
-      <div class="alert alert-danger">{{ errorMessage() }}</div>
-    }
-
-    <!-- Usamos loading() con paréntesis -->
-    @if (loading()) {
-      <p class="loading-text">Cargando perfil...</p>
-    } @else if (usuario()) {
-      <div class="perfil-card">
-        <div class="perfil-header">
-          <!-- Usamos usuario() con paréntesis y operador ? -->
-          @if (usuario().avatarUrl) {
-            <img [src]="usuario().avatarUrl" alt="Avatar de perfil" class="avatar-img" />
-          } @else {
-            <div class="avatar-placeholder">
-              {{ usuario().nombre?.charAt(0) | uppercase }}
+  <main class="content-perfil">
+    
+    <!-- Tarjeta Principal de Perfil -->
+    @if (usuario()) {
+      <div class="perfil-header-card">
+        <div class="perfil-info-principal">
+          
+          <!-- Contenedor del Avatar con botón interactivo -->
+          <div class="avatar-container" (click)="fileInput.click()">
+            @if (usuario().avatarUrl) {
+              <img [src]="usuario().avatarUrl" alt="Avatar" class="perfil-avatar" />
+            } @else {
+              <div class="perfil-avatar-default">👤</div>
+            }
+            
+            <!-- Botón flotante de la cámara -->
+            <div class="avatar-overlay-btn">
+              <span>📷</span>
             </div>
-          }
-          <div class="perfil-titles">
-            <h3>{{ usuario().nombre }} {{ usuario().apellido }}</h3>
-            <p class="username">&#64;{{ usuario().usuario }}</p>
-            <span class="badge" [class.admin]="usuario().perfil === 'administrador'">
-              {{ usuario().perfil | titlecase }}
-            </span>
-          </div>
-        </div>
 
-        <div class="perfil-details">
-          <div class="detail-item">
-            <span class="label">Correo Electrónico:</span>
-            <span class="value">{{ usuario().correo }}</span>
+            <!-- Input de archivo oculto -->
+            <input 
+              type="file" 
+              #fileInput 
+              (change)="onAvatarSelected($event)" 
+              accept="image/*" 
+              style="display: none;" 
+            />
           </div>
-          <div class="detail-item">
-            <span class="label">Fecha de Nacimiento:</span>
-            <span class="value">{{ usuario().fechaNacimiento | date:'longDate' }}</span>
-          </div>
-          <div class="detail-item descripcion-box">
-            <span class="label">Descripción Breve:</span>
-            <p class="value">{{ usuario().descripcionBreve || 'Sin descripción por el momento.' }}</p>
+
+          <div class="perfil-textos">
+            <h1>{{ usuario().nombre }} {{ usuario().apellido || '' }}</h1>
+            <span class="perfil-username">&#64;{{ usuario().usuario || 'usuario' }}</span>
+            <span class="perfil-email">{{ usuario().correo }}</span>
+            @if (subiendoAvatar()) {
+              <span class="subiendo-text">Actualizando foto...</span>
+            }
           </div>
         </div>
       </div>
+
+      <!-- Tarjeta de Descripción (Breve) -->
+      @if (usuario().descripcionBreve) {
+        <div class="perfil-bio-card">
+          <h4>Acerca de mí</h4>
+          <p>{{ usuario().descripcionBreve }}</p>
+        </div>
+      }
     }
+    <div class="crear-publicacion-wrapper">
+      <app-modal-crear-publicacion (onPublicado)="cargarDatosPerfil()"></app-modal-crear-publicacion>
+    </div>
+    <!-- Sección de Publicaciones Propias -->
+    <div class="mis-publicaciones-section">
+      <h3>Mis Publicaciones</h3>
+
+      @if (loading()) {
+        <p class="loading-text">Cargando tus publicaciones...</p>
+      } @else {
+        <div class="grid-publicaciones">
+          @for (pub of misPublicaciones(); track pub._id) {
+            <div class="card-publicacion">
+              
+              <div class="pub-header-autor">
+                @if (pub.autor?.avatarUrl || usuario()?.avatarUrl) {
+                  <img [src]="pub.autor?.avatarUrl || usuario()?.avatarUrl" alt="Avatar" class="autor-avatar" />
+                } @else {
+                  <div class="avatar-default">👤</div>
+                }
+                <div class="autor-info">
+                  <span class="autor-nombre">{{ pub.autor?.nombre || usuario()?.nombre }} {{ usuario()?.apellido || '' }}</span>
+                  <span class="autor-usuario">&#64;{{ pub.autor?.usuario || usuario()?.usuario }}</span>
+                </div>
+              </div>
+
+              <h4>{{ pub.titulo }}</h4>
+              <p class="pub-desc">{{ pub.descripcion }}</p>
+
+              @if (pub.imagenUrl) {
+                <img [src]="pub.imagenUrl" alt="Imagen receta" class="pub-img" />
+              }
+
+              <div class="pub-footer">
+                <span class="fecha">{{ pub.createdAt | date:'shortDate' }}</span>
+              </div>
+
+            </div>
+          } @empty {
+            <p class="no-data">Aún no has compartido ninguna receta.</p>
+          }
+        </div>
+      }
+    </div>
+
   </main>
 </div>

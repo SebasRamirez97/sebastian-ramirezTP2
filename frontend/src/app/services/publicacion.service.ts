@@ -7,14 +7,27 @@ import { Observable } from 'rxjs';
 })
 export class PublicacionService {
   private http = inject(HttpClient);
-  // Ajusta la URL según la ruta de tu controlador de publicaciones en el backend
   private API_URL = 'http://localhost:3000/publicaciones'; 
 
+  // Obtiene todas las publicaciones para el muro general
   obtenerPublicaciones(): Observable<any[]> {
-    return this.http.get<any[]>(this.API_URL);
+    return this.http.get<any[]>(this.API_URL, {
+      withCredentials: true
+    });
   }
 
+  // Obtiene únicamente las publicaciones del usuario logueado (para el perfil)
+  obtenerMisPublicaciones(): Observable<any[]> {
+    // Corregido: se usa `${this.API_URL}/mis-publicaciones` para evitar duplicar la ruta
+    return this.http.get<any[]>(`${this.API_URL}/mis-publicaciones`, {
+      withCredentials: true
+    });
+  }
+
+  // Crea una nueva publicación enviando el FormData (texto + imagen)
   crearPublicacion(formData: FormData): Observable<any> {
-    return this.http.post(this.API_URL, formData);
+    return this.http.post(this.API_URL, formData, {
+      withCredentials: true
+    });
   }
 }
