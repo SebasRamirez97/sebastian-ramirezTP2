@@ -68,7 +68,7 @@
 
     <!-- 👇 2. Aplicamos la clase 'expandida' ÚNICAMENTE al bloque de la descripción -->
     <div class="descripcion-wrapper" [class.expandida]="expandida()">
-      <p class="descripcion">{{ publicacion.descripcion }}</p>
+      <p class="descripcion" [innerHTML]="publicacion.descripcion | saltoLinea"></p>
     </div>
 
     <!-- 👇 3. Botón para desplegar solo la receta/descripción -->
