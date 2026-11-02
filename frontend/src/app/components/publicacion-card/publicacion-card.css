@@ -58,14 +58,26 @@
   font-size: 1.2rem;
   font-weight: 700;
   color: #222;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
-.descripcion {
-  font-size: 0.95rem;
-  color: #555;
-  line-height: 1.5;
+.imagen-container {
+  width: 100%;
+  max-height: 280px;         /* 👈 Reducimos la altura máxima para que sea más compacta (puedes probar con 250px o 300px) */
+  background-color: #f8f9fa; /* Fondo sutil para rellenar espacios si la imagen es muy vertical u horizontal */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 8px;
   margin-bottom: 12px;
+}
+
+.imagen-container img {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;       /* 👈 Clave: Muestra la foto entera de manera íntegra, sin recortar ningún borde */
+  display: block;
 }
 
 .tiempo-prep {
@@ -78,24 +90,60 @@
   margin-bottom: 12px;
 }
 
-.imagen-container {
-  width: 100%;
-  max-height: 400px;         /* Limita la altura máxima para que no ocupe toda la pantalla */
-  background-color: #f8f9fa; /* Color de fondo sutil por si la imagen es más pequeña o alargada */
-  display: flex;
-  justify-content: center;
-  align-items: center;
+/* --- WRAPPER PARA COLAPSAR SOLO LA DESCRIPCIÓN/RECETA --- */
+.descripcion-wrapper {
+  max-height: 90px; /* 👈 Altura máxima inicial para mostrar solo las primeras líneas */
   overflow: hidden;
-  border-radius: 8px;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  position: relative;
+  transition: max-height 0.35s ease-in-out;
 }
 
-.imagen-container img {
+/* Efecto de degradado al final del texto cuando está contraído */
+.descripcion-wrapper:not(.expandida):after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
   width: 100%;
-  max-height: 400px;
-  object-fit: contain;       /* Mantiene la proporción original de la foto completa sin recortarla */
-  display: block;
+  height: 45px;
+  background: linear-gradient(transparent, #ffffff);
+  pointer-events: none;
+}
+
+/* Cuando se expande, muestra toda la receta */
+.descripcion-wrapper.expandida {
+  max-height: 2000px; /* Permite desplegar recetas largas de forma fluida */
+}
+
+.descripcion {
+  font-size: 0.95rem;
+  color: #555;
+  line-height: 1.5;
+  margin: 0;
+  white-space: pre-line; /* Respeta los saltos de línea de la receta */
+}
+
+/* Botón de expansión de la descripción */
+.card-expand-footer {
+  padding-top: 8px;
+  background: #ffffff;
+  text-align: center;
+}
+
+.btn-ver-mas {
+  background: transparent;
+  border: none;
+  color: #3182ce;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: color 0.2s;
+}
+
+.btn-ver-mas:hover {
+  color: #2b6cb0;
+  text-decoration: underline;
 }
 
 .card-footer {

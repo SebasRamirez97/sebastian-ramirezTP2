@@ -58,50 +58,105 @@
         </div>
       }
     }
+
     <div class="crear-publicacion-wrapper">
       <app-modal-crear-publicacion (onPublicado)="cargarDatosPerfil()"></app-modal-crear-publicacion>
     </div>
+
     <!-- Sección de Publicaciones Propias -->
     <div class="mis-publicaciones-section">
-      <h3>Mis Publicaciones</h3>
+      
+      <!-- 👇 Cabecera con título y botón de ordenamiento idéntico al muro -->
+      <div class="feed-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <h3>Mis Publicaciones</h3>
+          <p class="subtitle" style="margin: 0; color: #666;">Historial de tus recetas compartidas</p>
+        </div>
+
+        <button class="btn-ordenar" (click)="cambiarOrden()">
+          @if (ordenActual() === 'fecha') {
+            Ordenar por más likes
+          } @else {
+            Ordenar por más recientes
+          }
+        </button>
+      </div>
 
       @if (loading()) {
         <p class="loading-text">Cargando tus publicaciones...</p>
       } @else {
         <div class="grid-publicaciones">
-          @for (pub of misPublicaciones(); track pub._id) {
-            <div class="card-publicacion">
-              
-              <div class="pub-header-autor">
-                @if (pub.autor?.avatarUrl || usuario()?.avatarUrl) {
-                  <img [src]="pub.autor?.avatarUrl || usuario()?.avatarUrl" alt="Avatar" class="autor-avatar" />
-                } @else {
-                  <div class="avatar-default">👤</div>
-                }
-                <div class="autor-info">
-                  <span class="autor-nombre">{{ pub.autor?.nombre || usuario()?.nombre }} {{ usuario()?.apellido || '' }}</span>
-                  <span class="autor-usuario">&#64;{{ pub.autor?.usuario || usuario()?.usuario }}</span>
-                </div>
-              </div>
-
-              <h4>{{ pub.titulo }}</h4>
-              <p class="pub-desc">{{ pub.descripcion }}</p>
-
-              @if (pub.imagenUrl) {
-                <img [src]="pub.imagenUrl" alt="Imagen receta" class="pub-img" />
-              }
-
-              <div class="pub-footer">
-                <span class="fecha">{{ pub.createdAt | date:'shortDate' }}</span>
-              </div>
-
-            </div>
+          @for (pub of misPublicaciones(); track (pub._id || pub.id)) {
+            <app-publicacion-card
+              [publicacion]="pub"
+              [usuarioActualId]="usuario()?._id || usuario()?.id"
+              (solicitarEliminacion)="abrirConfirmacionEliminacion(pub)">
+            </app-publicacion-card>
           } @empty {
             <p class="no-data">Aún no has compartido ninguna receta.</p>
+          }
+        </div>
+
+        <!-- 👇 Controles de Paginación Condicionales (igual que en el muro) -->
+        <div class="paginacion-container" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 30px 0;">
+          
+          @if (offset() > 0) {
+            <button 
+              class="btn-paginacion" 
+              (click)="paginaAnterior()" 
+              [disabled]="loading()"
+            >
+              ⬅️ Anterior
+            </button>
+          }
+
+          <span class="pagina-indicador" style="font-weight: 600; color: #4a5568;">
+            Página {{ paginaActual() }}
+          </span>
+
+          @if (misPublicaciones().length === limit()) {
+            <button 
+              class="btn-paginacion" 
+              (click)="paginaSiguiente()" 
+              [disabled]="loading()"
+            >
+              Siguiente ➡️
+            </button>
           }
         </div>
       }
     </div>
 
   </main>
+
+  <!-- Modal Global de Eliminación -->
+  @if (publicacionAEliminar()) {
+    <div class="modal-overlay-eliminar" (click)="cerrarConfirmacionEliminacion()">
+      <div class="modal-box-eliminar" (click)="$event.stopPropagation()">
+        <h4>¿Eliminar publicación?</h4>
+        <p>Esta acción no se puede deshacer y se borrará la receta de forma permanente.</p>
+        
+        <div class="modal-botones">
+          <button
+            class="btn-secundario"
+            (click)="cerrarConfirmacionEliminacion()"
+            [disabled]="cargandoEliminacion()"
+          >
+            Cancelar
+          </button>
+          <button
+            class="btn-peligro"
+            (click)="confirmarEliminacionGlobal()"
+            [disabled]="cargandoEliminacion()"
+          >
+            @if (cargandoEliminacion()) {
+              Eliminando...
+            } @else {
+              Sí, eliminar
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

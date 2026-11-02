@@ -88,15 +88,6 @@
         <input id="avatar" type="file" (change)="onFileSelected($event)" accept="image/*" />
       </div>
 
-      <!-- Tipo de Perfil (Usuario / Administrador) -->
-      <div class="form-group">
-        <label for="perfil">Tipo de Perfil</label>
-        <select id="perfil" formControlName="perfil" class="form-select">
-          <option value="usuario">Usuario</option>
-          <option value="administrador">Administrador</option>
-        </select>
-      </div>
-
       <button type="submit" [disabled]="loading" class="btn-submit">
         {{ loading ? 'Registrando...' : 'Registrarse' }}
       </button>

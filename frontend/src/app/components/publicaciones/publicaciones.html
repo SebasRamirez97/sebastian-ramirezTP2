@@ -10,9 +10,21 @@
   </header>
 
   <main class="content">
-    <div class="feed-header">
-      <h3>Muro de Publicaciones</h3>
-      <p class="subtitle">Descubre lo que la comunidad está cocinando</p>
+    <!-- 👇 Actualizamos el encabezado del muro para incluir el botón de orden -->
+    <div class="feed-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <div>
+        <h3>Muro de Publicaciones</h3>
+        <p class="subtitle" style="margin: 0;">Descubre lo que la comunidad está cocinando</p>
+      </div>
+
+      <!-- Botón dinámico para alternar el ordenamiento (Fecha vs Me gusta) -->
+      <button class="btn-ordenar" (click)="cambiarOrden()">
+        @if (ordenActual() === 'fecha') {
+          Ordenar por más likes
+        } @else {
+          Ordenar por más recientes
+        }
+      </button>
     </div>
 
     <!-- Modal de creación de publicaciones -->
@@ -26,12 +38,12 @@
     }
 
     <!-- Estado de carga -->
+    <!-- Estado de carga -->
     @if (loading()) {
       <p class="loading-text">Cargando publicaciones desde la base de datos...</p>
     } @else {
       <div class="grid-publicaciones">
         @for (pub of publicaciones(); track (pub._id || pub.id)) {
-          <!-- 👇 Escuchamos la solicitud de eliminación que emite la tarjeta -->
           <app-publicacion-card
             [publicacion]="pub"
             [usuarioActualId]="usuarioActualId()"
@@ -40,6 +52,36 @@
           </app-publicacion-card>
         } @empty {
           <p class="no-data">No hay publicaciones todavía en la base de datos.</p>
+        }
+      </div>
+
+      <!-- 👇 Controles de Paginación -->
+      <div class="paginacion-container" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 30px 0;">
+        
+        <!-- El botón "Anterior" solo se muestra si NO estamos en la primera página (offset > 0) -->
+        @if (offset() > 0) {
+          <button 
+            class="btn-paginacion" 
+            (click)="paginaAnterior()" 
+            [disabled]="loading()"
+          >
+            ⬅️ Anterior
+          </button>
+        }
+
+        <span class="pagina-indicador" style="font-weight: 600; color: #4a5568;">
+          Página {{ paginaActual() }}
+        </span>
+
+        <!-- El botón "Siguiente" solo se muestra si hay suficientes publicaciones para formar otra página -->
+        @if (publicaciones().length === limit()) {
+          <button 
+            class="btn-paginacion" 
+            (click)="paginaSiguiente()" 
+            [disabled]="loading()"
+          >
+            Siguiente ➡️
+          </button>
         }
       </div>
     }

@@ -2,11 +2,12 @@ import { Component, Input, output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PublicacionService } from '../../services/publicacion.service';
 import { FechaArgentinaPipe } from '../../pipes/fecha-argentina-pipe';
+import { SaltoLineaPipe } from '../../pipes/salto-linea-pipe';
 
 @Component({
   selector: 'app-publicacion-card',
   standalone: true,
-  imports: [CommonModule, FechaArgentinaPipe],
+  imports: [CommonModule, FechaArgentinaPipe, SaltoLineaPipe],
   templateUrl: './publicacion-card.html',
   styleUrls: ['./publicacion-card.css'],
 })
@@ -22,6 +23,7 @@ export class PublicacionCard {
   likeActualizado = output<any>();
 
   cargandoLike = signal<boolean>(false);
+  expandida = signal<boolean>(false);
 
   get publicacionId(): string {
     return this.publicacion?._id || this.publicacion?.id;
@@ -74,4 +76,8 @@ export class PublicacionCard {
       },
     });
   }
+
+  toggleExpandir() {
+  this.expandida.update(v => !v);
+}
 }

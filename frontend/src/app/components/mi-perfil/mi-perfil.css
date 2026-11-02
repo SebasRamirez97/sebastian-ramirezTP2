@@ -2,6 +2,7 @@
   min-height: 100vh;
   background-color: #f7fafc;
   font-family: system-ui, -apple-system, sans-serif;
+  position: relative; /* 👈 Necesario para posicionar elementos globales de forma correcta */
 }
 
 /* Navbar */
@@ -324,4 +325,127 @@
 
 .crear-publicacion-wrapper {
   margin-bottom: 1.5rem;
+}
+
+/* ==========================================
+   ESTILOS NUEVOS: ORDENAMIENTO Y PAGINACIÓN
+   ========================================== */
+.btn-ordenar {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e0;
+  color: #2d3748;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.btn-ordenar:hover {
+  background-color: #f7fafc;
+  border-color: #a0aec0;
+  transform: translateY(-1px);
+}
+
+.btn-paginacion {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e0;
+  color: #2d3748;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-paginacion:hover:not(:disabled) {
+  background-color: #edf2f7;
+  border-color: #a0aec0;
+}
+
+.btn-paginacion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   ESTILOS PARA EL MODAL GLOBAL DE ELIMINACIÓN
+   ========================================== */
+.modal-overlay-eliminar {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999 !important;
+  backdrop-filter: blur(2px);
+}
+
+.modal-box-eliminar {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  z-index: 100000;
+}
+
+.modal-box-eliminar h4 {
+  margin-top: 0;
+  color: #212529;
+  font-size: 1.25rem;
+}
+
+.modal-box-eliminar p {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+}
+
+.modal-botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-secundario {
+  background: #e9ecef;
+  color: #495057;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-secundario:hover {
+  background: #dde2e6;
+}
+
+.btn-peligro {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-peligro:hover {
+  background: #bb2d3b;
+}
+
+.btn-peligro:disabled, .btn-secundario:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

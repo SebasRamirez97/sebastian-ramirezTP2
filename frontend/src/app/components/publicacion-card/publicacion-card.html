@@ -2,7 +2,6 @@
   <!-- Cabecera: Autor y Botón Eliminar si es propia -->
   <div class="card-header">
     <div class="autor-container" style="display: flex; align-items: center; gap: 10px">
-      <!-- Avatar del autor -->
       @if (publicacion.usuario?.avatarUrl || publicacion.autor?.avatarUrl) {
         <img
           [src]="publicacion.usuario?.avatarUrl || publicacion.autor?.avatarUrl"
@@ -17,7 +16,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: #ddd;
+            background: #edf2f7;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -28,22 +27,21 @@
       }
 
       <div class="autor-info" style="display: flex; flex-direction: column">
-        <span class="autor-nombre" style="font-weight: 600"
-          >{{ publicacion.usuario?.nombre || publicacion.autor?.nombre || 'Usuario' }}
-          {{ publicacion.usuario?.apellido || publicacion.autor?.apellido || '' }}</span
-        >
-        <span class="autor-usuario" style="font-size: 0.85rem; color: #666"
-          >&#64;{{ publicacion.usuario?.usuario || publicacion.autor?.usuario || 'anonimo' }}</span
-        >
+        <span class="autor-nombre" style="font-weight: 600">
+          {{ publicacion.usuario?.nombre || publicacion.autor?.nombre || 'Usuario' }}
+          {{ publicacion.usuario?.apellido || publicacion.autor?.apellido || '' }}
+        </span>
+        <span class="autor-usuario" style="font-size: 0.85rem; color: #666">
+          &#64;{{ publicacion.usuario?.usuario || publicacion.autor?.usuario || 'anonimo' }}
+        </span>
       </div>
     </div>
 
     <div class="header-right">
-      <span class="fecha" style="font-size: 0.75rem; color: #888">{{
-        publicacion.createdAt | fechaArgentina
-      }}</span>
+      <span class="fecha" style="font-size: 0.75rem; color: #888">
+        {{ publicacion.createdAt | fechaArgentina }}
+      </span>
       @if (esMia) {
-        <!-- 👇 Emitimos el objeto completo de la publicación al componente padre -->
         <button class="btn-eliminar" (click)="solicitarEliminacion.emit(publicacion)" title="Eliminar publicación">
           🗑️
         </button>
@@ -51,10 +49,16 @@
     </div>
   </div>
 
-  <!-- Contenido de la publicación -->
+  <!-- Cuerpo de la publicación -->
   <div class="card-body">
     <h3 class="titulo">{{ publicacion.titulo }}</h3>
-    <p class="descripcion">{{ publicacion.descripcion }}</p>
+
+    <!-- 👇 1. La imagen SIEMPRE es visible y se muestra completa -->
+    @if (publicacion.imagenUrl) {
+      <div class="imagen-container">
+        <img [src]="publicacion.imagenUrl" [alt]="publicacion.titulo" />
+      </div>
+    }
 
     @if (publicacion.tiempoPreparacion) {
       <div class="tiempo-prep">
@@ -62,11 +66,21 @@
       </div>
     }
 
-    @if (publicacion.imagenUrl) {
-      <div class="imagen-container">
-        <img [src]="publicacion.imagenUrl" [alt]="publicacion.titulo" />
-      </div>
-    }
+    <!-- 👇 2. Aplicamos la clase 'expandida' ÚNICAMENTE al bloque de la descripción -->
+    <div class="descripcion-wrapper" [class.expandida]="expandida()">
+      <p class="descripcion">{{ publicacion.descripcion }}</p>
+    </div>
+
+    <!-- 👇 3. Botón para desplegar solo la receta/descripción -->
+    <div class="card-expand-footer">
+      <button class="btn-ver-mas" (click)="toggleExpandir()">
+        @if (expandida()) {
+          ▲ Ver menos
+        } @else {
+          ▼ Ver receta completa...
+        }
+      </button>
+    </div>
   </div>
 
   <!-- Acciones: Likes -->

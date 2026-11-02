@@ -32,9 +32,11 @@ export class Publicaciones implements OnInit {
   publicacionAEliminar = signal<any>(null);
   cargandoEliminacion = signal<boolean>(false);
 
-  ordenActual = signal<string>('fecha'); // 'fecha' o 'likes'
-  limit = signal<number>(10);
+  ordenActual = signal<'fecha' | 'likes'>('fecha');
+  limit = signal<number>(5);
   offset = signal<number>(0);
+  paginaActual = signal<number>(1);
+  totalPublicaciones = signal<number>(0);
   usuarioActualId = signal<string>('');
 
   ngOnInit(): void {
@@ -42,7 +44,7 @@ export class Publicaciones implements OnInit {
     this.cargarPublicaciones();
   }
 
-  cargarPublicaciones(orden: string = 'fecha'): void {
+  cargarPublicaciones(orden: 'fecha' | 'likes' = this.ordenActual()): void {
     this.loading.set(true);
     this.ordenActual.set(orden);
 
@@ -57,6 +59,26 @@ export class Publicaciones implements OnInit {
         console.error(err);
       },
     });
+  }
+
+  // Métodos para cambiar de página
+  paginaSiguiente() {
+    // Solo avanzamos si hay suficientes publicaciones para llenar la página
+    if (this.publicaciones().length === this.limit()) {
+      const nuevoOffset = this.offset() + this.limit();
+      this.offset.set(nuevoOffset);
+      this.paginaActual.update((p) => p + 1);
+      this.cargarPublicaciones();
+    }
+  }
+
+  paginaAnterior() {
+    if (this.offset() > 0) {
+      const nuevoOffset = Math.max(0, this.offset() - this.limit());
+      this.offset.set(nuevoOffset);
+      this.paginaActual.update((p) => p - 1);
+      this.cargarPublicaciones();
+    }
   }
 
   // Métodos para manejar el modal de creación
@@ -77,8 +99,12 @@ export class Publicaciones implements OnInit {
     this.router.navigate(['/mi-perfil']);
   }
 
-  cambiarOrden(nuevoOrden: string): void {
-    this.offset.set(0);
+  cambiarOrden() {
+    // Alternamos entre fecha y likes
+    const nuevoOrden = this.ordenActual() === 'fecha' ? 'likes' : 'fecha';
+    this.ordenActual.set(nuevoOrden);
+
+    // Llamamos a tu método que recarga las publicaciones enviando el nuevo parámetro de orden
     this.cargarPublicaciones(nuevoOrden);
   }
 

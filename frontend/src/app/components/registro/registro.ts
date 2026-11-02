@@ -40,8 +40,7 @@ export class Registro {
     password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(this.passwordPattern)]],
     repetirPassword: ['', [Validators.required]],
     fechaNacimiento: ['', [Validators.required]],
-    descripcionBreve: [''],
-    perfil: ['usuario', [Validators.required]] // Por defecto 'usuario', opcional 'administrador'
+    descripcionBreve: ['']
   }, { validators: matchPasswordValidator });
 
   // Manejar la selección del archivo de imagen (avatar)
