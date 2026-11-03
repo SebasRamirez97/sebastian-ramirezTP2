@@ -52,10 +52,15 @@ export class PublicacionesController {
   }
 
   @Get('mis-publicaciones')
-  async findMisPublicaciones(@Req() req: any) {
+  async findMisPublicaciones(
+    @Query('limit') limit: number = 10,
+    @Query('offset') offset: number = 0,
+    @Query('orden') orden: string = 'fecha',
+    @Req() req: any,
+  ) {
     const usuarioId = req.user.sub;
-    // Reutilizamos findAll pasando el usuarioId del token actual
-    return await this.publicacionesService.findAll(10, 0, 'fecha', usuarioId);
+    // 💡 Ahora reutilizamos los parámetros dinámicos que llegan de la URL
+    return await this.publicacionesService.findAll(limit, offset, orden, usuarioId);
   }
 
   @Get(':id')
@@ -84,4 +89,14 @@ export class PublicacionesController {
     const usuarioId = req.user.sub;
     return await this.publicacionesService.quitarLike(id, usuarioId);
   }
+  @Post(':id/comentarios')
+  async comentar(
+    @Param('id') id: string,
+    @Body('texto') texto: string,
+    @Req() req: any,
+  ) {
+    const usuarioId = req.user.sub;
+    return await this.publicacionesService.comentar(id, texto, usuarioId);
+  }
+
 }

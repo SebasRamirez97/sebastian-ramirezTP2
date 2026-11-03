@@ -121,6 +121,7 @@
   line-height: 1.5;
   margin: 0;
   white-space: pre-line; /* Respeta los saltos de línea de la receta */
+  word-break: break-word;
 }
 
 /* Botón de expansión de la descripción */

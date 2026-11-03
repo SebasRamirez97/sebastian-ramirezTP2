@@ -21,9 +21,14 @@ export class PublicacionCard {
   publicacionEliminada = output<string>();
   solicitarEliminacion = output<any>(); // 👈 Nuevo evento para invocar el modal global
   likeActualizado = output<any>();
+  comentarioAgregado = output<any>();
 
   cargandoLike = signal<boolean>(false);
   expandida = signal<boolean>(false);
+  // Estados locales para los comentarios usando Signals
+  nuevoComentario = signal<string>('');
+  cargandoComentario = signal<boolean>(false);
+  mostrarCajaComentario = signal<boolean>(false);
 
   get publicacionId(): string {
     return this.publicacion?._id || this.publicacion?.id;
@@ -78,6 +83,32 @@ export class PublicacionCard {
   }
 
   toggleExpandir() {
-  this.expandida.update(v => !v);
-}
+    this.expandida.update((v) => !v);
+  }
+
+  // Método para enviar el comentario
+  enviarComentario() {
+    const texto = this.nuevoComentario().trim();
+    if (!texto || this.cargandoComentario() || !this.publicacionId) return;
+
+    this.cargandoComentario.set(true);
+
+    this.publicacionService.comentarPublicacion(this.publicacionId, texto).subscribe({
+      next: (pubActualizada) => {
+        // Actualizamos la publicación localmente con la respuesta del backend
+        this.publicacion = pubActualizada; 
+        this.comentarioAgregado.emit(this.publicacion);
+        this.nuevoComentario.set(''); // Limpiamos la casilla
+        this.cargandoComentario.set(false);
+      },
+      error: (err) => {
+        console.error('Error al enviar el comentario:', err);
+        this.cargandoComentario.set(false);
+      },
+    });
+  }
+
+  toggleCajaComentario() {
+    this.mostrarCajaComentario.update((v) => !v);
+  }
 }

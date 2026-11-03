@@ -42,7 +42,11 @@
         {{ publicacion.createdAt | fechaArgentina }}
       </span>
       @if (esMia) {
-        <button class="btn-eliminar" (click)="solicitarEliminacion.emit(publicacion)" title="Eliminar publicación">
+        <button
+          class="btn-eliminar"
+          (click)="solicitarEliminacion.emit(publicacion)"
+          title="Eliminar publicación"
+        >
           🗑️
         </button>
       }
@@ -68,7 +72,7 @@
 
     <!-- 👇 2. Aplicamos la clase 'expandida' ÚNICAMENTE al bloque de la descripción -->
     <div class="descripcion-wrapper" [class.expandida]="expandida()">
-      <p class="descripcion" [innerHTML]="publicacion.descripcion | saltoLinea"></p>
+      <p class="descripcion">{{ publicacion.descripcion }}</p>
     </div>
 
     <!-- 👇 3. Botón para desplegar solo la receta/descripción -->
@@ -85,13 +89,72 @@
 
   <!-- Acciones: Likes -->
   <div class="card-footer">
-    <button
-      class="btn-like"
-      [class.liked]="usuarioDioLike"
-      (click)="toggleLike()"
-      [disabled]="cargandoLike()"
-    >
-      ❤️ {{ publicacion.likes?.length || 0 }} Me gusta
-    </button>
+    <!-- Botones principales alineados (Me gusta y Comentar) -->
+    <div class="acciones-principales" style="display: flex; gap: 10px; margin-bottom: 12px">
+      <button
+        class="btn-like"
+        [class.liked]="usuarioDioLike"
+        (click)="toggleLike()"
+        [disabled]="cargandoLike()"
+      >
+        ❤️ {{ publicacion.likes?.length || 0 }} Me gusta
+      </button>
+
+      <button class="btn-comentar-toggle" (click)="toggleCajaComentario()">
+        💬 Comentarios ({{ publicacion.comentarios?.length || 0 }})
+      </button>
+    </div>
+
+    <!-- Contenedor que se abre al hacer clic en Comentar -->
+    <div class="comentarios-container" *ngIf="mostrarCajaComentario()">
+      <!-- Casilla para redactar un nuevo comentario con su botón Publicar -->
+      <div class="input-comentario-box" style="display: flex; gap: 8px; margin-bottom: 15px">
+        <input
+          type="text"
+          [value]="nuevoComentario()"
+          (input)="nuevoComentario.set($any($event.target).value)"
+          placeholder="Escribe un comentario..."
+          [disabled]="cargandoComentario()"
+          (keyup.enter)="enviarComentario()"
+          style="flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc"
+        />
+        <button
+          class="btn-publicar"
+          (click)="enviarComentario()"
+          [disabled]="cargandoComentario() || !nuevoComentario().trim()"
+        >
+          {{ cargandoComentario() ? 'Publicando...' : 'Publicar' }}
+        </button>
+      </div>
+
+      <!-- Listado de comentarios por debajo -->
+      <div
+        class="lista-comentarios"
+        *ngIf="publicacion.comentarios && publicacion.comentarios.length > 0"
+      >
+        <div
+          *ngFor="let com of publicacion.comentarios"
+          class="comentario-item"
+          style="padding: 8px 0; border-bottom: 1px solid #f0f0f0"
+        >
+          <div
+            class="comentario-header"
+            style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #666"
+          >
+            <!-- Nombre y Apellido -->
+            <span class="comentario-autor">
+              <strong>{{ com.autor?.nombre }} {{ com.autor?.apellido }}</strong>
+            </span>
+            <!-- Fecha y Hora -->
+            <span class="comentario-fecha">
+              {{ com.fecha | fechaArgentina }}
+            </span>
+          </div>
+          <div class="comentario-texto" style="margin-top: 4px; font-size: 0.95rem">
+            {{ com.texto }}
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

@@ -5,9 +5,9 @@ import { Usuario } from '../../usuarios/entities/usuario.entity.js';
 
 export type PublicacionDocument = HydratedDocument<Publicacion>;
 
-@Schema({ 
+@Schema({
   timestamps: true,
-  collection: 'publicaciones'
+  collection: 'publicaciones',
 })
 export class Publicacion {
   @Prop({ required: true, trim: true })
@@ -33,6 +33,21 @@ export class Publicacion {
   // Nuevo: Arreglo de IDs de usuarios que dieron "me gusta"
   @Prop({ type: [{ type: Types.ObjectId, ref: Usuario.name }], default: [] })
   likes: Types.ObjectId[];
+  @Prop({
+    type: [
+      {
+        autor: { type: Types.ObjectId, ref: Usuario.name, required: true },
+        texto: { type: String, required: true, trim: true },
+        fecha: { type: Date, default: Date.now },
+      },
+    ],
+    default: [],
+  })
+  comentarios: Array<{
+    autor: Types.ObjectId;
+    texto: string;
+    fecha: Date;
+  }>;
 }
 
 export const PublicacionSchema = SchemaFactory.createForClass(Publicacion);

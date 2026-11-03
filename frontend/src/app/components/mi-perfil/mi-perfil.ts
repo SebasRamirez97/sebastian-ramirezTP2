@@ -49,36 +49,29 @@ export class MiPerfil implements OnInit {
   }
 
   // Método para cargar las publicaciones propias con soporte de paginación y ordenamiento
+  // Método para cargar las publicaciones propias con soporte de paginación y ordenamiento
   cargarMisPublicaciones(orden: 'fecha' | 'likes' = this.ordenActual()): void {
-    const user = this.usuario();
-    if (!user) return;
-
     this.loading.set(true);
     this.ordenActual.set(orden);
 
-    // Si tu servicio soporta parámetros de paginación y orden directo por usuario, úsalos:
-    // this.publicacionService.obtenerPublicacionesPorUsuario(user._id || user.id, this.limit(), this.offset(), orden)
-    // O filtrando desde el listado general según la estructura de tu API:
-    this.publicacionService.obtenerPublicaciones(this.limit(), this.offset(), orden).subscribe({
+    // 💡 Usamos el método específico para el perfil que ya preparaste en el servicio
+    this.publicacionService.obtenerMisPublicaciones(this.limit(), this.offset(), orden).subscribe({
       next: (pubs) => {
-        const userId = user._id || user.id;
-        const propias = pubs.filter(
-          (p: any) =>
-            p.autor?._id === userId || p.autor === userId || p.usuarioId === userId
-        );
-        this.misPublicaciones.set(propias);
+        this.misPublicaciones.set(pubs);
         this.loading.set(false);
       },
       error: (err) => {
-        console.error('Error al cargar publicaciones:', err);
+        console.error('Error al cargar mis publicaciones:', err);
         this.loading.set(false);
       },
     });
   }
 
-  // Alternar criterio de ordenamiento
+  // Alternar criterio de ordenamiento (¡Reiniciamos el offset a 0 al cambiar de orden!)
   cambiarOrden() {
     const nuevoOrden = this.ordenActual() === 'fecha' ? 'likes' : 'fecha';
+    this.offset.set(0);          // 👈 Volvemos a la página 1 al ordenar distinto
+    this.paginaActual.set(1);
     this.cargarMisPublicaciones(nuevoOrden);
   }
 
@@ -88,7 +81,7 @@ export class MiPerfil implements OnInit {
       const nuevoOffset = this.offset() + this.limit();
       this.offset.set(nuevoOffset);
       this.paginaActual.update((p) => p + 1);
-      this.cargarMisPublicaciones();
+      this.cargarMisPublicaciones(); // Mantiene el ordenActual automáticamente
     }
   }
 
@@ -97,7 +90,7 @@ export class MiPerfil implements OnInit {
       const nuevoOffset = Math.max(0, this.offset() - this.limit());
       this.offset.set(nuevoOffset);
       this.paginaActual.update((p) => p - 1);
-      this.cargarMisPublicaciones();
+      this.cargarMisPublicaciones(); // Mantiene el ordenActual automáticamente
     }
   }
 

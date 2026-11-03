@@ -10,7 +10,7 @@ export class InactivityService {
 
   // Configuramos los tiempos:
   private readonly INACTIVITY_LIMIT = 25* 60 * 1000; 
-  private readonly WARNING_DURATION = 5 * 60 * 1000;   
+  private readonly WARNING_DURATION = 5* 60 * 1000;   
 
   private inactivityTimer: any;
   private warningTimer: any;

@@ -52,6 +52,8 @@ export class Publicaciones implements OnInit {
       next: (data) => {
         this.publicaciones.set(data);
         this.loading.set(false);
+        console.log("Se actualizaron las publicaciones");
+        console.log(data);
       },
       error: (err) => {
         this.errorMessage.set('No se pudieron cargar las publicaciones del servidor.');

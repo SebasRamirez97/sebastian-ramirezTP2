@@ -10,7 +10,7 @@ export class PublicacionService {
   private API_URL = 'http://localhost:3000/publicaciones'; 
 
   // Obtiene todas las publicaciones para el muro general
-  obtenerPublicaciones(limit: number = 10, offset: number = 0, orden: string = 'fecha', usuarioId?: string): Observable<any[]> {
+  obtenerPublicaciones(limit: number = 1000, offset: number = 0, orden: string = 'fecha', usuarioId?: string): Observable<any[]> {
     let params: any = {
       limit: limit.toString(),
       offset: offset.toString(),
@@ -28,9 +28,14 @@ export class PublicacionService {
   }
 
   // Obtiene únicamente las publicaciones del usuario logueado (para el perfil)
-  obtenerMisPublicaciones(): Observable<any[]> {
+  obtenerMisPublicaciones(limit: number = 3, offset: number = 0, orden: string = 'fecha'): Observable<any[]> {
     return this.http.get<any[]>(`${this.API_URL}/mis-publicaciones`, {
-      withCredentials: true
+      withCredentials: true,
+      params: {
+        limit: limit.toString(),
+        offset: offset.toString(),
+        orden: orden
+      }
     });
   }
 
@@ -61,4 +66,12 @@ export class PublicacionService {
       withCredentials: true
     });
   }
+
+  // En publicacion.service.ts
+comentarPublicacion(id: string, texto: string): Observable<any> {
+  return this.http.post(`${this.API_URL}/${id}/comentarios`, { texto }, {
+    withCredentials: true
+  });
 }
+}
+
