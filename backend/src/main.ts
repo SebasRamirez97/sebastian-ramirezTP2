@@ -14,7 +14,7 @@ async function bootstrap() {
   
   // 2. Configuramos el CORS una sola vez y de forma correcta
   app.enableCors({
-    origin: ['http://localhost:4200'],
+    origin: ['http://localhost:4200','https://sebastian-ramirez-tp-2-nest.vercel.app'],
     credentials: true, 
   });
   
