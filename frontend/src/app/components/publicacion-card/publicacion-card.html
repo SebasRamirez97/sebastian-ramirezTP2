@@ -100,7 +100,8 @@
         ❤️ {{ publicacion.likes?.length || 0 }} Me gusta
       </button>
 
-      <button class="btn-comentar-toggle" (click)="toggleCajaComentario()">
+      <!-- Cambiamos el (click) para que emita la publicación completa al padre -->
+      <button class="btn-comentar-toggle" (click)="abrirModalComentarios.emit(publicacion)">
         💬 Comentarios ({{ publicacion.comentarios?.length || 0 }})
       </button>
     </div>

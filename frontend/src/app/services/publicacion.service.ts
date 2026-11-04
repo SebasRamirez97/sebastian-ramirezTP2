@@ -73,5 +73,30 @@ comentarPublicacion(id: string, texto: string): Observable<any> {
     withCredentials: true
   });
 }
+
+// 👇 NUEVO: Obtener comentarios de una publicación con paginación
+  obtenerComentarios(id: string, limit: number = 3, offset: number = 0): Observable<any> {
+    return this.http.get(`${this.API_URL}/${id}/comentarios`, {
+      withCredentials: true,
+      params: {
+        limit: limit.toString(),
+        offset: offset.toString()
+      }
+    });
+  }
+
+  // 👇 NUEVO: Editar un comentario existente
+  editarComentario(comentarioId: string, texto: string): Observable<any> {
+  return this.http.put(`${this.API_URL}/comentarios/${comentarioId}`, { texto }, {
+    withCredentials: true
+  });
+}
+
+  // 👇 NUEVO: Eliminar un comentario propio por su ID
+  eliminarComentario(comentarioId: string): Observable<any> {
+    return this.http.delete(`${this.API_URL}/comentarios/${comentarioId}`, {
+      withCredentials: true
+    });
+  }
 }
 

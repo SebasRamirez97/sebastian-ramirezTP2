@@ -33,7 +33,7 @@ export class AutenticacionService {
 
     // 2. Verificar si el correo o el nombre de usuario ya existen en la base de datos
     const existingUser = await this.usuarioModel.findOne({
-      $or: [{ email: registroDto.correo }, { username: registroDto.usuario }],
+      $or: [{ correo: registroDto.correo }, { usuario: registroDto.usuario }],
     });
 
     if (existingUser) {
@@ -99,16 +99,24 @@ export class AutenticacionService {
     return user;
   }
 
-  async generateToken(usuario: UsuarioDocument) {
+  async generateToken(usuario: any) {
     const payload = { 
       correo: usuario.correo, 
       usuario: usuario.usuario, 
-      sub: usuario._id, 
+      sub: usuario._id || usuario.sub, 
       perfil: usuario.perfil 
     };
     return this.jwtService.signAsync(payload);
   }
-
+  async verificarDisponibilidad(correo?: string, usuario?: string) {
+  const existe = await this.usuarioModel.findOne({
+    $or: [
+      ...(correo ? [{ correo }] : []),
+      ...(usuario ? [{ usuario }] : [])
+    ]
+  });
+  return { disponible: !existe };
+}
   setTokenCookie(res: Response, token: string) {
     res.cookie('token', token, {
       httpOnly: true, // Evita ataques XSS
@@ -117,4 +125,5 @@ export class AutenticacionService {
       maxAge: 1000 * 60 * 60 * 24, // 1 día de expiración
     });
   }
+
 }

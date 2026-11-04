@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  Put,
   Delete,
   Body,
   Param,
@@ -99,4 +100,46 @@ export class PublicacionesController {
     return await this.publicacionesService.comentar(id, texto, usuarioId);
   }
 
+  // 👇 GET: Traer comentarios de una publicación con paginación y ordenados (más recientes primero)
+  @Get(':id/comentarios')
+  async obtenerComentarios(
+    @Param('id') id: string,
+    @Query('limit') limit: number = 10,
+    @Query('offset') offset: number = 0,
+  ) {
+    return await this.publicacionesService.obtenerComentarios(
+      id, 
+      Number(limit), 
+      Number(offset)
+    );
+  }
+
+  // 👇 PUT: Modificar un comentario existente y marcar modificado: true
+  @Put('comentarios/:comentarioId')
+  async editarComentario(
+    @Param('comentarioId') comentarioId: string,
+    @Body('texto') texto: string,
+    @Req() req: any,
+  ) {
+    const usuarioId = req.user.sub; // ID del usuario autenticado que intenta editar
+    return await this.publicacionesService.editarComentario(
+      comentarioId, 
+      texto, 
+      usuarioId
+    );
+  }
+
+  @Delete('comentarios/:comentarioId')
+  async eliminarComentario(
+    @Param('comentarioId') comentarioId: string,
+    @Req() req: any,
+  ) {
+    const usuarioId = req.user.sub;
+    return await this.publicacionesService.eliminarComentario(
+      comentarioId, 
+      usuarioId
+    );
+  }
 }
+
+  

@@ -99,7 +99,11 @@ export class PublicacionesService {
 
     const publicacion = await this.publicacionModel
       .findOne({ _id: id, activo: true })
-      .populate('autor', '-password')
+      .populate('autor', '-password') // Popula el autor principal de la receta
+      .populate({
+        path: 'comentarios.autor', // 👈 Popula el autor dentro de cada comentario
+        select: '-password',        // Excluye la contraseña del usuario que comentó
+      })
       .exec();
 
     if (!publicacion) {
@@ -206,5 +210,94 @@ export class PublicacionesService {
 
     return pubActualizada;
   }
+
+  // 📝 1. GET: Obtener comentarios con paginación y orden descendente (más recientes primero)
+  // backend/src/publicaciones/publicaciones.service.ts
+
+async obtenerComentarios(publicacionId: string, limit: number = 3, offset: number = 0) {
+  // 1. Buscamos la publicación y populamos los datos del autor de cada comentario
+  const publicacion = await this.publicacionModel.findById(publicacionId)
+    .populate({
+      path: 'comentarios.autor',
+      select: '-password',
+    });
+
+  if (!publicacion) {
+    throw new NotFoundException('Publicación no encontrada');
+  }
+
+  // 2. Ordenar los comentarios del más reciente al más antiguo (fecha descendente)
+  const comentariosOrdenados = publicacion.comentarios.sort(
+    (a: any, b: any) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()
+  );
+
+  const total = comentariosOrdenados.length;
+
+  // 3. Aplicar paginación (slice corta desde el offset la cantidad definida en limit)
+  const comentariosPaginados = comentariosOrdenados.slice(offset, offset + limit);
+
+  return {
+    total,
+    comentarios: comentariosPaginados,
+    hasMore: offset + limit < total, // 👈 Útil para que el frontend sepa si oculta o muestra el botón "Cargar más"
+  };
+}
+  // ✏️ 2. PUT: Modificar un comentario y marcarlo como modificado: true
+  async editarComentario(comentarioId: string, nuevoTexto: string, usuarioId: string) {
+  const publicacion = await this.publicacionModel.findOne({ 'comentarios._id': comentarioId });
+  if (!publicacion) {
+    throw new NotFoundException('Comentario o publicación no encontrados');
+  }
+
+  const comentario: any = publicacion.comentarios.id(comentarioId);
+  if (!comentario) {
+    throw new NotFoundException('Comentario no encontrado');
+  }
+
+  if (comentario.autor.toString() !== usuarioId) {
+    throw new ForbiddenException('No tienes permiso para editar este comentario');
+  }
+
+  comentario.texto = nuevoTexto;
+  comentario.modificado = true; 
+
+  await publicacion.save();
+
+  return {
+    message: 'Comentario actualizado exitosamente',
+    comentario,
+  };
+}
+
+  async eliminarComentario(comentarioId: string, usuarioId: string) {
+    const publicacion = await this.publicacionModel.findOne({ 'comentarios._id': comentarioId });
+    if (!publicacion) {
+      throw new NotFoundException('Comentario o publicación no encontrados');
+    }
+
+    const comentario: any = publicacion.comentarios.id(comentarioId);
+    if (!comentario) {
+      throw new NotFoundException('Comentario no encontrado');
+    }
+
+    // Validar que el usuario sea el dueño del comentario (o si prefieres permitir que el autor de la receta también lo borre)
+    if (comentario.autor.toString() !== usuarioId && publicacion.autor.toString() !== usuarioId) {
+      throw new ForbiddenException('No tienes permiso para eliminar este comentario');
+    }
+
+    // Eliminamos el comentario del DocumentArray usando el método pull de Mongoose
+    publicacion.comentarios.pull(comentarioId);
+    await publicacion.save();
+
+    return {
+      message: 'Comentario eliminado exitosamente',
+    };
+  }
+
+
+
+  
+
+  
 
 }

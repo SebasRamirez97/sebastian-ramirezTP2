@@ -1,11 +1,13 @@
+// src/app/components/registro/registro.ts
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { InputErrorDirective } from '../../directives/input-error.directive.ts';
+import { InputErrorDirective } from '../../directives/input-error.directive';
 import { FormErrorPipe } from '../../pipes/form-error.pipe';
 import { matchPasswordValidator } from '../../validators/match-password.validator';
+import { VerificarDuplicadoDirective } from '../../directives/verficiar-duplicado.directive'; // 👈 Importar directiva
 
 @Component({
   selector: 'app-registro',
@@ -15,7 +17,8 @@ import { matchPasswordValidator } from '../../validators/match-password.validato
     ReactiveFormsModule,
     RouterLink,
     InputErrorDirective,
-    FormErrorPipe
+    FormErrorPipe,
+    VerificarDuplicadoDirective // 👈 Agregar a imports
   ],
   templateUrl: './registro.html',
   styleUrl: './registro.css'
@@ -29,21 +32,19 @@ export class Registro {
   loading: boolean = false;
   selectedFile: File | null = null;
 
-  // Patrón: Al menos una mayúscula y un número
   private passwordPattern = /^(?=.*[A-Z])(?=.*\d)/;
 
   registroForm: FormGroup = this.fb.group({
     nombre: ['', [Validators.required]],
     apellido: ['', [Validators.required]],
-    correo: ['', [Validators.required, Validators.email]],
-    usuario: ['', [Validators.required]],
+    correo: ['', [Validators.required, Validators.email]], // La directiva validará asíncronamente aquí
+    usuario: ['', [Validators.required]],                   // Y aquí
     password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(this.passwordPattern)]],
     repetirPassword: ['', [Validators.required]],
     fechaNacimiento: ['', [Validators.required]],
     descripcionBreve: ['']
   }, { validators: matchPasswordValidator });
 
-  // Manejar la selección del archivo de imagen (avatar)
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
@@ -60,7 +61,6 @@ export class Registro {
     this.loading = true;
     this.errorMessage = null;
 
-    // Como necesitamos enviar un archivo (avatar) junto con texto, usamos FormData
     const formData = new FormData();
     const formValues = this.registroForm.value;
 

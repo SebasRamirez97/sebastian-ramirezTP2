@@ -2,12 +2,11 @@ import { Component, Input, output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PublicacionService } from '../../services/publicacion.service';
 import { FechaArgentinaPipe } from '../../pipes/fecha-argentina-pipe';
-import { SaltoLineaPipe } from '../../pipes/salto-linea-pipe';
 
 @Component({
   selector: 'app-publicacion-card',
   standalone: true,
-  imports: [CommonModule, FechaArgentinaPipe, SaltoLineaPipe],
+  imports: [CommonModule, FechaArgentinaPipe],
   templateUrl: './publicacion-card.html',
   styleUrls: ['./publicacion-card.css'],
 })
@@ -17,11 +16,14 @@ export class PublicacionCard {
   @Input({ required: true }) publicacion: any;
   @Input({ required: true }) usuarioActualId!: string;
 
+
   // Eventos para el padre
   publicacionEliminada = output<string>();
   solicitarEliminacion = output<any>(); // 👈 Nuevo evento para invocar el modal global
   likeActualizado = output<any>();
   comentarioAgregado = output<any>();
+  abrirModalComentarios = output<any>();
+
 
   cargandoLike = signal<boolean>(false);
   expandida = signal<boolean>(false);

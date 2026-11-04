@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PublicacionService } from '../../services/publicacion.service';
@@ -6,11 +6,14 @@ import { UserService } from '../../services/user.service';
 import { ModalCrearPublicacion } from '../modal-crear-publicacion/modal-crear-publicacion';
 import { InactivityService } from '../../services/inactivity.service';
 import { PublicacionCard } from '../publicacion-card/publicacion-card';
+import { FechaArgentinaPipe } from '../../pipes/fecha-argentina-pipe';
+import { FormsModule } from '@angular/forms';
+
 
 @Component({
   selector: 'app-publicaciones',
   standalone: true,
-  imports: [CommonModule, ModalCrearPublicacion, PublicacionCard],
+  imports: [CommonModule, ModalCrearPublicacion, PublicacionCard, FechaArgentinaPipe,FormsModule],
   templateUrl: './publicaciones.html',
   styleUrl: './publicaciones.css',
 })
@@ -39,6 +42,18 @@ export class Publicaciones implements OnInit {
   totalPublicaciones = signal<number>(0);
   usuarioActualId = signal<string>('');
 
+  // Variables / Signals en publicaciones.component.ts
+  publicacionSeleccionada = signal<any | null>(null);
+  comentariosModal = signal<any[]>([]);
+  offsetComentarios = signal<number>(0);
+  limitComentarios = signal<number>(3); // 👈 Empezamos trayendo de a 3 como acordamos
+  hasMoreComentarios = signal<boolean>(false);
+  nuevoComentarioTexto = signal<string>('');
+  cargandoComentarioModal = signal<boolean>(false);
+  // 📝 Estados para controlar qué comentario se está editando
+  comentarioEnEdicionId = signal<string | null>(null);
+  textoEditado: string = '';
+
   ngOnInit(): void {
     this.cargarUsuarioActual();
     this.cargarPublicaciones();
@@ -52,7 +67,7 @@ export class Publicaciones implements OnInit {
       next: (data) => {
         this.publicaciones.set(data);
         this.loading.set(false);
-        console.log("Se actualizaron las publicaciones");
+        console.log('Se actualizaron las publicaciones');
         console.log(data);
       },
       error: (err) => {
@@ -163,4 +178,144 @@ export class Publicaciones implements OnInit {
       },
     });
   }
+
+  // 1. Abrir el modal y hacer la carga inicial de comentarios
+async abrirModal(pub: any) {
+  this.publicacionSeleccionada.set(pub);
+  this.offsetComentarios.set(0);
+  await this.cargarComentariosModal(pub._id, 0);
+}
+
+// 2. Cerrar el modal
+cerrarModal() {
+  this.publicacionSeleccionada.set(null);
+  this.comentariosModal.set([]);
+}
+
+// 3. Obtener comentarios desde el servicio con paginación
+async cargarComentariosModal(publicacionId: string, offset: number) {
+  // Llamas a tu servicio que conecta con el GET /publicaciones/:id/comentarios
+  this.publicacionService.obtenerComentarios(publicacionId, this.limitComentarios(), offset).subscribe({
+    next: (res: any) => {
+      if (offset === 0) {
+        this.comentariosModal.set(res.comentarios);
+      } else {
+        // Si es "cargar más", acumulamos los nuevos comentarios sin perder los anteriores
+        this.comentariosModal.update(actuales => [...actuales, ...res.comentarios]);
+      }
+      this.hasMoreComentarios.set(res.hasMore);
+    },
+    error: (err) => console.error('Error al cargar comentarios', err)
+  });
+}
+
+// 4. Botón "Cargar más"
+async cargarMasComentarios() {
+  const nuevoOffset = this.offsetComentarios() + this.limitComentarios();
+  this.offsetComentarios.set(nuevoOffset);
+  const pubId = this.publicacionSeleccionada()._id;
+  await this.cargarComentariosModal(pubId, nuevoOffset);
+}
+
+// 5. Enviar un nuevo comentario desde la caja fija inferior
+// 5. Enviar un nuevo comentario desde la caja fija inferior
+  async enviarComentarioModal() {
+    const texto = this.nuevoComentarioTexto().trim();
+    if (!texto) return;
+
+    const pubId = this.publicacionSeleccionada()._id;
+    this.cargandoComentarioModal.set(true);
+
+    this.publicacionService.comentarPublicacion(pubId, texto).subscribe({
+      next: async (res) => {
+        this.nuevoComentarioTexto.set('');
+        this.cargandoComentarioModal.set(false);
+        
+        // 1. Recargamos los comentarios del modal para ver el nuevo reflejado arriba
+        this.offsetComentarios.set(0);
+        await this.cargarComentariosModal(pubId, 0);
+
+        // 2. Actualizamos la lista principal de publicaciones para que el contador de la tarjeta suba al instante
+        this.publicaciones.update(pubs => 
+          pubs.map(pub => {
+            const idPubActual = pub._id || pub.id;
+            if (idPubActual === pubId) {
+              // Dependiendo de cómo devuelva tu backend el comentario creado (res o res.comentario), 
+              // lo agregamos al array local de comentarios de la publicación
+              const nuevoComentario = res.comentario || res; 
+              return {
+                ...pub,
+                comentarios: [...(pub.comentarios || []), nuevoComentario]
+              };
+            }
+            return pub;
+          })
+        );
+      },
+      error: (err) => {
+        console.error('Error al comentar', err);
+        this.cargandoComentarioModal.set(false);
+      }
+    });
+  }
+
+// Activar la edición cargando el texto actual en la variable temporal
+  iniciarEdicion(com: any) {
+    this.comentarioEnEdicionId.set(com._id);
+    this.textoEditado = com.texto;
+  }
+
+  // Cancelar el modo edición
+  cancelarEdicion() {
+    this.comentarioEnEdicionId.set(null);
+    this.textoEditado = '';
+  }
+// 6. Editar un comentario propio
+  // Guardar llamando al servicio y refrescar el modal
+  async guardarEdicionComentario(comentarioId: string) {
+    if (!this.textoEditado.trim()) return;
+
+    this.publicacionService.editarComentario(comentarioId, this.textoEditado).subscribe({
+      next: async () => {
+        this.cancelarEdicion();
+        const pubId = this.publicacionSeleccionada()._id;
+        this.offsetComentarios.set(0);
+        await this.cargarComentariosModal(pubId, 0);
+      },
+      error: (err) => console.error('Error al editar comentario', err)
+    });
+  }
+
+  // 7. Eliminar un comentario propio
+  async eliminarComentarioModal(comentarioId: string) {
+    const pubId = this.publicacionSeleccionada()._id;
+
+    this.publicacionService.eliminarComentario(comentarioId).subscribe({
+      next: async () => {
+        // 1. Recargamos los comentarios del modal (como ya lo hacías)
+        this.offsetComentarios.set(0);
+        await this.cargarComentariosModal(pubId, 0);
+
+        // 2. Actualizamos la lista principal de publicaciones para que el contador de la tarjeta baje al instante
+        this.publicaciones.update(pubs => 
+          pubs.map(pub => {
+            const idPubActual = pub._id || pub.id;
+            if (idPubActual === pubId) {
+              return {
+                ...pub,
+                comentarios: pub.comentarios.filter((c: any) => c._id !== comentarioId)
+              };
+            }
+            return pub;
+          })
+        );
+      },
+      error: (err) => console.error('Error al eliminar comentario', err)
+    });
+  }
+  
+
+
+
+
 }

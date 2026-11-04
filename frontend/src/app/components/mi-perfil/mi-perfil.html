@@ -10,12 +10,10 @@
   </header>
 
   <main class="content-perfil">
-    
     <!-- Tarjeta Principal de Perfil -->
     @if (usuario()) {
       <div class="perfil-header-card">
         <div class="perfil-info-principal">
-          
           <!-- Contenedor del Avatar con botón interactivo -->
           <div class="avatar-container" (click)="fileInput.click()">
             @if (usuario().avatarUrl) {
@@ -23,19 +21,19 @@
             } @else {
               <div class="perfil-avatar-default">👤</div>
             }
-            
+
             <!-- Botón flotante de la cámara -->
             <div class="avatar-overlay-btn">
               <span>📷</span>
             </div>
 
             <!-- Input de archivo oculto -->
-            <input 
-              type="file" 
-              #fileInput 
-              (change)="onAvatarSelected($event)" 
-              accept="image/*" 
-              style="display: none;" 
+            <input
+              type="file"
+              #fileInput
+              (change)="onAvatarSelected($event)"
+              accept="image/*"
+              style="display: none"
             />
           </div>
 
@@ -60,17 +58,28 @@
     }
 
     <div class="crear-publicacion-wrapper">
-      <app-modal-crear-publicacion (onPublicado)="cargarDatosPerfil()"></app-modal-crear-publicacion>
+      <app-modal-crear-publicacion
+        (onPublicado)="cargarDatosPerfil()"
+      ></app-modal-crear-publicacion>
     </div>
 
     <!-- Sección de Publicaciones Propias -->
     <div class="mis-publicaciones-section">
-      
       <!-- 👇 Cabecera con título y botón de ordenamiento idéntico al muro -->
-      <div class="feed-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <div
+        class="feed-header"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 1.5rem;
+        "
+      >
         <div>
           <h3>Mis Publicaciones</h3>
-          <p class="subtitle" style="margin: 0; color: #666;">Historial de tus recetas compartidas</p>
+          <p class="subtitle" style="margin: 0; color: #666">
+            Historial de tus recetas compartidas
+          </p>
         </div>
 
         <button class="btn-ordenar" (click)="cambiarOrden()">
@@ -86,11 +95,13 @@
         <p class="loading-text">Cargando tus publicaciones...</p>
       } @else {
         <div class="grid-publicaciones">
-          @for (pub of misPublicaciones(); track (pub._id || pub.id)) {
+          @for (pub of misPublicaciones(); track pub._id || pub.id) {
             <app-publicacion-card
               [publicacion]="pub"
               [usuarioActualId]="usuario()?._id || usuario()?.id"
-              (solicitarEliminacion)="abrirConfirmacionEliminacion(pub)">
+              (solicitarEliminacion)="abrirConfirmacionEliminacion(pub)"
+              (abrirModalComentarios)="abrirModal(pub)"
+            >
             </app-publicacion-card>
           } @empty {
             <p class="no-data">Aún no has compartido ninguna receta.</p>
@@ -98,35 +109,344 @@
         </div>
 
         <!-- 👇 Controles de Paginación Condicionales (igual que en el muro) -->
-        <div class="paginacion-container" style="display: flex; justify-content: center; align-items: center; gap: 15px; margin: 30px 0;">
-          
+        <div
+          class="paginacion-container"
+          style="
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 30px 0;
+          "
+        >
           @if (offset() > 0) {
-            <button 
-              class="btn-paginacion" 
-              (click)="paginaAnterior()" 
-              [disabled]="loading()"
-            >
+            <button class="btn-paginacion" (click)="paginaAnterior()" [disabled]="loading()">
               ⬅️ Anterior
             </button>
           }
 
-          <span class="pagina-indicador" style="font-weight: 600; color: #4a5568;">
+          <span class="pagina-indicador" style="font-weight: 600; color: #4a5568">
             Página {{ paginaActual() }}
           </span>
 
           @if (misPublicaciones().length === limit()) {
-            <button 
-              class="btn-paginacion" 
-              (click)="paginaSiguiente()" 
-              [disabled]="loading()"
-            >
+            <button class="btn-paginacion" (click)="paginaSiguiente()" [disabled]="loading()">
               Siguiente ➡️
             </button>
           }
         </div>
       }
     </div>
+    <!-- 🪟 MODAL ESTILO INSTAGRAM (Vista ampliada y scroll unificado) -->
+    @if (publicacionSeleccionada()) {
+      <div class="modal-backdrop" (click)="cerrarModal()">
+        <div class="modal-publicacion-container" (click)="$event.stopPropagation()">
+          <!-- Lado izquierdo: Imagen grande -->
+          <div class="modal-imagen-section">
+            @if (publicacionSeleccionada()?.imagenUrl) {
+              <img
+                [src]="publicacionSeleccionada()?.imagenUrl"
+                [alt]="publicacionSeleccionada()?.titulo"
+              />
+            } @else {
+              <div class="sin-imagen">Sin imagen disponible</div>
+            }
+          </div>
 
+          <!-- Lado derecho: Contenido con scroll unificado -->
+          <div class="modal-info-section">
+            <!-- Cabecera del autor -->
+            <div class="modal-header">
+              <div class="autor-info-modal" style="display: flex; align-items: center; gap: 10px">
+                @if (
+                  publicacionSeleccionada().usuario?.avatarUrl ||
+                  publicacionSeleccionada().autor?.avatarUrl
+                ) {
+                  <img
+                    [src]="
+                      publicacionSeleccionada().usuario?.avatarUrl ||
+                      publicacionSeleccionada().autor?.avatarUrl
+                    "
+                    alt="Avatar"
+                    class="autor-avatar"
+                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover"
+                  />
+                } @else {
+                  <div
+                    class="avatar-default"
+                    style="
+                      width: 40px;
+                      height: 40px;
+                      border-radius: 50%;
+                      background: #edf2f7;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                    "
+                  >
+                    👤
+                  </div>
+                }
+                <div class="autor-info" style="display: flex; flex-direction: column">
+                  <span class="autor-nombre" style="font-weight: 600">
+                    {{
+                    publicacionSeleccionada().usuario?.nombre ||
+                      publicacionSeleccionada().autor?.nombre ||
+                      'Usuario'
+                  }}
+                  {{
+                    publicacionSeleccionada().usuario?.apellido ||
+                      publicacionSeleccionada().autor?.apellido ||
+                      ''
+                  }}
+                  </span>
+                  <span class="autor-usuario" style="font-size: 0.85rem; color: #666"
+                    >&#64;{{
+                      publicacionSeleccionada().usuario?.usuario ||
+                        publicacionSeleccionada().autor?.usuario ||
+                        'anonimo'
+                    }}</span
+                  >
+                </div>
+              </div>
+              <button
+                class="btn-cerrar"
+                (click)="cerrarModal()"
+                style="background: none; border: none; font-size: 1.2rem; cursor: pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <hr class="divider" style="margin: 0; border: 0; border-top: 1px solid #dbdbdb" />
+
+            <!-- Scroll unificado -->
+            <div class="scrollable-content" style="flex: 1; overflow-y: auto; padding: 15px">
+              <div class="publicacion-descripcion-box" style="margin-bottom: 15px">
+                <h3 class="modal-titulo" style="margin-top: 0; font-size: 1.1rem">
+                  {{ publicacionSeleccionada()?.titulo }}
+                </h3>
+                <p class="descripcion-texto" style="font-size: 0.95rem; color: #262626">
+                  {{ publicacionSeleccionada()?.descripcion }}
+                </p>
+                @if (publicacionSeleccionada()?.tiempoPreparacion) {
+                  <span class="tiempo-prep" style="font-size: 0.85rem; color: #8e8e8e"
+                    >⏱️ Preparación: {{ publicacionSeleccionada()?.tiempoPreparacion }}</span
+                  >
+                }
+              </div>
+
+              <hr
+                class="divider"
+                style="border: 0; border-top: 1px solid #efefef; margin: 15px 0"
+              />
+
+              <!-- Listado de comentarios -->
+              <div class="comentarios-list">
+                @for (com of comentariosModal(); track com._id) {
+                  <div
+                    class="comentario-item"
+                    style="display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-start"
+                  >
+                    @if (com.autor?.avatarUrl) {
+                      <img
+                        [src]="com.autor.avatarUrl"
+                        alt="Avatar"
+                        class="autor-avatar"
+                        style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover"
+                      />
+                    } @else {
+                      <div
+                        class="avatar-default"
+                        style="
+                          width: 40px;
+                          height: 40px;
+                          border-radius: 50%;
+                          background: #edf2f7;
+                          display: flex;
+                          align-items: center;
+                          justify-content: center;
+                        "
+                      >
+                        👤
+                      </div>
+                    }
+
+                    <div class="comentario-contenido" style="flex: 1">
+                      <div
+                        class="comentario-sub-header"
+                        style="
+                          display: flex;
+                          justify-content: space-between;
+                          font-size: 0.8rem;
+                          color: #8e8e8e;
+                        "
+                      >
+                        <div style="display: flex; align-items: center; gap: 6px">
+                          <span class="comentario-usuario" style="font-weight: 600; color: #262626"
+                            >@{{ com.autor?.usuario }}</span
+                          >
+                          @if (com.modificado) {
+                            <span class="editado-label" style="font-size: 0.7rem; color: #999"
+                              >-editado</span
+                            >
+                          }
+                        </div>
+                        <span>{{ com.fecha | fechaArgentina }}</span>
+                      </div>
+
+                      @if (comentarioEnEdicionId() !== com._id) {
+                        <p
+                          class="comentario-texto"
+                          style="margin: 4px 0 2px 0; font-size: 0.9rem; color: #262626"
+                        >
+                          {{ com.texto }}
+                        </p>
+                      } @else {
+                        <div style="display: flex; gap: 6px; margin: 6px 0">
+                          <input
+                            type="text"
+                            [(ngModel)]="textoEditado"
+                            style="
+                              flex: 1;
+                              padding: 6px 10px;
+                              font-size: 0.85rem;
+                              border: 1px solid #dbdbdb;
+                              border-radius: 4px;
+                              outline: none;
+                            "
+                            (keyup.enter)="guardarEdicionComentario(com._id)"
+                          />
+                          <button
+                            (click)="guardarEdicionComentario(com._id)"
+                            style="
+                              background: #0095f6;
+                              color: white;
+                              border: none;
+                              padding: 4px 10px;
+                              border-radius: 4px;
+                              font-size: 0.8rem;
+                              cursor: pointer;
+                              font-weight: 600;
+                            "
+                          >
+                            Guardar
+                          </button>
+                          <button
+                            (click)="cancelarEdicion()"
+                            style="
+                              background: none;
+                              border: none;
+                              color: #8e8e8e;
+                              cursor: pointer;
+                              font-size: 0.8rem;
+                            "
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                      }
+
+                      @if (
+                        (com.autor?._id === usuario()?._id ||
+                          com.autor?._id === usuario()?.id ||
+                          com.autor === usuario()?._id) &&
+                        comentarioEnEdicionId() !== com._id
+                      ) {
+                        <div
+                          class="comentario-acciones"
+                          style="display: flex; gap: 12px; margin-top: 2px; font-size: 0.75rem"
+                        >
+                          <button
+                            (click)="iniciarEdicion(com)"
+                            style="
+                              background: none;
+                              border: none;
+                              color: #8e8e8e;
+                              cursor: pointer;
+                              padding: 0;
+                              font-weight: 600;
+                            "
+                          >
+                            Editar
+                          </button>
+                          <button
+                            (click)="eliminarComentarioModal(com._id)"
+                            style="
+                              background: none;
+                              border: none;
+                              color: #ed4956;
+                              cursor: pointer;
+                              padding: 0;
+                              font-weight: 600;
+                            "
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+
+              @if (hasMoreComentarios()) {
+                <button
+                  (click)="cargarMasComentarios()"
+                  class="btn-cargar-mas"
+                  style="
+                    width: 100%;
+                    padding: 8px;
+                    background: none;
+                    border: none;
+                    color: #0095f6;
+                    font-weight: 600;
+                    cursor: pointer;
+                    margin-top: 10px;
+                  "
+                >
+                  Cargar más comentarios
+                </button>
+              }
+            </div>
+
+            <!-- Caja de texto fija abajo -->
+            <div
+              class="comentario-input-box"
+              style="
+                display: flex;
+                padding: 12px 15px;
+                border-top: 1px solid #dbdbdb;
+                background: #fff;
+                align-items: center;
+                gap: 10px;
+              "
+            >
+              <input
+                type="text"
+                [(ngModel)]="nuevoComentarioTexto"
+                placeholder="Agrega un comentario..."
+                (keyup.enter)="enviarComentarioModal()"
+                style="flex: 1; border: none; outline: none; font-size: 0.9rem"
+              />
+              <button
+                (click)="enviarComentarioModal()"
+                [disabled]="!nuevoComentarioTexto().trim() || cargandoComentarioModal()"
+                style="
+                  background: none;
+                  border: none;
+                  color: #0095f6;
+                  font-weight: 600;
+                  cursor: pointer;
+                "
+              >
+                Publicar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   </main>
 
   <!-- Modal Global de Eliminación -->
@@ -135,7 +455,7 @@
       <div class="modal-box-eliminar" (click)="$event.stopPropagation()">
         <h4>¿Eliminar publicación?</h4>
         <p>Esta acción no se puede deshacer y se borrará la receta de forma permanente.</p>
-        
+
         <div class="modal-botones">
           <button
             class="btn-secundario"

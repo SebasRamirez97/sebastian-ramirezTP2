@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { InputErrorDirective } from '../../directives/input-error.directive.ts';
+import { InputErrorDirective } from '../../directives/input-error.directive';
 import { FormErrorPipe } from '../../pipes/form-error.pipe';
 import { InactivityService } from '../../services/inactivity.service';
 

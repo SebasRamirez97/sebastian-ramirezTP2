@@ -9,7 +9,8 @@ import {
   Get, 
   Param, 
   UseGuards, 
-  Req 
+  Req,
+  Query // 👈 1. Importar Query aquí
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -17,17 +18,16 @@ import { AutenticacionService } from './autenticacion.service.js';
 import { RegistroDto } from './dto/registro.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import type { Response, Request } from 'express';
-// Ajusta la ruta del AuthGuard según dónde lo tengas ubicado en tu proyecto:
 import { JwtAuthGuard } from './guards/jwt-auth.guard.js'; 
 
-@Controller('autenticacion') // O 'auth' según prefieras
+@Controller('autenticacion')
 export class AutenticacionController {
   constructor(private readonly autenticacionService: AutenticacionService) {}
 
   @Post('registro')
   @UseInterceptors(
     FileInterceptor('avatar', {
-      storage: memoryStorage(), // Almacena temporalmente en memoria para pasarlo a Cloudinary
+      storage: memoryStorage(),
     }),
   )
   async registrar(
@@ -35,12 +35,8 @@ export class AutenticacionController {
     @UploadedFile() file: Express.Multer.File | undefined,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // 1. Ejecutamos el registro en el servicio (con o sin archivo adjunto)
     const token = await this.autenticacionService.registrar(registroDto, file);
-
-    // 2. Seteamos la cookie HttpOnly con el token JWT devuelto
     this.autenticacionService.setTokenCookie(res, token);
-
     return { 
       message: 'Usuario registrado exitosamente', 
       token 
@@ -52,31 +48,59 @@ export class AutenticacionController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // 1. Validamos credenciales y generamos el token
     const token = await this.autenticacionService.login(loginDto);
-
-    // 2. Seteamos la cookie HttpOnly en la respuesta del navegador
     this.autenticacionService.setTokenCookie(res, token);
-
     return { 
       message: 'Inicio de sesión exitoso', 
       token 
     };
   }
 
-  // Ruta protegida de ejemplo usando el JwtAuthGuard basado en Cookies
+  // 👇 2. Endpoint de verificación limpio que delega al servicio
+  @Get('verificar')
+  async verificarDisponibilidad(
+    @Query('correo') correo?: string, 
+    @Query('usuario') usuario?: string
+  ) {
+    return await this.autenticacionService.verificarDisponibilidad(correo, usuario);
+  }
+
   @Get('perfil/:id')
   @UseGuards(JwtAuthGuard)
   async obtenerPerfil(@Param('id') id: string) {
     return await this.autenticacionService.getPerfil(id);
   }
 
-  // Ruta opcional para verificar el usuario autenticado actual a través de la cookie
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async obtenerUsuarioActual(@Req() req: Request) {
-    // El AuthGuard inyecta el payload descodificado en req.user
     const userId = (req as any).user?.sub;
     return await this.autenticacionService.getPerfil(userId);
+  }
+
+  // backend/src/autenticacion/autenticacion.controller.ts
+
+  // 👇 Ruta autorizar por POST: Valida token y devuelve datos del usuario (o 401 automático si falla)
+  @Post('autorizar')
+  @UseGuards(JwtAuthGuard)
+  async autorizarToken(@Req() req: Request) {
+    const userId = (req as any).user?.sub;
+    return await this.autenticacionService.getPerfil(userId);
+  }
+
+  // 👇 Ruta refrescar por POST: Valida el token actual y emite uno nuevo con 15 min de vigencia
+  @Post('refrescar')
+  @UseGuards(JwtAuthGuard)
+  async refrescarToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const usuarioPayload = (req as any).user;
+    const nuevoToken = await this.autenticacionService.generateToken(usuarioPayload);
+    
+    // Seteamos la nueva cookie con el token renovado
+    this.autenticacionService.setTokenCookie(res, nuevoToken);
+    
+    return { 
+      message: 'Token refrescado exitosamente',
+      token: nuevoToken 
+    };
   }
 }

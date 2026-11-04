@@ -5,6 +5,21 @@ import { Usuario } from '../../usuarios/entities/usuario.entity.js';
 
 export type PublicacionDocument = HydratedDocument<Publicacion>;
 
+// 1. Sub-esquema para los comentarios (permite tipado robusto y métodos de Mongoose)
+@Schema({ timestamps: { createdAt: 'fecha', updatedAt: false } })
+export class Comentario {
+  @Prop({ type: Types.ObjectId, ref: Usuario.name, required: true })
+  autor: Types.ObjectId;
+
+  @Prop({ required: true, trim: true })
+  texto: string;
+
+  @Prop({ default: false })
+  modificado: boolean;
+}
+
+export const ComentarioSchema = SchemaFactory.createForClass(Comentario);
+
 @Schema({
   timestamps: true,
   collection: 'publicaciones',
@@ -22,32 +37,18 @@ export class Publicacion {
   @Prop({ default: '' })
   imagenUrl: string;
 
-  // Relación con el usuario creador de la publicación
   @Prop({ type: Types.ObjectId, ref: Usuario.name, required: true })
   autor: Types.ObjectId;
 
-  // Nuevo: Para la baja lógica (true = activa, false = eliminada lógicamente)
   @Prop({ default: true })
   activo: boolean;
 
-  // Nuevo: Arreglo de IDs de usuarios que dieron "me gusta"
   @Prop({ type: [{ type: Types.ObjectId, ref: Usuario.name }], default: [] })
   likes: Types.ObjectId[];
-  @Prop({
-    type: [
-      {
-        autor: { type: Types.ObjectId, ref: Usuario.name, required: true },
-        texto: { type: String, required: true, trim: true },
-        fecha: { type: Date, default: Date.now },
-      },
-    ],
-    default: [],
-  })
-  comentarios: Array<{
-    autor: Types.ObjectId;
-    texto: string;
-    fecha: Date;
-  }>;
+
+  // 2. Usamos el sub-esquema definido en lugar de un objeto plano
+  @Prop({ type: [ComentarioSchema], default: [] })
+  comentarios: Types.DocumentArray<Comentario & { _id: Types.ObjectId; fecha: Date }>;
 }
 
 export const PublicacionSchema = SchemaFactory.createForClass(Publicacion);
