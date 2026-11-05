@@ -6,6 +6,7 @@ import { PublicacionesModule } from './publicaciones/publicaciones.module.js';
 import { ConfigModule } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module.js';
 import { FaviconController } from './favicon/favicon.controller.js';
+import { RootController } from './app.controller.js';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { FaviconController } from './favicon/favicon.controller.js';
     UsuariosModule,
     PublicacionesModule,
     CloudinaryModule,
+    RootController,
   ],
   controllers: [FaviconController],
   providers: [],
