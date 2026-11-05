@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser';
 import pkg from '@vendia/serverless-express';
 import { Express } from 'express';
 
-const { configure, EVENT_SOURCES } = pkg as any; // 👈 Importar EVENT_SOURCES
+const { configure } = pkg as any; // 👈 Sin EVENT_SOURCES
 
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
@@ -36,11 +36,8 @@ async function bootstrap() {
     await app.init();
     const expressApp = app.getHttpAdapter().getInstance() as Express;
     
-    // 👇 Forzar el eventSource como VERCEL o API_GATEWAY para que no falle al adivinarlo
-    cachedServer = configure({ 
-      app: expressApp, 
-      eventSource: EVENT_SOURCES.VERCEL // o eventSource: 'VERCEL'
-    });
+    // 👇 Configuración limpia y directa para Vercel
+    cachedServer = configure({ app: expressApp });
   }
   return cachedServer;
 }
