@@ -9,8 +9,8 @@ export class InactivityService {
   private router = inject(Router);
 
   // Configuramos los tiempos:
-  private readonly INACTIVITY_LIMIT = 25* 60 * 1000; 
-  private readonly WARNING_DURATION = 5* 60 * 1000;   
+  private readonly INACTIVITY_LIMIT = 25* 1000; 
+  private readonly WARNING_DURATION = 5* 1000;   
 
   private inactivityTimer: any;
   private warningTimer: any;
@@ -18,7 +18,7 @@ export class InactivityService {
 
   // Signals para el control del modal
   showModal = signal<boolean>(false);
-  tiempoRestante = signal<string>('5:00');
+  tiempoRestante = signal<string>('0:05');
 
   // Guardamos la referencia de la función bound para poder removerla luego
   private boundHandleActivity = () => this.handleUserActivity();

@@ -64,7 +64,6 @@ export class MiPerfil implements OnInit {
   }
 
   // Método para cargar las publicaciones propias con soporte de paginación y ordenamiento
-  // Método para cargar las publicaciones propias con soporte de paginación y ordenamiento
   cargarMisPublicaciones(orden: 'fecha' | 'likes' = this.ordenActual()): void {
     this.loading.set(true);
     this.ordenActual.set(orden);
