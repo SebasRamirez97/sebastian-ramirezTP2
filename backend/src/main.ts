@@ -40,11 +40,13 @@ async function bootstrap() {
   return cachedServer;
 }
 
-// 👈 ESTO ES LO QUE VERCEL NECESITA OBLIGATORIAMENTE
-export const handler = async (req: any, res: any, context: any) => {
+// 👈 EXPORTACIÓN POR DEFECTO REQUERIDA POR VERCEL
+const handler = async (req: any, res: any, context: any) => {
   const server = await bootstrap();
   return server(req, res, context);
 };
+
+export default handler;
 
 // Arranque local tradicional (sólo para desarrollo en tu PC)
 if (process.env.NODE_ENV !== 'production') {
