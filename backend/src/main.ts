@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser';
 import pkg from '@vendia/serverless-express';
 import { Express } from 'express';
 
-const { configure } = pkg as any;
+const { configure, EVENT_SOURCES } = pkg as any; // 👈 Importar EVENT_SOURCES
 
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
@@ -35,12 +35,16 @@ async function bootstrap() {
     
     await app.init();
     const expressApp = app.getHttpAdapter().getInstance() as Express;
-    cachedServer = configure({ app: expressApp });
+    
+    // 👇 Forzar el eventSource como VERCEL o API_GATEWAY para que no falle al adivinarlo
+    cachedServer = configure({ 
+      app: expressApp, 
+      eventSource: EVENT_SOURCES.VERCEL // o eventSource: 'VERCEL'
+    });
   }
   return cachedServer;
 }
 
-// 👈 EXPORTACIÓN POR DEFECTO REQUERIDA POR VERCEL
 const handler = async (req: any, res: any, context: any) => {
   const server = await bootstrap();
   return server(req, res, context);
@@ -48,7 +52,7 @@ const handler = async (req: any, res: any, context: any) => {
 
 export default handler;
 
-// Arranque local tradicional (sólo para desarrollo en tu PC)
+// Arranque local tradicional
 if (process.env.NODE_ENV !== 'production') {
   NestFactory.create<NestExpressApplication>(AppModule).then(async (app) => {
     app.enableCors({
