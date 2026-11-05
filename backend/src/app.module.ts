@@ -16,9 +16,9 @@ import { RootController } from './app.controller.js';
     UsuariosModule,
     PublicacionesModule,
     CloudinaryModule,
-    RootController,
+    
   ],
-  controllers: [FaviconController],
+  controllers: [FaviconController, RootController],
   providers: [],
 })
 export class AppModule {}
