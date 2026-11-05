@@ -5,10 +5,10 @@ import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
 import * as dns from 'dns';
 import cookieParser from 'cookie-parser';
-import pkg from '@vendia/serverless-express'; // 👈 Importar como paquete genérico
+import pkg from '@vendia/serverless-express';
 import { Express } from 'express';
 
-const { configure } = pkg as any; // 👈 Extraer configure de forma segura para TS
+const { configure } = pkg as any;
 
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
@@ -35,18 +35,18 @@ async function bootstrap() {
     
     await app.init();
     const expressApp = app.getHttpAdapter().getInstance() as Express;
-    cachedServer = configure({ app: expressApp }); // 👈 Usar configure aquí
+    cachedServer = configure({ app: expressApp });
   }
   return cachedServer;
 }
 
-// Export para Vercel (Serverless)
+// 👈 ESTO ES LO QUE VERCEL NECESITA OBLIGATORIAMENTE
 export const handler = async (req: any, res: any, context: any) => {
   const server = await bootstrap();
   return server(req, res, context);
 };
 
-// Arranque local tradicional (si no estamos en Vercel)
+// Arranque local tradicional (sólo para desarrollo en tu PC)
 if (process.env.NODE_ENV !== 'production') {
   NestFactory.create<NestExpressApplication>(AppModule).then(async (app) => {
     app.enableCors({
