@@ -1,0 +1,293 @@
+/* ==========================================
+   ESTILOS GENERALES DEL DASHBOARD (Acorde al Muro)
+   ========================================== */
+.dashboard-container {
+  min-height: 100vh;
+  background-color: #f7fafc;
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 2rem 1rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Barra de navegación superior */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.navbar h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #2d3748;
+}
+
+.nav {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-nav {
+  background-color: #edf2f7;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  color: #4a5568;
+  transition: background-color 0.2s;
+}
+
+.btn-nav:hover {
+  background-color: #e2e8f0;
+}
+
+.btn-nav.active {
+  background-color: #3182ce;
+  color: white;
+}
+
+.dashboard-container h2 {
+  color: #1a202c;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.dashboard-container h3 {
+  color: #2d3748;
+  font-size: 1.15rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* ==========================================
+   TARJETA / CONTENEDOR DEL FORMULARIO DE REGISTRO
+   ========================================== */
+.card-formulario {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e2e8f0;
+  margin-bottom: 2.5rem;
+}
+
+.card-formulario form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+}
+
+.card-formulario label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #4a5568;
+  margin-bottom: 0.35rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.65rem 0.875rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  color: #2d3748;
+  background-color: #fff;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #3182ce;
+  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+}
+
+/* Grupo de Radio Buttons para los perfiles */
+.radio-group-container {
+  grid-column: span 2;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background-color: #f7fafc;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.radio-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #2d3748;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.radio-option input[type="radio"] {
+  accent-color: #3182ce;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+}
+
+/* Botón principal de acción (Crear Usuario) */
+.btn-primary-admin {
+  grid-column: span 2;
+  background-color: #3182ce;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary-admin:hover:not(:disabled) {
+  background-color: #2b6cb0;
+}
+
+.btn-primary-admin:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================
+   TABLA DE LISTADO DE USUARIOS
+   ========================================== */
+.table-responsive {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.usuarios-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.usuarios-table th {
+  background-color: #edf2f7;
+  color: #4a5568;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.usuarios-table td {
+  padding: 14px 16px;
+  font-size: 0.9rem;
+  color: #2d3748;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.usuarios-table tr:last-child td {
+  border-bottom: none;
+}
+
+.usuarios-table tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Insignias de Roles y Estados */
+.badge-rol {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-admin {
+  background-color: #e9d8fd;
+  color: #6b46c1;
+}
+
+.badge-usuario {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
+}
+
+.badge-activo {
+  color: #38a169;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge-inactivo {
+  color: #e53e3e;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Botones de Deshabilitar / Rehabilitar dentro de la tabla */
+.btn-accion-deshabilitar {
+  background-color: #fff5f5;
+  color: #e53e3e;
+  border: 1px solid #feb2b2;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-accion-deshabilitar:hover {
+  background-color: #fed7d7;
+}
+
+.btn-accion-rehabilitar {
+  background-color: #f0fff4;
+  color: #38a169;
+  border: 1px solid #9ae6b4;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-accion-rehabilitar:hover {
+  background-color: #c6f6d5;
+}
+
+/* Alertas de error o carga */
+.alert-danger {
+  background-color: #fed7d7;
+  color: #9b2c2c;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #feb2b2;
+}
+
+.loading-text {
+  text-align: center;
+  color: #718096;
+  padding: 2rem;
+  font-style: italic;
+}

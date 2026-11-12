@@ -73,7 +73,7 @@ export class PublicacionesController {
   @Delete(':id')
   async eliminar(@Param('id') id: string, @Req() req: any) {
     const usuarioId = req.user.sub;
-    const esAdmin = req.user.role === 'admin'; // Ajusta según tu estructura de roles en el token
+    const esAdmin = req.user.perfil === 'administrador'; // Ajusta según tu estructura de roles en el token
     return await this.publicacionesService.bajaLogica(id, usuarioId, esAdmin);
   }
 

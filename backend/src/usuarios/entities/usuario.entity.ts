@@ -32,6 +32,8 @@ export class Usuario {
 
   @Prop({ default: 'usuario', enum: ['usuario', 'administrador'] })
   perfil: string; // Por defecto 'usuario', pero puede ser 'administrador'
+  @Prop({ default: true })
+  activo: boolean; // 👈 NUEVO: true por defecto, false si un administrador lo da de baja lógica
 }
 
 export const UsuarioSchema = SchemaFactory.createForClass(Usuario);

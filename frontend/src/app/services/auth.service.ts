@@ -1,7 +1,7 @@
-// src/app/services/auth.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface LoginCredentials {
   identificador: string;
@@ -11,16 +11,15 @@ export interface LoginCredentials {
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService { // <--- Asegúrate de incluir 'export' aquí
+export class AuthService {
   private http = inject(HttpClient);
-  private API_URL = 'http://localhost:3000/autenticacion'; // Cambia si tu puerto del backend es distinto
+  private API_URL = `${environment.apiUrl}/autenticacion`;
 
   login(credenciales: LoginCredentials): Observable<any> {
-    return this.http.post(`${this.API_URL}/login`, credenciales);
+    return this.http.post(`${this.API_URL}/login`, credenciales, { withCredentials: true });
   }
 
   registrar(formData: FormData): Observable<any> {
-    // Usamos FormData porque el registro incluye campos de texto y un archivo (avatar)
     return this.http.post(`${this.API_URL}/registro`, formData);
   }
 

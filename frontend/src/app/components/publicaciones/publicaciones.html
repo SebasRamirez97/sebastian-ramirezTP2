@@ -3,6 +3,16 @@
   <header class="navbar">
     <h2>Red Social de Recetas</h2>
     <nav class="nav">
+      @if (perfilUsuario() === 'administrador') {
+    <button class="btn-nav" (click)="irDashboardEstadisticas()" style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600;">
+      📊 Estadísticas
+    </button>
+  }
+      @if (perfilUsuario() === 'administrador') {
+    <button class="btn-nav btn-admin" (click)="irDashboardUsuarios()" style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600;">
+      ⚙️ Panel Admin
+    </button>
+  }
       <button class="btn-nav active">Publicaciones</button>
       <button class="btn-nav" (click)="irMiPerfil()">Mi Perfil</button>
       <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
@@ -55,10 +65,10 @@
           <app-publicacion-card
             [publicacion]="pub"
             [usuarioActualId]="usuarioActualId()"
+            [perfilUsuario]="perfilUsuario()"
             (solicitarEliminacion)="abrirConfirmacionEliminacion(pub)"
             (abrirModalComentarios)="abrirModal(pub)"
-          >
-          </app-publicacion-card>
+          ></app-publicacion-card>
         } @empty {
           <p class="no-data">No hay publicaciones todavía en la base de datos.</p>
         }
@@ -308,41 +318,53 @@
                       </div>
                     }
 
-                    <!-- 📍 Botones "Editar" y "Eliminar" justo abajo del texto -->
+                    <!-- 📍 Botones "Editar" (solo autor) y "Eliminar" (autor o administrador) -->
                     @if (
-                      (com.autor?._id === usuarioActualId() || com.autor === usuarioActualId()) &&
-                      comentarioEnEdicionId() !== com._id
+                      com.autor?._id === usuarioActualId() ||
+                      com.autor === usuarioActualId() ||
+                      perfilUsuario() === 'administrador'
                     ) {
                       <div
                         class="comentario-acciones"
                         style="display: flex; gap: 12px; margin-top: 2px; font-size: 0.75rem"
                       >
-                        <button
-                          (click)="iniciarEdicion(com)"
-                          style="
-                            background: none;
-                            border: none;
-                            color: #8e8e8e;
-                            cursor: pointer;
-                            padding: 0;
-                            font-weight: 600;
-                          "
-                        >
-                          Editar
-                        </button>
-                        <button
-                          (click)="eliminarComentarioModal(com._id)"
-                          style="
-                            background: none;
-                            border: none;
-                            color: #ed4956;
-                            cursor: pointer;
-                            padding: 0;
-                            font-weight: 600;
-                          "
-                        >
-                          Eliminar
-                        </button>
+                        <!-- El botón "Editar" SOLO aparece si el usuario logueado es el dueño del comentario -->
+                        @if (
+                          com.autor?._id === usuarioActualId() || com.autor === usuarioActualId()
+                        ) {
+                          @if (comentarioEnEdicionId() !== com._id) {
+                            <button
+                              (click)="iniciarEdicion(com)"
+                              style="
+                                background: none;
+                                border: none;
+                                color: #8e8e8e;
+                                cursor: pointer;
+                                padding: 0;
+                                font-weight: 600;
+                              "
+                            >
+                              Editar
+                            </button>
+                          }
+                        }
+
+                        <!-- El botón "Eliminar" aparece si es el dueño O si es administrador -->
+                        @if (comentarioEnEdicionId() !== com._id) {
+                          <button
+                            (click)="eliminarComentarioModal(com._id)"
+                            style="
+                              background: none;
+                              border: none;
+                              color: #ed4956;
+                              cursor: pointer;
+                              padding: 0;
+                              font-weight: 600;
+                            "
+                          >
+                            Eliminar
+                          </button>
+                        }
                       </div>
                     }
                   </div>

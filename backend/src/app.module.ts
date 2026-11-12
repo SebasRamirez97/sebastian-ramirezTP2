@@ -7,6 +7,7 @@ import { ConfigModule } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module.js';
 import { FaviconController } from './favicon/favicon.controller.js';
 import { RootController } from './root.controller.js';
+import { EstadisticasModule } from './estadisticas/estadisticas.module.js';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RootController } from './root.controller.js';
     UsuariosModule,
     PublicacionesModule,
     CloudinaryModule,
+    EstadisticasModule,
     
   ],
   controllers: [FaviconController, RootController],

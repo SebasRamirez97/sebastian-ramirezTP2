@@ -1,0 +1,214 @@
+<!-- Barra de navegación superior unificada -->
+<header class="navbar">
+  <h2>Red Social de Recetas</h2>
+  <nav class="nav">
+    <button
+      class="btn-nav"
+      (click)="irDashboardEstadisticas()"
+      style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600"
+    >
+      📊 Estadísticas
+    </button>
+    <!-- El Panel Admin está activo porque nos encontramos aquí -->
+    <button
+      class="btn-nav active btn-admin"
+      style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600"
+    >
+      ⚙️ Panel Admin
+    </button>
+    <button class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
+    <button class="btn-nav" (click)="irMiPerfil()">Mi Perfil</button>
+    <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
+  </nav>
+</header>
+<div class="dashboard-container">
+  <!-- Cabecera de la sección -->
+  <div
+    style="
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    "
+  >
+    <h2>Panel de Administración - Gestión de Usuarios</h2>
+    <a
+      routerLink="/publicaciones"
+      class="btn-secundario"
+      style="text-decoration: none; display: inline-flex; align-items: center; gap: 6px"
+    >
+      ⬅️ Volver al Muro
+    </a>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="alert-danger">{{ errorMessage() }}</div>
+  }
+
+  <!-- SECCIÓN 1: Formulario de Registro por el Administrador -->
+  <div class="card-formulario">
+    <h3>Registrar Nuevo Usuario</h3>
+    <form [formGroup]="formRegistroAdmin" (ngSubmit)="crearUsuario()">
+      <div>
+        <label>Nombre</label>
+        <input type="text" formControlName="nombre" class="form-control" placeholder="Ej. Juan" />
+      </div>
+
+      <div>
+        <label>Apellido</label>
+        <input
+          type="text"
+          formControlName="apellido"
+          class="form-control"
+          placeholder="Ej. Pérez"
+        />
+      </div>
+
+      <div>
+        <label>Correo Electrónico</label>
+        <input
+          type="email"
+          formControlName="correo"
+          class="form-control"
+          placeholder="correo@ejemplo.com"
+        />
+      </div>
+
+      <div>
+        <label>Nombre de Usuario</label>
+        <input
+          type="text"
+          formControlName="usuario"
+          class="form-control"
+          placeholder="usuario123"
+        />
+      </div>
+
+      <div style="grid-column: span 2">
+        <label>Contraseña</label>
+        <input
+          type="password"
+          formControlName="password"
+          class="form-control"
+          placeholder="Mínimo 6 caracteres"
+        />
+      </div>
+
+      <!-- 👇 Grupo de Radio Buttons estilizados para elegir el perfil -->
+      <div class="radio-group-container">
+        <span style="font-weight: 600; font-size: 0.875rem; color: #4a5568">Asignar Perfil:</span>
+
+        <label class="radio-option">
+          <input type="radio" formControlName="perfil" value="usuario" />
+          <span>Usuario Regular</span>
+        </label>
+
+        <label class="radio-option">
+          <input type="radio" formControlName="perfil" value="administrador" />
+          <span>Administrador</span>
+        </label>
+      </div>
+
+      <!-- Botón de Envío -->
+      <button type="submit" [disabled]="formRegistroAdmin.invalid" class="btn-primary-admin">
+        Crear Usuario en el Sistema
+      </button>
+    </form>
+  </div>
+
+  <!-- SECCIÓN 2: Listado de Usuarios Registrados -->
+  <h3>Listado de Usuarios Registrados</h3>
+
+  @if (loading()) {
+    <div class="loading-text">Cargando usuarios desde la base de datos...</div>
+  } @else {
+    <div class="table-responsive">
+      <table class="usuarios-table">
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Correo</th>
+            <th>Perfil</th>
+            <th>Estado</th>
+            <th>Acciones de Moderación</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of usuarios(); track u._id) {
+            <tr>
+              <td>
+                <strong>&#64;{{ u.usuario }}</strong>
+                <div style="font-size: 0.8rem; color: #718096">{{ u.nombre }} {{ u.apellido }}</div>
+              </td>
+              <td>{{ u.correo }}</td>
+              <td>
+                @if (u.perfil === 'administrador') {
+                  <!-- Si es administrador, permitimos quitarle el rol (hacer usuario) SÓLO SI NO ES EL USUARIO ACTUAL -->
+                  @if (u._id !== usuarioActualId()) {
+                    <button
+                      (click)="hacerUsuario(u._id)"
+                      class="badge-rol badge-admin"
+                      style="
+                        border: none;
+                        cursor: pointer;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 4px;
+                      "
+                      title="Hacer usuario regular"
+                    >
+                      Administrador 🔄
+                    </button>
+                  } @else {
+                    <!-- Si es el admin actual, solo se muestra el badge estático sin opción de auto-quitarse -->
+                    <span class="badge-rol badge-admin">Administrador (Tú)</span>
+                  }
+                } @else {
+                  <!-- Si es usuario regular, permitimos ascenderlo a administrador -->
+                  <button
+                    (click)="hacerAdministrador(u._id)"
+                    class="badge-rol badge-usuario"
+                    style="
+                      border: none;
+                      cursor: pointer;
+                      display: inline-flex;
+                      align-items: center;
+                      gap: 4px;
+                    "
+                    title="Otorgar permisos de administrador"
+                  >
+                    Usuario 🔄
+                  </button>
+                }
+              </td>
+              <td>
+                @if (u.activo !== false) {
+                  <span class="badge-activo">● Activo</span>
+                } @else {
+                  <span class="badge-inactivo">● Deshabilitado</span>
+                }
+              </td>
+              <td>
+                @if (u.activo !== false) {
+                  <button (click)="deshabilitarUsuario(u._id)" class="btn-accion-deshabilitar">
+                    Deshabilitar
+                  </button>
+                } @else {
+                  <button (click)="rehabilitarUsuario(u._id)" class="btn-accion-rehabilitar">
+                    Rehabilitar
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" style="text-align: center; padding: 2rem; color: #a0aec0">
+                No hay usuarios registrados actualmente.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

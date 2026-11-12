@@ -41,7 +41,7 @@
       <span class="fecha" style="font-size: 0.75rem; color: #888">
         {{ publicacion.createdAt | fechaArgentina }}
       </span>
-      @if (esMia) {
+      @if (puedeEliminar) {
         <button
           class="btn-eliminar"
           (click)="solicitarEliminacion.emit(publicacion)"

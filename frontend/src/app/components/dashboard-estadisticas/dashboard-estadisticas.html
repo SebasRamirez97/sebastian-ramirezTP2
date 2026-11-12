@@ -1,0 +1,85 @@
+<!-- Barra de navegación unificada -->
+<header class="navbar">
+  <h2>Red Social de Recetas</h2>
+  <nav class="nav">
+   
+      <button class="btn-nav" style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600;">
+        📊 Estadísticas
+      </button>
+    <button class="btn-nav" (click)="irDashboardUsuarios()">Panel Usuarios</button>
+    <button class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
+    <button class="btn-nav" (click)="irMiPerfil()">Mi Perfil</button>
+    <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
+  </nav>
+</header>
+
+<div class="dashboard-container">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+    <h2>Panel de Estadísticas y Analítica</h2>
+    
+    <!-- Selector de Lapso de Tiempo -->
+    <div style="display: flex; gap: 8px; align-items: center;">
+      <span style="font-size: 0.9rem; font-weight: 600; color: #4a5568;">Lapso:</span>
+      <button class="btn-ordenar" [class.active]="lapsoSeleccionado() === '7d'" (click)="cambiarLapso('7d')">Última Semana</button>
+      <button class="btn-ordenar" [class.active]="lapsoSeleccionado() === '30d'" (click)="cambiarLapso('30d')">Último Mes</button>
+      <button class="btn-ordenar" [class.active]="lapsoSeleccionado() === 'todo'" (click)="cambiarLapso('todo')">Histórico</button>
+    </div>
+  </div>
+
+  <!-- 👇 Botones Selectores de Gráficos (Navegación central) -->
+  <div class="graficos-selector-container">
+    <button 
+      class="btn-grafico-tab" 
+      [class.active]="graficoActivo() === 'publicaciones'" 
+      (click)="seleccionarGrafico('publicaciones')">
+      👥 Publicaciones por Usuario
+    </button>
+    <button 
+      class="btn-grafico-tab" 
+      [class.active]="graficoActivo() === 'comentarios-tiempo'" 
+      (click)="seleccionarGrafico('comentarios-tiempo')">
+      📈 Evolución de Comentarios
+    </button>
+    <button 
+      class="btn-grafico-tab" 
+      [class.active]="graficoActivo() === 'comentarios-publicacion'" 
+      (click)="seleccionarGrafico('comentarios-publicacion')">
+      🥧 Comentarios por Publicación
+    </button>
+  </div>
+
+  <!-- Contenedor Central del Gráfico Activo (Más grande y limpio) -->
+  <div class="card-formulario card-grafico-principal">
+    
+    <!-- Gráfico 1 -->
+    @if (graficoActivo() === 'publicaciones') {
+      <div>
+        <h3 style="margin-bottom: 1.5rem; text-align: center;">Cantidad de publicaciones realizadas por cada usuario</h3>
+        <div style="position: relative; height: 420px;">
+          <canvas #chartPublicaciones></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- Gráfico 2 -->
+    @if (graficoActivo() === 'comentarios-tiempo') {
+      <div>
+        <h3 style="margin-bottom: 1.5rem; text-align: center;">Cantidad de comentarios realizados en el tiempo</h3>
+        <div style="position: relative; height: 420px;">
+          <canvas #chartComentariosTiempo></canvas>
+        </div>
+      </div>
+    }
+
+    <!-- Gráfico 3 -->
+    @if (graficoActivo() === 'comentarios-publicacion') {
+      <div style="max-width: 750px; margin: 0 auto;">
+        <h3 style="margin-bottom: 1.5rem; text-align: center;">Cantidad de comentarios en cada publicación</h3>
+        <div style="position: relative; height: 420px;">
+          <canvas #chartComentariosPub></canvas>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

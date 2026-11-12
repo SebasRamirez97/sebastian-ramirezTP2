@@ -8,7 +8,6 @@ import { PublicacionCard } from '../publicacion-card/publicacion-card';
 import { FechaArgentinaPipe } from '../../pipes/fecha-argentina-pipe';
 import { FormsModule } from '@angular/forms';
 
-
 @Component({
   selector: 'app-mi-perfil',
   standalone: true,
@@ -48,7 +47,10 @@ export class MiPerfil implements OnInit {
   comentarioEnEdicionId = signal<string | null>(null);
   textoEditado: string = '';
 
+   usuarioActualId = signal<string>('');
+  perfilUsuario = signal<string>('');
   ngOnInit(): void {
+    this.cargarUsuarioActual();
     this.cargarDatosPerfil();
   }
 
@@ -60,6 +62,16 @@ export class MiPerfil implements OnInit {
         this.cargarMisPublicaciones();
       },
       error: () => this.loading.set(false),
+    });
+  }
+
+  cargarUsuarioActual(): void {
+    this.userService.obtenerPerfil().subscribe({
+      next: (user: any) => {
+        this.usuarioActualId.set(user._id || user.id);
+        this.perfilUsuario.set(user.perfil);
+      },
+      error: (err) => console.error('Error al obtener usuario actual:', err),
     });
   }
 
@@ -84,7 +96,7 @@ export class MiPerfil implements OnInit {
   // Alternar criterio de ordenamiento (¡Reiniciamos el offset a 0 al cambiar de orden!)
   cambiarOrden() {
     const nuevoOrden = this.ordenActual() === 'fecha' ? 'likes' : 'fecha';
-    this.offset.set(0);          // 👈 Volvemos a la página 1 al ordenar distinto
+    this.offset.set(0); // 👈 Volvemos a la página 1 al ordenar distinto
     this.paginaActual.set(1);
     this.cargarMisPublicaciones(nuevoOrden);
   }
@@ -159,9 +171,17 @@ export class MiPerfil implements OnInit {
       },
     });
   }
-
+  
   irPublicaciones() {
     this.router.navigate(['/publicaciones']);
+  }
+
+  irDashboardUsuarios() {
+    this.router.navigate(['/dashboard/usuarios']);
+  }
+
+  irDashboardEstadisticas() {
+    this.router.navigate(['dashboard/estadisticas']);
   }
 
   cerrarSesion() {
@@ -186,17 +206,19 @@ export class MiPerfil implements OnInit {
 
   // 3. Cargar comentarios
   async cargarComentariosModal(publicacionId: string, offset: number) {
-    this.publicacionService.obtenerComentarios(publicacionId, this.limitComentarios(), offset).subscribe({
-      next: (res: any) => {
-        if (offset === 0) {
-          this.comentariosModal.set(res.comentarios);
-        } else {
-          this.comentariosModal.update(actuales => [...actuales, ...res.comentarios]);
-        }
-        this.hasMoreComentarios.set(res.hasMore);
-      },
-      error: (err) => console.error('Error al cargar comentarios', err)
-    });
+    this.publicacionService
+      .obtenerComentarios(publicacionId, this.limitComentarios(), offset)
+      .subscribe({
+        next: (res: any) => {
+          if (offset === 0) {
+            this.comentariosModal.set(res.comentarios);
+          } else {
+            this.comentariosModal.update((actuales) => [...actuales, ...res.comentarios]);
+          }
+          this.hasMoreComentarios.set(res.hasMore);
+        },
+        error: (err) => console.error('Error al cargar comentarios', err),
+      });
   }
 
   // 4. Cargar más
@@ -223,24 +245,24 @@ export class MiPerfil implements OnInit {
         await this.cargarComentariosModal(pubId, 0);
 
         // Actualizar contador en la lista de mis publicaciones
-        this.misPublicaciones.update(pubs => 
-          pubs.map(pub => {
+        this.misPublicaciones.update((pubs) =>
+          pubs.map((pub) => {
             const idPubActual = pub._id || pub.id;
             if (idPubActual === pubId) {
               const nuevoComentario = res.comentario || res;
               return {
                 ...pub,
-                comentarios: [...(pub.comentarios || []), nuevoComentario]
+                comentarios: [...(pub.comentarios || []), nuevoComentario],
               };
             }
             return pub;
-          })
+          }),
         );
       },
       error: (err) => {
         console.error('Error al comentar', err);
         this.cargandoComentarioModal.set(false);
-      }
+      },
     });
   }
 
@@ -265,7 +287,7 @@ export class MiPerfil implements OnInit {
         this.offsetComentarios.set(0);
         await this.cargarComentariosModal(pubId, 0);
       },
-      error: (err) => console.error('Error al editar comentario', err)
+      error: (err) => console.error('Error al editar comentario', err),
     });
   }
 
@@ -279,20 +301,20 @@ export class MiPerfil implements OnInit {
         await this.cargarComentariosModal(pubId, 0);
 
         // Actualizar contador en la lista de mis publicaciones
-        this.misPublicaciones.update(pubs => 
-          pubs.map(pub => {
+        this.misPublicaciones.update((pubs) =>
+          pubs.map((pub) => {
             const idPubActual = pub._id || pub.id;
             if (idPubActual === pubId) {
               return {
                 ...pub,
-                comentarios: pub.comentarios.filter((c: any) => c._id !== comentarioId)
+                comentarios: pub.comentarios.filter((c: any) => c._id !== comentarioId),
               };
             }
             return pub;
-          })
+          }),
         );
       },
-      error: (err) => console.error('Error al eliminar comentario', err)
+      error: (err) => console.error('Error al eliminar comentario', err),
     });
   }
 }

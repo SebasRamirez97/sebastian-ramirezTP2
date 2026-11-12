@@ -3,6 +3,16 @@
   <header class="navbar">
     <h2>Red Social de Recetas</h2>
     <nav class="nav">
+         @if (perfilUsuario() === 'administrador') {
+    <button class="btn-nav" (click)="irDashboardEstadisticas()" style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600;">
+      📊 Estadísticas
+    </button>
+  }
+      @if (perfilUsuario() === 'administrador') {
+    <button class="btn-nav btn-admin" (click)="irDashboardUsuarios()" style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600;">
+      ⚙️ Panel Admin
+    </button>
+  }
       <button class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
       <button class="btn-nav active">Mi Perfil</button>
       <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
@@ -190,15 +200,15 @@
                 <div class="autor-info" style="display: flex; flex-direction: column">
                   <span class="autor-nombre" style="font-weight: 600">
                     {{
-                    publicacionSeleccionada().usuario?.nombre ||
-                      publicacionSeleccionada().autor?.nombre ||
-                      'Usuario'
-                  }}
-                  {{
-                    publicacionSeleccionada().usuario?.apellido ||
-                      publicacionSeleccionada().autor?.apellido ||
-                      ''
-                  }}
+                      publicacionSeleccionada().usuario?.nombre ||
+                        publicacionSeleccionada().autor?.nombre ||
+                        'Usuario'
+                    }}
+                    {{
+                      publicacionSeleccionada().usuario?.apellido ||
+                        publicacionSeleccionada().autor?.apellido ||
+                        ''
+                    }}
                   </span>
                   <span class="autor-usuario" style="font-size: 0.85rem; color: #666"
                     >&#64;{{

@@ -15,18 +15,18 @@ export class PublicacionCard {
 
   @Input({ required: true }) publicacion: any;
   @Input({ required: true }) usuarioActualId!: string;
-
+  @Input() perfilUsuario: string = ''; // 👈 1. Recibimos el perfil del usuario logueado
 
   // Eventos para el padre
   publicacionEliminada = output<string>();
-  solicitarEliminacion = output<any>(); // 👈 Nuevo evento para invocar el modal global
+  solicitarEliminacion = output<any>(); 
   likeActualizado = output<any>();
   comentarioAgregado = output<any>();
   abrirModalComentarios = output<any>();
 
-
   cargandoLike = signal<boolean>(false);
   expandida = signal<boolean>(false);
+  
   // Estados locales para los comentarios usando Signals
   nuevoComentario = signal<string>('');
   cargandoComentario = signal<boolean>(false);
@@ -49,6 +49,21 @@ export class PublicacionCard {
       this.publicacion.autor?._id ||
       this.publicacion.autor;
     return autorId === this.usuarioActualId;
+  }
+
+  // 👇 2. Getter actualizado para verificar si es dueño O administrador
+  get puedeEliminar(): boolean {
+    const autorId =
+      this.publicacion.usuarioId ||
+      this.publicacion.usuario?._id ||
+      this.publicacion.usuario ||
+      this.publicacion.autor?._id ||
+      this.publicacion.autor;
+      
+    const esDueno = autorId === this.usuarioActualId;
+    const esAdmin = this.perfilUsuario === 'administrador';
+    
+    return esDueno || esAdmin; 
   }
 
   toggleLike() {
@@ -88,7 +103,6 @@ export class PublicacionCard {
     this.expandida.update((v) => !v);
   }
 
-  // Método para enviar el comentario
   enviarComentario() {
     const texto = this.nuevoComentario().trim();
     if (!texto || this.cargandoComentario() || !this.publicacionId) return;
@@ -97,10 +111,9 @@ export class PublicacionCard {
 
     this.publicacionService.comentarPublicacion(this.publicacionId, texto).subscribe({
       next: (pubActualizada) => {
-        // Actualizamos la publicación localmente con la respuesta del backend
         this.publicacion = pubActualizada; 
         this.comentarioAgregado.emit(this.publicacion);
-        this.nuevoComentario.set(''); // Limpiamos la casilla
+        this.nuevoComentario.set('');
         this.cargandoComentario.set(false);
       },
       error: (err) => {

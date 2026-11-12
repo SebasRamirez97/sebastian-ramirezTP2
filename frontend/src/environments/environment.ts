@@ -1,5 +1,4 @@
 export const environment = {
-    mensaje: "Estoy en producccion",
-    apiUrl: "http://localhost:3000",
-
+  production: true,
+  apiUrl: 'sebastian-ramirez-tp-2-nest.vercel.app' // Aquí pondrás la URL real de tu backend cuando despliegues
 };

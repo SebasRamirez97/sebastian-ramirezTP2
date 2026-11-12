@@ -74,22 +74,27 @@ export class AutenticacionService {
   }
 
   async login(loginDto: LoginDto) {
-    // 1. Busca por correo o por nombre de usuario usando la propiedad 'identificador' del LoginDto
-    const user = await this.usuarioModel.findOne({
-      $or: [
-        { correo: loginDto.identificador },
-        { usuario: loginDto.identificador },
-      ],
-    });
+  // 1. Busca por correo o por nombre de usuario usando la propiedad 'identificador' del LoginDto
+  const user = await this.usuarioModel.findOne({
+    $or: [
+      { correo: loginDto.identificador },
+      { usuario: loginDto.identificador },
+    ],
+  });
 
-    // 2. Validar si el usuario existe y si la contraseña es correcta
-    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
-      throw new UnauthorizedException('Credenciales incorrectas');
-    }
-
-    // 3. Generar el token JWT
-    return this.generateToken(user);
+  // 2. Validar si el usuario existe y si la contraseña es correcta
+  if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+    throw new UnauthorizedException('Credenciales incorrectas');
   }
+
+  // 3. 👈 NUEVO: Validar si el usuario está deshabilitado (baja lógica)
+  if (user.activo === false) {
+    throw new UnauthorizedException('Tu cuenta ha sido deshabilitada. No tienes autorización para ingresar.');
+  }
+
+  // 4. Generar el token JWT si todo está en orden
+  return this.generateToken(user);
+}
 
   async getPerfil(id: string) {
     const user = await this.usuarioModel.findById(id).select('-password');

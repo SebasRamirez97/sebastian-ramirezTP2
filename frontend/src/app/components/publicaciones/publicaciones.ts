@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, signal} from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { PublicacionService } from '../../services/publicacion.service';
 import { UserService } from '../../services/user.service';
 import { ModalCrearPublicacion } from '../modal-crear-publicacion/modal-crear-publicacion';
@@ -9,16 +9,16 @@ import { PublicacionCard } from '../publicacion-card/publicacion-card';
 import { FechaArgentinaPipe } from '../../pipes/fecha-argentina-pipe';
 import { FormsModule } from '@angular/forms';
 
-
 @Component({
   selector: 'app-publicaciones',
   standalone: true,
-  imports: [CommonModule, ModalCrearPublicacion, PublicacionCard, FechaArgentinaPipe,FormsModule],
+  imports: [CommonModule, ModalCrearPublicacion, PublicacionCard, FechaArgentinaPipe, FormsModule],
   templateUrl: './publicaciones.html',
   styleUrl: './publicaciones.css',
 })
 export class Publicaciones implements OnInit {
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private publicacionService = inject(PublicacionService);
   private userService = inject(UserService);
   private inactivityService = inject(InactivityService);
@@ -41,6 +41,7 @@ export class Publicaciones implements OnInit {
   paginaActual = signal<number>(1);
   totalPublicaciones = signal<number>(0);
   usuarioActualId = signal<string>('');
+  perfilUsuario = signal<string>('');
 
   // Variables / Signals en publicaciones.component.ts
   publicacionSeleccionada = signal<any | null>(null);
@@ -57,6 +58,24 @@ export class Publicaciones implements OnInit {
   ngOnInit(): void {
     this.cargarUsuarioActual();
     this.cargarPublicaciones();
+
+    // 👈 3. ESCUCHAR LA URL: Si la ruta tiene un ID, abrimos el modal automáticamente
+    this.route.paramMap.subscribe((params) => {
+      const pubId = params.get('id');
+      if (pubId) {
+        this.publicacionService.obtenerPublicacionPorId(pubId).subscribe({
+          next: (pub) => {
+            this.publicacionSeleccionada.set(pub);
+            this.offsetComentarios.set(0);
+            this.cargarComentariosModal(pub._id || pub.id, 0);
+          },
+          error: (err) => {
+            console.error('No se pudo encontrar la publicación de la URL', err);
+            this.router.navigate(['/publicaciones']);
+          },
+        });
+      }
+    });
   }
 
   cargarPublicaciones(orden: 'fecha' | 'likes' = this.ordenActual()): void {
@@ -116,6 +135,14 @@ export class Publicaciones implements OnInit {
     this.router.navigate(['/mi-perfil']);
   }
 
+  irDashboardEstadisticas() {
+    this.router.navigate(['dashboard/estadisticas']);
+  }
+
+  irDashboardUsuarios() {
+    this.router.navigate(['/dashboard/usuarios']);
+  }
+
   cambiarOrden() {
     // Alternamos entre fecha y likes
     const nuevoOrden = this.ordenActual() === 'fecha' ? 'likes' : 'fecha';
@@ -129,6 +156,7 @@ export class Publicaciones implements OnInit {
     this.userService.obtenerPerfil().subscribe({
       next: (user: any) => {
         this.usuarioActualId.set(user._id || user.id);
+        this.perfilUsuario.set(user.perfil);
       },
       error: (err) => console.error('Error al obtener usuario actual:', err),
     });
@@ -180,45 +208,54 @@ export class Publicaciones implements OnInit {
   }
 
   // 1. Abrir el modal y hacer la carga inicial de comentarios
-async abrirModal(pub: any) {
-  this.publicacionSeleccionada.set(pub);
-  this.offsetComentarios.set(0);
-  await this.cargarComentariosModal(pub._id, 0);
-}
+  async abrirModal(pub: any) {
+    const pubId = pub._id || pub.id;
+    this.publicacionSeleccionada.set(pub);
+    this.offsetComentarios.set(0);
+    await this.cargarComentariosModal(pubId, 0);
 
-// 2. Cerrar el modal
-cerrarModal() {
-  this.publicacionSeleccionada.set(null);
-  this.comentariosModal.set([]);
-}
+    // Cambia la URL en el navegador a /publicaciones/ID
+    this.router.navigate(['/publicaciones', pubId]);
+  }
 
-// 3. Obtener comentarios desde el servicio con paginación
-async cargarComentariosModal(publicacionId: string, offset: number) {
-  // Llamas a tu servicio que conecta con el GET /publicaciones/:id/comentarios
-  this.publicacionService.obtenerComentarios(publicacionId, this.limitComentarios(), offset).subscribe({
-    next: (res: any) => {
-      if (offset === 0) {
-        this.comentariosModal.set(res.comentarios);
-      } else {
-        // Si es "cargar más", acumulamos los nuevos comentarios sin perder los anteriores
-        this.comentariosModal.update(actuales => [...actuales, ...res.comentarios]);
-      }
-      this.hasMoreComentarios.set(res.hasMore);
-    },
-    error: (err) => console.error('Error al cargar comentarios', err)
-  });
-}
+  // 2. Cerrar el modal
+  cerrarModal() {
+    this.publicacionSeleccionada.set(null);
+    this.comentariosModal.set([]);
 
-// 4. Botón "Cargar más"
-async cargarMasComentarios() {
-  const nuevoOffset = this.offsetComentarios() + this.limitComentarios();
-  this.offsetComentarios.set(nuevoOffset);
-  const pubId = this.publicacionSeleccionada()._id;
-  await this.cargarComentariosModal(pubId, nuevoOffset);
-}
+    // Limpia la URL volviendo a /publicaciones
+    this.router.navigate(['/publicaciones']);
+  }
 
-// 5. Enviar un nuevo comentario desde la caja fija inferior
-// 5. Enviar un nuevo comentario desde la caja fija inferior
+  // 3. Obtener comentarios desde el servicio con paginación
+  async cargarComentariosModal(publicacionId: string, offset: number) {
+    // Llamas a tu servicio que conecta con el GET /publicaciones/:id/comentarios
+    this.publicacionService
+      .obtenerComentarios(publicacionId, this.limitComentarios(), offset)
+      .subscribe({
+        next: (res: any) => {
+          if (offset === 0) {
+            this.comentariosModal.set(res.comentarios);
+          } else {
+            // Si es "cargar más", acumulamos los nuevos comentarios sin perder los anteriores
+            this.comentariosModal.update((actuales) => [...actuales, ...res.comentarios]);
+          }
+          this.hasMoreComentarios.set(res.hasMore);
+        },
+        error: (err) => console.error('Error al cargar comentarios', err),
+      });
+  }
+
+  // 4. Botón "Cargar más"
+  async cargarMasComentarios() {
+    const nuevoOffset = this.offsetComentarios() + this.limitComentarios();
+    this.offsetComentarios.set(nuevoOffset);
+    const pubId = this.publicacionSeleccionada()._id;
+    await this.cargarComentariosModal(pubId, nuevoOffset);
+  }
+
+  // 5. Enviar un nuevo comentario desde la caja fija inferior
+  // 5. Enviar un nuevo comentario desde la caja fija inferior
   async enviarComentarioModal() {
     const texto = this.nuevoComentarioTexto().trim();
     if (!texto) return;
@@ -230,36 +267,36 @@ async cargarMasComentarios() {
       next: async (res) => {
         this.nuevoComentarioTexto.set('');
         this.cargandoComentarioModal.set(false);
-        
+
         // 1. Recargamos los comentarios del modal para ver el nuevo reflejado arriba
         this.offsetComentarios.set(0);
         await this.cargarComentariosModal(pubId, 0);
 
         // 2. Actualizamos la lista principal de publicaciones para que el contador de la tarjeta suba al instante
-        this.publicaciones.update(pubs => 
-          pubs.map(pub => {
+        this.publicaciones.update((pubs) =>
+          pubs.map((pub) => {
             const idPubActual = pub._id || pub.id;
             if (idPubActual === pubId) {
-              // Dependiendo de cómo devuelva tu backend el comentario creado (res o res.comentario), 
+              // Dependiendo de cómo devuelva tu backend el comentario creado (res o res.comentario),
               // lo agregamos al array local de comentarios de la publicación
-              const nuevoComentario = res.comentario || res; 
+              const nuevoComentario = res.comentario || res;
               return {
                 ...pub,
-                comentarios: [...(pub.comentarios || []), nuevoComentario]
+                comentarios: [...(pub.comentarios || []), nuevoComentario],
               };
             }
             return pub;
-          })
+          }),
         );
       },
       error: (err) => {
         console.error('Error al comentar', err);
         this.cargandoComentarioModal.set(false);
-      }
+      },
     });
   }
 
-// Activar la edición cargando el texto actual en la variable temporal
+  // Activar la edición cargando el texto actual en la variable temporal
   iniciarEdicion(com: any) {
     this.comentarioEnEdicionId.set(com._id);
     this.textoEditado = com.texto;
@@ -270,7 +307,7 @@ async cargarMasComentarios() {
     this.comentarioEnEdicionId.set(null);
     this.textoEditado = '';
   }
-// 6. Editar un comentario propio
+  // 6. Editar un comentario propio
   // Guardar llamando al servicio y refrescar el modal
   async guardarEdicionComentario(comentarioId: string) {
     if (!this.textoEditado.trim()) return;
@@ -282,7 +319,7 @@ async cargarMasComentarios() {
         this.offsetComentarios.set(0);
         await this.cargarComentariosModal(pubId, 0);
       },
-      error: (err) => console.error('Error al editar comentario', err)
+      error: (err) => console.error('Error al editar comentario', err),
     });
   }
 
@@ -297,25 +334,25 @@ async cargarMasComentarios() {
         await this.cargarComentariosModal(pubId, 0);
 
         // 2. Actualizamos la lista principal de publicaciones para que el contador de la tarjeta baje al instante
-        this.publicaciones.update(pubs => 
-          pubs.map(pub => {
+        this.publicaciones.update((pubs) =>
+          pubs.map((pub) => {
             const idPubActual = pub._id || pub.id;
             if (idPubActual === pubId) {
               return {
                 ...pub,
-                comentarios: pub.comentarios.filter((c: any) => c._id !== comentarioId)
+                comentarios: pub.comentarios.filter((c: any) => c._id !== comentarioId),
               };
             }
             return pub;
-          })
+          }),
         );
       },
-      error: (err) => console.error('Error al eliminar comentario', err)
+      error: (err) => console.error('Error al eliminar comentario', err),
     });
   }
-  
-
-
-
-
+  puedeEliminar(pub: any): boolean {
+    const esDueno = (pub.usuario?._id || pub.usuario) === this.usuarioActualId();
+    const esAdmin = this.perfilUsuario() === 'administrador';
+    return esDueno || esAdmin;
+  }
 }
