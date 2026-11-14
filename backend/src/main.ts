@@ -26,6 +26,7 @@ async function bootstrap() {
         'https://sebastian-ramirez-tp-2-nest.vercel.app',
         'https://sebastian-ramirez-tp-2-angular.vercel.app'
       ],
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true, 
     });
     
@@ -65,6 +66,7 @@ if (process.env.NODE_ENV !== 'production') {
         'https://sebastian-ramirez-tp-2-nest.vercel.app',
         'https://sebastian-ramirez-tp-2-angular.vercel.app'
       ],
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       credentials: true, 
     });
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
