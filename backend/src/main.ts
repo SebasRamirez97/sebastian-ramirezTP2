@@ -5,14 +5,11 @@ import { AppModule } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
 import * as dns from 'dns';
 import cookieParser from 'cookie-parser';
-import pkg from '@vendia/serverless-express';
+import { configure } from '@codegenie/serverless-express'; // O usa '@vendia/serverless-express' según tu package.json
 import { Express } from 'express';
-
-const { configure } = pkg as any;
 
 dns.setServers(['8.8.8.8', '1.1.1.1']);
 
-// 👇 Definimos la lista blanca y la configuración dinámica de CORS
 const whitelist = [
   'http://localhost:4200', 
   'http://localhost:4250',
@@ -39,7 +36,6 @@ async function bootstrap() {
   if (!cachedServer) {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
     
-    // 👇 1. Aplicamos los corsOptions en Producción (Vercel)
     app.enableCors(corsOptions);
     
     app.useGlobalPipes(
@@ -55,24 +51,22 @@ async function bootstrap() {
     await app.init();
     const expressApp = app.getHttpAdapter().getInstance() as Express;
     
+    // 👇 Usamos configure correctamente sin errores de TypeScript
     cachedServer = configure({ app: expressApp });
   }
   return cachedServer;
 }
 
-const handler = async (req: any, res: any) => {
+// 👈 Handler compatible con Vercel
+export default async function handler(req: any, res: any) {
   const server = await bootstrap();
   return server(req, res);
-};
-
-export default handler;
+}
 
 // Arranque local tradicional (sólo para desarrollo en tu PC)
 if (process.env.NODE_ENV !== 'production') {
   NestFactory.create<NestExpressApplication>(AppModule).then(async (app) => {
-    // 👇 2. Aplicamos los corsOptions en Desarrollo Local
     app.enableCors(corsOptions);
-    
     app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }));
     app.use(cookieParser());
     await app.listen(process.env.PORT ?? 3000);
