@@ -10,22 +10,16 @@ import { InactivityService } from '../../services/inactivity.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
-    RouterLink, 
-    InputErrorDirective, 
-    FormErrorPipe
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, InputErrorDirective, FormErrorPipe],
   templateUrl: './login.html',
-  styleUrl: './login.css'
+  styleUrl: './login.css',
 })
 export class Login {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
   private inactivityService = inject(InactivityService);
-  
+
   errorMessage: string | null = null;
   loading: boolean = false;
 
@@ -34,31 +28,27 @@ export class Login {
 
   loginForm: FormGroup = this.fb.group({
     identificador: ['', [Validators.required]],
-    password: ['', [Validators.required, Validators.pattern(this.passwordPattern)]]
+    password: ['', [Validators.required, Validators.pattern(this.passwordPattern)]],
   });
 
-  onSubmit(): void {
-    if (this.loginForm.invalid) {
-      this.loginForm.markAllAsTouched();
-      return;
-    }
+  // En tu login.component.ts
+  onSubmit() {
+    if (this.loginForm.invalid) return;
 
-    this.loading = true;
-    this.errorMessage = null;
+    // 1. Aquí defines o extraes los datos del formulario (ej: this.loginForm.value)
+    const credentials = this.loginForm.value;
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
-        this.loading = false;
-        
-        // 👇 ¡Aquí arranca el monitoreo de inactividad al iniciar sesión con éxito!
-        this.inactivityService.initInactivityMonitor();
-        
+    this.authService.login(credentials).subscribe({
+      next: (response) => {
+        // 2. Guardamos el token en localStorage para que el interceptor lo use
+        localStorage.setItem('token', response.token);
+
+        console.log('Inicio de sesión exitoso');
         this.router.navigate(['/publicaciones']);
       },
       error: (err) => {
-        this.loading = false;
-        this.errorMessage = err.error?.message || 'Credenciales incorrectas o error en el servidor.';
-      }
+        console.error('Error al iniciar sesión', err);
+      },
     });
   }
 }

@@ -10,7 +10,7 @@ import {
   Param, 
   UseGuards, 
   Req,
-  Query // 👈 1. Importar Query aquí
+  Query 
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -56,7 +56,6 @@ export class AutenticacionController {
     };
   }
 
-  // 👇 2. Endpoint de verificación limpio que delega al servicio
   @Get('verificar')
   async verificarDisponibilidad(
     @Query('correo') correo?: string, 
@@ -78,9 +77,6 @@ export class AutenticacionController {
     return await this.autenticacionService.getPerfil(userId);
   }
 
-  // backend/src/autenticacion/autenticacion.controller.ts
-
-  // 👇 Ruta autorizar por POST: Valida token y devuelve datos del usuario (o 401 automático si falla)
   @Post('autorizar')
   @UseGuards(JwtAuthGuard)
   async autorizarToken(@Req() req: Request) {
@@ -88,14 +84,12 @@ export class AutenticacionController {
     return await this.autenticacionService.getPerfil(userId);
   }
 
-  // 👇 Ruta refrescar por POST: Valida el token actual y emite uno nuevo con 15 min de vigencia
   @Post('refrescar')
   @UseGuards(JwtAuthGuard)
   async refrescarToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const usuarioPayload = (req as any).user;
     const nuevoToken = await this.autenticacionService.generateToken(usuarioPayload);
     
-    // Seteamos la nueva cookie con el token renovado
     this.autenticacionService.setTokenCookie(res, nuevoToken);
     
     return { 
