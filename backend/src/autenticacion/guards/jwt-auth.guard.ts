@@ -10,7 +10,6 @@ export class JwtAuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<Request>();
     
-    // 👇 Extraemos el token priorizando el Header Authorization (Bearer), con respaldo en cookies
     const token = this.extractToken(request);
 
     if (!token) {
@@ -21,23 +20,33 @@ export class JwtAuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET || 'clave-secreta-super-segura-recetas',
       });
-      (request as any).user = payload; // Adjunta los datos del usuario al request
-    } catch {
+      (request as any).user = payload;
+    } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
     }
     return true;
   }
 
   private extractToken(request: Request): string | null {
-    // 1. Intentar extraer del Header Authorization: Bearer <token>
-    const authHeader = request.headers?.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      return authHeader.split(' ')[1];
-    }
+    try {
+      // 1. Extraer de las cabeceras asegurando compatibilidad con minúsculas/mayúsculas
+      const headers = request.headers || {};
+      const authHeader = headers['authorization'] || headers['Authorization'];
 
-    // 2. Respaldo: Extraer de las cookies si estuvieran disponibles
-    if (request.cookies?.token) {
-      return request.cookies.token;
+      if (authHeader && typeof authHeader === 'string') {
+        const [type, token] = authHeader.split(' ');
+        if (type === 'Bearer' && token) {
+          return token.trim();
+        }
+      }
+
+      // 2. Respaldo por cookies si estuvieran presentes
+      if (request.cookies && request.cookies.token) {
+        return request.cookies.token;
+      }
+    } catch (e) {
+      // Si ocurre cualquier error al leer headers/cookies, retornamos null
+      return null;
     }
 
     return null;
