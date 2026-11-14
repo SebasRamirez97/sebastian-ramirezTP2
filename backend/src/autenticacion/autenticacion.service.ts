@@ -123,10 +123,11 @@ export class AutenticacionService {
   return { disponible: !existe };
 }
   setTokenCookie(res: Response, token: string) {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
       httpOnly: true, // Evita ataques XSS
-      sameSite: 'strict', // Evita ataques CSRF
-      secure: false, // Cambiar a true si usas HTTPS en producción
+      sameSite: isProduction ? 'none' : 'lax', // Evita ataques CSRF
+      secure: isProduction, // Cambiar a true si usas HTTPS en producción
       maxAge: 1000 * 60 * 60 * 24, // 1 día de expiración
     });
   }
