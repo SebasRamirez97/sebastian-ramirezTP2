@@ -15,7 +15,7 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module.js';
     // Configuramos JWT con una clave secreta y un tiempo de expiración de sesión (ej. 1 hora o 1 día)
     JwtModule.register({
       global: true, // Hace que el servicio JWT esté disponible en toda la aplicación si se requiere
-      secret: process.env.JWT_SECRET || 'clave-secreta-super-segura-recetas',
+      secret: process.env.JWT_SECRET || 'clave_secreta_para_jwt_2026',
       signOptions: { expiresIn: '2h' }, // Tiempo de sesión abierta (ej: 2 horas)
     }),
   CloudinaryModule],

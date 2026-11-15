@@ -50,36 +50,30 @@
 
   <!-- Contenedor Central del Gráfico Activo (Más grande y limpio) -->
   <div class="card-formulario card-grafico-principal">
-    
-    <!-- Gráfico 1 -->
-    @if (graficoActivo() === 'publicaciones') {
-      <div>
-        <h3 style="margin-bottom: 1.5rem; text-align: center;">Cantidad de publicaciones realizadas por cada usuario</h3>
-        <div style="position: relative; height: 420px;">
-          <canvas #chartPublicaciones></canvas>
-        </div>
-      </div>
-    }
-
-    <!-- Gráfico 2 -->
-    @if (graficoActivo() === 'comentarios-tiempo') {
-      <div>
-        <h3 style="margin-bottom: 1.5rem; text-align: center;">Cantidad de comentarios realizados en el tiempo</h3>
-        <div style="position: relative; height: 420px;">
-          <canvas #chartComentariosTiempo></canvas>
-        </div>
-      </div>
-    }
-
-    <!-- Gráfico 3 -->
-    @if (graficoActivo() === 'comentarios-publicacion') {
-      <div style="max-width: 750px; margin: 0 auto;">
-        <h3 style="margin-bottom: 1.5rem; text-align: center;">Cantidad de comentarios en cada publicación</h3>
-        <div style="position: relative; height: 420px;">
-          <canvas #chartComentariosPub></canvas>
-        </div>
-      </div>
-    }
-
+  
+  <!-- Gráfico 1 -->
+  <div [style.display]="graficoActivo() === 'publicaciones' ? 'block' : 'none'">
+    <h3 style="margin-bottom: 1.5rem; text-align: center;">Cantidad de publicaciones realizadas por cada usuario</h3>
+    <div style="position: relative; height: 420px;">
+      <canvas #chartPublicaciones></canvas>
+    </div>
   </div>
+
+  <!-- Gráfico 2 -->
+  <div [style.display]="graficoActivo() === 'comentarios-tiempo' ? 'block' : 'none'">
+    <h3 style="margin-bottom: 1.5rem; text-align: center;">Cantidad de comentarios realizados en el tiempo</h3>
+    <div style="position: relative; height: 420px;">
+      <canvas #chartComentariosTiempo></canvas>
+    </div>
+  </div>
+
+  <!-- Gráfico 3 -->
+  <div [style.display]="graficoActivo() === 'comentarios-publicacion' ? 'block' : 'none'" style="max-width: 750px; margin: 0 auto;">
+    <h3 style="margin-bottom: 1.5rem; text-align: center;">Cantidad de comentarios en cada publicación</h3>
+    <div style="position: relative; height: 420px;">
+      <canvas #chartComentariosPub></canvas>
+    </div>
+  </div>
+
+</div>
 </div>

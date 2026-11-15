@@ -150,10 +150,10 @@ export class DashboardEstadisticasComponent implements OnInit, AfterViewInit {
   cerrarSesion() { this.userService.cerrarSesion().subscribe(() => this.router.navigate(['login'])); }
 
   seleccionarGrafico(tipo: string) {
-    this.graficoActivo.set(tipo);
-    // Forzamos un pequeño retraso para asegurar que el canvas esté renderizado en el DOM al cambiar de solapa
-    setTimeout(() => {
-      this.cargarDatosYRenderizar();
-    }, 50);
-  }
+  this.graficoActivo.set(tipo);
+  // Como los canvas ya existen en el DOM, solo volvemos a cargar los datos para asegurar que se redibujen con el tamaño correcto
+  setTimeout(() => {
+    this.cargarDatosYRenderizar();
+  }, 50);
+}
 }

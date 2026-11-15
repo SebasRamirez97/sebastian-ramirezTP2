@@ -18,10 +18,12 @@ export class JwtAuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET || 'clave-secreta-super-segura-recetas',
+        secret: process.env.JWT_SECRET || 'clave_secreta_para_jwt_2026',
       });
       (request as any).user = payload;
-    } catch (error) {
+    } catch (error: any) {
+      // 👇 IMPRIME EL ERROR REAL EN LA TERMINAL DE NESTJS
+      console.error('❌ Error al verificar el token en el Guard:', error.message);
       throw new UnauthorizedException('Invalid or expired token');
     }
     return true;

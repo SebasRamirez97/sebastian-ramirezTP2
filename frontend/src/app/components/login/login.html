@@ -3,12 +3,6 @@
     <h2>Iniciar Sesión</h2>
     <p class="subtitle">Bienvenido a la red social de recetas</p>
 
-    @if (errorMessage) {
-      <div class="alert alert-danger">
-        {{ errorMessage }}
-      </div>
-    }
-
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <!-- Campo Identificador -->
       <div class="form-group">
@@ -54,3 +48,20 @@
     </div>
   </div>
 </div>
+
+<!-- Modal de Error Personalizado -->
+@if (showModal) {
+  <div class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>¡Acceso Denegado!</h3>
+      </div>
+      <div class="modal-body">
+        <p>{{ modalMessage }}</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-modal" (click)="closeModal()">Aceptar</button>
+      </div>
+    </div>
+  </div>
+}

@@ -8,7 +8,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const token = localStorage.getItem('token');
 
-  // Clonamos la petición e inyectamos el Bearer Token si existe
+  console.log(`Interceptando petición a [${req.url}] - Token encontrado:`, token ? 'SÍ' : 'NO');
+
   let authReq = req;
   if (token) {
     authReq = req.clone({
@@ -21,8 +22,8 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   return next(authReq).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
-        console.warn('La sesión ha expirado por inactividad. Redirigiendo al login...');
-        localStorage.removeItem('token'); // Limpiamos el token inválido/expirado
+        console.warn(`Error 401 en [${req.url}]. Limpiando token y redirigiendo...`);
+        localStorage.removeItem('token');
         router.navigate(['/login']); 
       }
       return throwError(() => error);

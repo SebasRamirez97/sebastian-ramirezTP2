@@ -50,7 +50,9 @@ export class AutenticacionService {
     }
 
     // 4. Hashear la contraseña
-    const hashedPassword = await bcrypt.hash(registroDto.password, 10);
+
+    const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
+    const hashedPassword = await bcrypt.hash(registroDto.password, saltRounds);
 
     // 5. Crear el usuario mapeando los campos del DTO a la estructura de la base de datos
     const newUser = await this.usuarioModel.create({
@@ -74,27 +76,29 @@ export class AutenticacionService {
   }
 
   async login(loginDto: LoginDto) {
-  // 1. Busca por correo o por nombre de usuario usando la propiedad 'identificador' del LoginDto
-  const user = await this.usuarioModel.findOne({
-    $or: [
-      { correo: loginDto.identificador },
-      { usuario: loginDto.identificador },
-    ],
-  });
+    // 1. Busca por correo o por nombre de usuario usando la propiedad 'identificador' del LoginDto
+    const user = await this.usuarioModel.findOne({
+      $or: [
+        { correo: loginDto.identificador },
+        { usuario: loginDto.identificador },
+      ],
+    });
 
-  // 2. Validar si el usuario existe y si la contraseña es correcta
-  if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
-    throw new UnauthorizedException('Credenciales incorrectas');
+    // 2. Validar si el usuario existe y si la contraseña es correcta
+    if (!user || !(await bcrypt.compare(loginDto.password, user.password))) {
+      throw new UnauthorizedException('Credenciales incorrectas');
+    }
+
+    // 3. 👈 NUEVO: Validar si el usuario está deshabilitado (baja lógica)
+    if (user.activo === false) {
+      throw new UnauthorizedException(
+        'Tu cuenta ha sido deshabilitada. No tienes autorización para ingresar.',
+      );
+    }
+
+    // 4. Generar el token JWT si todo está en orden
+    return this.generateToken(user);
   }
-
-  // 3. 👈 NUEVO: Validar si el usuario está deshabilitado (baja lógica)
-  if (user.activo === false) {
-    throw new UnauthorizedException('Tu cuenta ha sido deshabilitada. No tienes autorización para ingresar.');
-  }
-
-  // 4. Generar el token JWT si todo está en orden
-  return this.generateToken(user);
-}
 
   async getPerfil(id: string) {
     const user = await this.usuarioModel.findById(id).select('-password');
@@ -105,23 +109,20 @@ export class AutenticacionService {
   }
 
   async generateToken(usuario: any) {
-    const payload = { 
-      correo: usuario.correo, 
-      usuario: usuario.usuario, 
-      sub: usuario._id || usuario.sub, 
-      perfil: usuario.perfil 
+    const payload = {
+      correo: usuario.correo,
+      usuario: usuario.usuario,
+      sub: usuario._id || usuario.sub,
+      perfil: usuario.perfil,
     };
     return this.jwtService.signAsync(payload);
   }
   async verificarDisponibilidad(correo?: string, usuario?: string) {
-  const existe = await this.usuarioModel.findOne({
-    $or: [
-      ...(correo ? [{ correo }] : []),
-      ...(usuario ? [{ usuario }] : [])
-    ]
-  });
-  return { disponible: !existe };
-}
+    const existe = await this.usuarioModel.findOne({
+      $or: [...(correo ? [{ correo }] : []), ...(usuario ? [{ usuario }] : [])],
+    });
+    return { disponible: !existe };
+  }
   setTokenCookie(res: Response, token: string) {
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('token', token, {
@@ -131,5 +132,4 @@ export class AutenticacionService {
       maxAge: 1000 * 60 * 60 * 24, // 1 día de expiración
     });
   }
-
 }

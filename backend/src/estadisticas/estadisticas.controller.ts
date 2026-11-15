@@ -8,37 +8,34 @@ import { EstadisticasService } from './estadisticas.service.js';
 export class EstadisticasController {
   constructor(private readonly estadisticasService: EstadisticasService) {}
 
-  // 1. Cantidad de publicaciones por usuario en un lapso de tiempo
-  @Get('publicaciones-por-usuario')
+  // 1. Cantidad de publicaciones por usuario según el lapso
+  @Get('publicaciones-usuario')
   async getPublicacionesPorUsuario(
-    @Query('inicio') inicio: string,
-    @Query('fin') fin: string,
+    @Query('lapso') lapso: string,
     @Req() req: any,
   ) {
     this.validarEsAdmin(req);
-    return await this.estadisticasService.publicacionesPorUsuario(inicio, fin);
+    return await this.estadisticasService.publicacionesPorUsuario(lapso);
   }
 
-  // 2. Cantidad de comentarios realizados en un lapso de tiempo
+  // 2. Cantidad de comentarios realizados en el tiempo según el lapso
   @Get('comentarios-tiempo')
   async getComentariosEnTiempo(
-    @Query('inicio') inicio: string,
-    @Query('fin') fin: string,
+    @Query('lapso') lapso: string,
     @Req() req: any,
   ) {
     this.validarEsAdmin(req);
-    return await this.estadisticasService.comentariosEnTiempo(inicio, fin);
+    return await this.estadisticasService.comentariosEnTiempo(lapso);
   }
 
-  // 3. Cantidad de comentarios en cada publicación en un lapso de tiempo
-  @Get('comentarios-por-publicacion')
+  // 3. Cantidad de comentarios en cada publicación según el lapso
+  @Get('comentarios-publicacion')
   async getComentariosPorPublicacion(
-    @Query('inicio') inicio: string,
-    @Query('fin') fin: string,
+    @Query('lapso') lapso: string,
     @Req() req: any,
   ) {
     this.validarEsAdmin(req);
-    return await this.estadisticasService.comentariosPorPublicacion(inicio, fin);
+    return await this.estadisticasService.comentariosPorPublicacion(lapso);
   }
 
   // 🛡️ Helper privado para asegurar que solo los administradores accedan

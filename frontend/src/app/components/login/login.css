@@ -89,3 +89,69 @@
   text-decoration: none;
   font-weight: 600;
 }
+
+/* Estilos del Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.modal-card {
+  background: #ffffff;
+  width: 90%;
+  max-width: 380px;
+  padding: 1.8rem;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: scaleUp 0.2s ease-in-out;
+}
+
+.modal-header h3 {
+  color: #e53e3e;
+  margin-bottom: 0.8rem;
+  font-size: 1.25rem;
+}
+
+.modal-body p {
+  color: #4a5568;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.btn-modal {
+  width: 100%;
+  padding: 0.7rem;
+  background-color: #2b6cb0;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-modal:hover {
+  background-color: #2c5282;
+}
+
+/* Animaciones suaves */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

@@ -1,3 +1,4 @@
+// backend/src/estadisticas/estadisticas.service.ts
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -11,16 +12,36 @@ export class EstadisticasService {
     @InjectModel(Usuario.name) private userModel: Model<Usuario>,
   ) {}
 
-  async publicacionesPorUsuario(inicio: string, fin: string) {
-    const fechaInicio = new Date(inicio);
-    const fechaFin = new Date(fin);
+  // 🛠️ Helper privado para convertir el lapso en un rango de fechas (o un filtro vacío si es 'todo')
+  private obtenerRangoFechas(lapso: string) {
+    if (lapso === 'todo') {
+      return null; // Sin filtro de fecha para el histórico
+    }
 
-    return await this.publicacionModel.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: fechaInicio, $lte: fechaFin },
-        },
-      },
+    const fechaFin = new Date();
+    const fechaInicio = new Date();
+
+    if (lapso === '7d') {
+      fechaInicio.setDate(fechaFin.getDate() - 7);
+    } else if (lapso === '30d') {
+      fechaInicio.setDate(fechaFin.getDate() - 30);
+    } else {
+      fechaInicio.setDate(fechaFin.getDate() - 30); // Por defecto 30 días
+    }
+
+    return { fechaInicio, fechaFin };
+  }
+
+  async publicacionesPorUsuario(lapso: string) {
+    const rango = this.obtenerRangoFechas(lapso);
+    const matchStage: any = {};
+
+    if (rango) {
+      matchStage.createdAt = { $gte: rango.fechaInicio, $lte: rango.fechaFin };
+    }
+
+    const resultado = await this.publicacionModel.aggregate([
+      { $match: matchStage },
       {
         $group: {
           _id: '$usuario',
@@ -38,26 +59,30 @@ export class EstadisticasService {
       { $unwind: '$usuarioInfo' },
       {
         $project: {
-          email: '$usuarioInfo.email',
+          usuario: '$usuarioInfo.usuario', // O '$usuarioInfo.correo'
           totalPublicaciones: 1,
         },
       },
     ]);
+
+    // Transformar a { labels, valores } para Chart.js
+    return {
+      labels: resultado.map((item: any) => `@${item.usuario || 'usuario'}`),
+      valores: resultado.map((item: any) => item.totalPublicaciones),
+    };
   }
 
-  async comentariosEnTiempo(inicio: string, fin: string) {
-    const fechaInicio = new Date(inicio);
-    const fechaFin = new Date(fin);
+  async comentariosEnTiempo(lapso: string) {
+    const rango = this.obtenerRangoFechas(lapso);
+    const matchDateStage: any = {};
 
-    // Si manejas los comentarios embebidos o en colección separada, 
-    // puedes usar $unwind sobre el array de comentarios filtrando por fecha:
-    return await this.publicacionModel.aggregate([
+    if (rango) {
+      matchDateStage['comentarios.createdAt'] = { $gte: rango.fechaInicio, $lte: rango.fechaFin };
+    }
+
+    const resultado = await this.publicacionModel.aggregate([
       { $unwind: '$comentarios' },
-      {
-        $match: {
-          'comentarios.createdAt': { $gte: fechaInicio, $lte: fechaFin },
-        },
-      },
+      { $match: matchDateStage },
       {
         $group: {
           _id: {
@@ -68,24 +93,38 @@ export class EstadisticasService {
       },
       { $sort: { _id: 1 } },
     ]);
+
+    // Transformar a { labels, valores } para Chart.js
+    return {
+      labels: resultado.map((item: any) => item._id),
+      valores: resultado.map((item: any) => item.totalComentarios),
+    };
   }
 
-  async comentariosPorPublicacion(inicio: string, fin: string) {
-    const fechaInicio = new Date(inicio);
-    const fechaFin = new Date(fin);
+  async comentariosPorPublicacion(lapso: string) {
+    const rango = this.obtenerRangoFechas(lapso);
+    const matchStage: any = {};
 
-    return await this.publicacionModel.aggregate([
-      {
-        $match: {
-          createdAt: { $gte: fechaInicio, $lte: fechaFin },
-        },
-      },
+    if (rango) {
+      matchStage.createdAt = { $gte: rango.fechaInicio, $lte: rango.fechaFin };
+    }
+
+    const resultado = await this.publicacionModel.aggregate([
+      { $match: matchStage },
       {
         $project: {
-          titulo: '$titulo', // O el campo identificador de la publicación
+          titulo: '$titulo', 
           totalComentarios: { $size: { $ifNull: ['$comentarios', []] } },
         },
       },
+      { $sort: { totalComentarios: -1 } },
+      { $limit: 10 }, // Limitamos a las 10 recetas con más comentarios para que la torta luzca ordenada
     ]);
+
+    // Transformar a { labels, valores } para Chart.js
+    return {
+      labels: resultado.map((item: any) => item.titulo || 'Sin título'),
+      valores: resultado.map((item: any) => item.totalComentarios),
+    };
   }
 }
