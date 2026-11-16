@@ -5,11 +5,13 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { UserService } from '../../services/user.service';
+import { VerificarDuplicadoDirective } from '../../directives/verficar-duplicado.directive';
+import { InputErrorDirective } from '../../directives/input-error.directive';
 
 @Component({
   selector: 'app-dashboard-usuarios',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, VerificarDuplicadoDirective,InputErrorDirective ],
   templateUrl: './dashboard-usuarios.html',
   styleUrls: ['./dashboard-usuarios.css']
 })
