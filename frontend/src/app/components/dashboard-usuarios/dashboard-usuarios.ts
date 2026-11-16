@@ -8,11 +8,12 @@ import { UserService } from '../../services/user.service';
 import { VerificarDuplicadoDirective } from '../../directives/verficar-duplicado.directive';
 import { InputErrorDirective } from '../../directives/input-error.directive';
 import { matchPasswordValidator } from '../../validators/match-password.validator'; // 👈 Importar validador de contraseñas
+import { FormErrorPipe } from '../../pipes/form-error.pipe';
 
 @Component({
   selector: 'app-dashboard-usuarios',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, VerificarDuplicadoDirective, InputErrorDirective],
+  imports: [CommonModule, ReactiveFormsModule, VerificarDuplicadoDirective, InputErrorDirective, FormErrorPipe],
   templateUrl: './dashboard-usuarios.html',
   styleUrls: ['./dashboard-usuarios.css']
 })
