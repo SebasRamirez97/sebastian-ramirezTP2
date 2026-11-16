@@ -1,7 +1,16 @@
 <div class="registro-container">
   <div class="registro-card">
-    <h2>Crear Cuenta</h2>
-    <p class="subtitle">Únete a nuestra red social de recetas</p>
+    <!-- Cabecera con Branding de Foodies Centrado -->
+    <div class="registro-brand-center">
+      <img 
+        src="assets/icons/Gorrito-chef-192x192.png" 
+        alt="Logo Foodies" 
+        class="registro-logo" 
+      />
+      <h2>Foodies</h2>
+    </div>
+    
+    <p class="subtitle">Crea tu cuenta y únete a nuestra red social de recetas</p>
 
     @if (errorMessage) {
       <div class="alert alert-danger">
@@ -137,8 +146,14 @@
         }
       </div>
 
-      <!-- Descripción Breve -->
+      <!-- Avatar (File) -->
       <div class="form-group">
+        <label for="avatar">Imagen de Perfil</label>
+        <input id="avatar" type="file" (change)="onFileSelected($event)" accept="image/*" class="file-input" />
+      </div>
+
+      <!-- Descripción Breve (Ocupa ancho completo) -->
+      <div class="form-group full-width">
         <label for="descripcionBreve">Descripción Breve (Opcional)</label>
         <textarea
           id="descripcionBreve"
@@ -148,13 +163,8 @@
         ></textarea>
       </div>
 
-      <!-- Avatar (File) -->
-      <div class="form-group">
-        <label for="avatar">Imagen de Perfil</label>
-        <input id="avatar" type="file" (change)="onFileSelected($event)" accept="image/*" />
-      </div>
-
-      <button type="submit" [disabled]="loading || registroForm.invalid" class="btn-submit">
+      <!-- Botón de Envío (Ocupa ancho completo) -->
+      <button type="submit" [disabled]="loading || registroForm.invalid" class="btn-submit full-width">
         {{ loading ? 'Registrando...' : 'Registrarse' }}
       </button>
     </form>

@@ -1,7 +1,16 @@
 <div class="login-container">
   <div class="login-card">
-    <h2>Iniciar Sesión</h2>
-    <p class="subtitle">Bienvenido a la red social de recetas</p>
+    <!-- Cabecera con Branding de Foodies Centrado -->
+    <div class="login-brand-center">
+      <img 
+        src="assets/icons/Gorrito-chef-192x192.png" 
+        alt="Logo Foodies" 
+        class="login-logo" 
+      />
+      <h2>Foodies</h2>
+    </div>
+    
+    <p class="subtitle">Inicia sesión en la más famosa red social de recetas</p>
 
     <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <!-- Campo Identificador -->
@@ -49,20 +58,3 @@
     </div>
   </div>
 </div>
-
-<!-- Modal de Error Personalizado -->
-@if (showModal()) {
-  <div class="modal-overlay">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3>¡Acceso Denegado!</h3>
-      </div>
-      <div class="modal-body">
-        <p>{{ modalMessage() }}</p>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn-modal" (click)="closeModal()">Aceptar</button>
-      </div>
-    </div>
-  </div>
-}
