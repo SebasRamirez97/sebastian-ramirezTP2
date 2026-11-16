@@ -1,16 +1,18 @@
 // src/app/services/inactivity.service.ts
 import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InactivityService {
   private router = inject(Router);
+  private authService = inject(AuthService);
 
   // Configuramos los tiempos:
-  private readonly INACTIVITY_LIMIT = 60* 25* 1000; 
-  private readonly WARNING_DURATION = 60* 5* 1000;   
+  private readonly INACTIVITY_LIMIT = 25* 1000; 
+  private readonly WARNING_DURATION = 5* 1000;   
 
   private inactivityTimer: any;
   private warningTimer: any;
@@ -18,7 +20,7 @@ export class InactivityService {
 
   // Signals para el control del modal
   showModal = signal<boolean>(false);
-  tiempoRestante = signal<string>('5:00');
+  tiempoRestante = signal<string>('0:05');
 
   // Guardamos la referencia de la función bound para poder removerla luego
   private boundHandleActivity = () => this.handleUserActivity();
@@ -79,11 +81,16 @@ export class InactivityService {
   public cerrarSesionPorInactividad(): void {
     this.showModal.set(false);
     clearInterval(this.countdownInterval);
-    this.detenerMonitoreo(); // <--- Limpiamos listeners y temporizadores
+    this.detenerMonitoreo(); 
+    
     console.warn('Sesión cerrada por inactividad.');
-    this.router.navigate(['/login']);
-  }
 
+    // Llamamos al método que ya borra el localStorage y avisa al backend
+    this.authService.cerrarSesion().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => this.router.navigate(['/login']) // Redirige incluso si falla la petición HTTP
+    });
+  }
   // 👇 NUEVO MÉTODO PÚBLICO PARA DETENER EL MONITOREO AL HACER LOGOUT MANUAL
   public detenerMonitoreo(): void {
     clearTimeout(this.inactivityTimer);
