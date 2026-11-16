@@ -5,12 +5,14 @@
   min-height: 100vh;
   background-color: #f7fafc;
   font-family: system-ui, -apple-system, sans-serif;
-  padding: 2rem 1rem;
-  max-width: 1100px;
-  margin: 0 auto;
+  position: relative;
+  padding-bottom: 3rem;
 }
 
 /* Barra de navegación superior unificada */
+/* ==========================================
+   ESTILOS DE LA BARRA DE NAVEGACIÓN (FOODIES)
+   ========================================== */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -21,75 +23,136 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.navbar h2 {
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  transform: scale(1.15);
+}
+
+.navbar-brand h2 {
   margin: 0;
-  font-size: 1.25rem;
-  color: #2d3748;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #dd6b20;
+  letter-spacing: -0.5px;
 }
 
 .nav {
   display: flex;
   gap: 10px;
+  align-items: center;
 }
 
+/* Botones de navegación estándar (Naranja clarito) */
 .btn-nav {
-  background-color: #edf2f7;
-  border: none;
+  background-color: #fffaf0; /* 👈 Fondo naranja muy suave / clarito */
+  border: 1px solid #feebc8;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 500;
-  color: #4a5568;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  color: #dd6b20; /* 👈 Texto en tono naranja */
+  transition: all 0.2s ease;
 }
 
 .btn-nav:hover {
-  background-color: #e2e8f0;
+  background-color: #feebc8; /* 👈 Naranja clarito un poco más intenso al pasar el cursor */
+  border-color: #fbd38d;
 }
 
+/* Botón activo / presionado (Naranja fuerte y letras blancas) */
 .btn-nav.active {
-  background-color: #3182ce;
-  color: white;
+  background-color: #dd6b20 !important; /* 👈 Naranja fuerte corporativo */
+  color: white !important;               /* 👈 Letras blancas */
+  border-color: #c05621 !important;
 }
 
-.dashboard-container h2 {
+/* Botón de cerrar sesión (Mantiene su estilo de alerta característico) */
+.btn-logout {
+  background-color: #fed7d7;
+  color: #9b2c2c;
+  border: 1px solid #feb2b2;
+}
+
+.btn-logout:hover {
+  background-color: #feb2b2;
+}
+
+/* ==========================================
+   CONTENIDO PRINCIPAL CENTRADO (Idéntico al muro)
+   ========================================== */
+.dashboard-content {
+  max-width: 850px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-header h2 {
   color: #1a202c;
   font-size: 1.5rem;
-  margin-bottom: 0;
+  margin: 0 0 0.25rem 0;
   font-weight: 700;
 }
 
-.dashboard-container h3 {
-  color: #2d3748;
-  font-size: 1.15rem;
-  font-weight: 600;
+.subtitle {
+  color: #718096;
+  margin: 0;
+  font-size: 0.95rem;
 }
 
 /* ==========================================
    BOTONES DE FILTRO DE LAPSO (.btn-ordenar)
    ========================================== */
+/* ==========================================
+   BOTONES DE FILTRO DE LAPSO (.btn-ordenar)
+   ========================================== */
+.filtros-lapso {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .btn-ordenar {
-  background-color: #ffffff;
-  border: 1px solid #cbd5e0;
-  color: #4a5568;
-  padding: 0.5rem 1rem;
+  background-color: #fffaf0; /* 👈 Naranja clarito por defecto */
+  border: 1px solid #feebc8;
+  color: #dd6b20; /* 👈 Texto naranja */
+  padding: 8px 14px;
   border-radius: 8px;
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
 
 .btn-ordenar:hover {
-  background-color: #edf2f7;
-  border-color: #a0aec0;
+  background-color: #feebc8; /* 👈 Naranja clarito más intenso al pasar el cursor */
+  border-color: #fbd38d;
+  transform: translateY(-1px);
 }
 
 .btn-ordenar.active {
-  background-color: #3182ce;
-  color: white;
-  border-color: #3182ce;
-  box-shadow: 0 1px 3px rgba(49, 130, 206, 0.2);
+  background-color: #dd6b20 !important; /* 👈 Naranja fuerte corporativo */
+  color: white !important;               /* 👈 Letras blancas */
+  border-color: #c05621 !important;
+  box-shadow: 0 1px 3px rgba(221, 107, 32, 0.25);
 }
 
 /* ==========================================
@@ -97,15 +160,16 @@
    ========================================== */
 .graficos-selector-container {
   display: flex;
+  justify-content: center;
   gap: 12px;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
 }
 
 .btn-grafico-tab {
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  color: #4a5568;
+  background-color: #fffaf0; /* 👈 Naranja clarito por defecto */
+  border: 1px solid #feebc8;
+  color: #dd6b20; /* 👈 Texto naranja */
   padding: 0.75rem 1.25rem;
   border-radius: 10px;
   font-size: 0.95rem;
@@ -116,31 +180,55 @@
 }
 
 .btn-grafico-tab:hover {
-  background-color: #edf2f7;
-  border-color: #cbd5e0;
+  background-color: #feebc8; /* 👈 Naranja clarito más intenso al pasar el cursor */
+  border-color: #fbd38d;
 }
 
 .btn-grafico-tab.active {
-  background-color: #6b46c1; /* Tono morado elegante para diferenciarlo de los filtros */
-  color: white;
-  border-color: #6b46c1;
-  box-shadow: 0 4px 6px -1px rgba(107, 70, 193, 0.2);
+  background-color: #dd6b20 !important; /* 👈 Naranja fuerte corporativo */
+  color: white !important;               /* 👈 Letras blancas */
+  border-color: #c05621 !important;
+  box-shadow: 0 4px 6px -1px rgba(221, 107, 32, 0.25);
 }
-
 /* ==========================================
-   TARJETA CONTENEDORA PRINCIPAL DEL GRÁFICO
+   TARJETA Y PANEL DEL GRÁFICO CENTRADO
    ========================================== */
 .card-formulario {
   background: #ffffff;
-  padding: 30px;
+  padding: 2rem;
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   border: 1px solid #e2e8f0;
 }
 
 .card-grafico-principal {
-  min-height: 500px;
+  min-height: 480px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: center;
+}
+
+.grafico-panel {
+  width: 100%;
+  flex-direction: column;
+  align-items: center;
+}
+
+.grafico-panel h3 {
+  color: #2d3748;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.canvas-wrapper {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

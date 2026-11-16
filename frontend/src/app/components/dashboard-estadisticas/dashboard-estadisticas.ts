@@ -20,7 +20,7 @@ Chart.register(...registerables); // Registramos los componentes de Chart.js
 @Component({
   selector: 'app-dashboard-estadisticas',
   standalone: true,
-  imports: [CommonModule, FormsModule, FechaArgentinaPipe],
+  imports: [CommonModule, FormsModule],
   templateUrl: './dashboard-estadisticas.html',
   styleUrls: ['./dashboard-estadisticas.css'],
 })
@@ -86,7 +86,9 @@ export class DashboardEstadisticasComponent implements OnInit, AfterViewInit {
           {
             label: 'Publicaciones realizadas',
             data: data.valores, // ej: [12, 8]
-            backgroundColor: '#3182ce',
+            backgroundColor: '#dd6b20', // 👈 Naranja corporativo Foodies
+            borderColor: '#c05621',     // 👈 Borde en tono naranja oscuro
+            borderWidth: 1,
             borderRadius: 6,
           },
         ],
@@ -113,10 +115,11 @@ export class DashboardEstadisticasComponent implements OnInit, AfterViewInit {
           {
             label: 'Comentarios en el lapso',
             data: data.valores,
-            borderColor: '#6b46c1',
-            backgroundColor: 'rgba(107, 70, 193, 0.1)',
+            borderColor: '#dd6b20',                    // 👈 Línea en naranja Foodies
+            backgroundColor: 'rgba(221, 107, 32, 0.1)', // 👈 Relleno degradado suave en tonos naranjas
             fill: true,
             tension: 0.3,
+            pointBackgroundColor: '#dd6b20',
           },
         ],
       },

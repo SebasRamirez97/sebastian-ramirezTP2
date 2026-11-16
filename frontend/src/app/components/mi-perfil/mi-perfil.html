@@ -1,31 +1,38 @@
 <div class="perfil-container">
   <!-- Barra de navegación superior -->
   <header class="navbar">
-    <h2>Red Social de Recetas</h2>
-    <nav class="nav">
-      
-   <button
-      *appPermisoRol="'administrador'"
-      appResaltarHover
-      appSombraHover
-      class="btn-nav"
-      (click)="irDashboardEstadisticas()"
-      style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600"
-    >
-      📊 Estadísticas
-    </button>
+    <div class="navbar-brand">
+      <img 
+        src="assets/icons/Gorrito-chef-192x192.png" 
+        alt="Logo Foodies" 
+        class="navbar-logo" 
+      />
+      <h2>Foodies</h2>
+    </div>
 
-    <button
-      *appPermisoRol="'administrador'"
-      appResaltarHover
-      appSombraHover
-      class="btn-nav"
-      (click)="irDashboardEstadisticas()"
-      style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600"
-    >
-      📊 Estadísticas
-    </button>
-    
+    <nav class="nav">
+      <!-- Botón Estadísticas protegido con la directiva estructural -->
+      <button
+        *appPermisoRol="'administrador'"
+        appResaltarHover
+        appSombraHover
+        class="btn-nav"
+        (click)="irDashboardEstadisticas()"
+      >
+         Estadísticas
+      </button>
+
+      <!-- Botón Panel Admin protegido con la directiva estructural -->
+      <button
+        *appPermisoRol="'administrador'"
+        appResaltarHover
+        appSombraHover
+        class="btn-nav btn-admin"
+        (click)="irDashboardUsuarios()"
+      >
+         Panel Administrador
+      </button>
+
       <button appResaltarHover appSombraHover class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
       <button appResaltarHover appSombraHover class="btn-nav active">Mi Perfil</button>
       <button appResaltarHover appSombraHover class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
@@ -127,8 +134,8 @@
             class="clock-icon-reveal"
           />
         </div>
-        <h2>Red Social de Recetas</h2>
-        <p>Cargando publicaciones...</p>
+        <h2>Foodies</h2>
+        <p>Cargando recetas...</p>
       </div>
     } @else {
         <div class="grid-publicaciones">

@@ -1,36 +1,43 @@
 <div class="publicaciones-container">
   <!-- Barra de navegación superior -->
   <header class="navbar">
-  <h2>Red Social de Recetas</h2>
-  <nav class="nav">
-    <!-- Botón Estadísticas protegido con la directiva estructural -->
-    <button
-      *appPermisoRol="'administrador'"
-      appResaltarHover
-      appSombraHover
-      class="btn-nav"
-      (click)="irDashboardEstadisticas()"
+    <div class="navbar-brand">
+      <img 
+        src="assets/icons/Gorrito-chef-192x192.png" 
+        alt="Logo Foodies" 
+        class="navbar-logo" 
+      />
+      <h2>Foodies</h2>
+    </div>
 
-    >
-      📊 Estadísticas
-    </button>
+    <nav class="nav">
+      <!-- Botón Estadísticas protegido con la directiva estructural -->
+      <button
+        *appPermisoRol="'administrador'"
+        appResaltarHover
+        appSombraHover
+        class="btn-nav"
+        (click)="irDashboardEstadisticas()"
+      >
+         Estadísticas
+      </button>
 
-    <!-- Botón Panel Admin protegido con la directiva estructural -->
-    <button
-      *appPermisoRol="'administrador'"
-      appResaltarHover
-      appSombraHover
-      class="btn-nav btn-admin"
-      (click)="irDashboardUsuarios()"
-    >
-      ⚙️ Panel Admin
-    </button>
+      <!-- Botón Panel Admin protegido con la directiva estructural -->
+      <button
+        *appPermisoRol="'administrador'"
+        appResaltarHover
+        appSombraHover
+        class="btn-nav btn-admin"
+        (click)="irDashboardUsuarios()"
+      >
+         Panel Administrador
+      </button>
 
-    <button class="btn-nav active" appResaltarHover appSombraHover>Publicaciones</button>
-    <button class="btn-nav" (click)="irMiPerfil()"appResaltarHover appSombraHover>Mi Perfil</button>
-    <button class="btn-nav btn-logout" (click)="cerrarSesion()"appResaltarHover appSombraHover>Cerrar Sesión</button>
-  </nav>
-</header>
+      <button class="btn-nav active" appResaltarHover appSombraHover>Publicaciones</button>
+      <button class="btn-nav" (click)="irMiPerfil()" appResaltarHover appSombraHover>Mi Perfil</button>
+      <button class="btn-nav btn-logout" (click)="cerrarSesion()" appResaltarHover appSombraHover>Cerrar Sesión</button>
+    </nav>
+  </header>
 
   <main class="content">
     <div
@@ -82,8 +89,8 @@
             class="clock-icon-reveal"
           />
         </div>
-        <h2>Red Social de Recetas</h2>
-        <p>Cargando publicaciones...</p>
+        <h2>Foodies</h2>
+        <p>Cargando recetas...</p>
       </div>
     } @else {
       <!-- Contenido normal del muro: Listado de tarjetas de publicaciones -->

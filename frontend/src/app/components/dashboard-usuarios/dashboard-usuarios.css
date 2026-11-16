@@ -1,16 +1,18 @@
 /* ==========================================
    ESTILOS GENERALES DEL DASHBOARD (Acorde al Muro)
    ========================================== */
-.dashboard-container {
+.dashboard-usuarios {
   min-height: 100vh;
   background-color: #f7fafc;
   font-family: system-ui, -apple-system, sans-serif;
-  padding: 2rem 1rem;
-  max-width: 1100px;
-  margin: 0 auto;
+  position: relative;
+  padding-bottom: 3rem;
 }
 
-/* Barra de navegación superior */
+/* Barra de navegación superior unificada */
+/* ==========================================
+   ESTILOS DE LA BARRA DE NAVEGACIÓN (FOODIES)
+   ========================================== */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -21,47 +23,99 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.navbar h2 {
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-logo {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  transform: scale(1.15);
+}
+
+.navbar-brand h2 {
   margin: 0;
-  font-size: 1.25rem;
-  color: #2d3748;
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #dd6b20;
+  letter-spacing: -0.5px;
 }
 
 .nav {
   display: flex;
   gap: 10px;
+  align-items: center;
 }
 
+/* Botones de navegación estándar (Naranja clarito) */
 .btn-nav {
-  background-color: #edf2f7;
-  border: none;
+  background-color: #fffaf0; /* 👈 Fondo naranja muy suave / clarito */
+  border: 1px solid #feebc8;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
-  font-weight: 500;
-  color: #4a5568;
-  transition: background-color 0.2s;
+  font-weight: 600;
+  color: #dd6b20; /* 👈 Texto en tono naranja */
+  transition: all 0.2s ease;
 }
 
 .btn-nav:hover {
-  background-color: #e2e8f0;
+  background-color: #feebc8; /* 👈 Naranja clarito un poco más intenso al pasar el cursor */
+  border-color: #fbd38d;
 }
 
+/* Botón activo / presionado (Naranja fuerte y letras blancas) */
 .btn-nav.active {
-  background-color: #3182ce;
-  color: white;
+  background-color: #dd6b20 !important; /* 👈 Naranja fuerte corporativo */
+  color: white !important;               /* 👈 Letras blancas */
+  border-color: #c05621 !important;
 }
 
-.dashboard-container h2 {
+/* Botón de cerrar sesión (Mantiene su estilo de alerta característico) */
+.btn-logout {
+  background-color: #fed7d7;
+  color: #9b2c2c;
+  border: 1px solid #feb2b2;
+}
+
+.btn-logout:hover {
+  background-color: #feb2b2;
+}
+
+/* ==========================================
+   CONTENIDO PRINCIPAL CENTRADO (Idéntico al muro)
+   ========================================== */
+.dashboard-content {
+  max-width: 1150px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.dashboard-header {
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-header h2 {
   color: #1a202c;
   font-size: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin: 0 0 0.25rem 0;
   font-weight: 700;
 }
 
-.dashboard-container h3 {
+.subtitle {
+  color: #718096;
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.dashboard-content h3 {
   color: #2d3748;
   font-size: 1.15rem;
+  margin-top: 0;
   margin-bottom: 1rem;
   font-weight: 600;
 }
@@ -106,8 +160,16 @@
 
 .form-control:focus {
   outline: none;
-  border-color: #3182ce;
-  box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.15);
+  border-color: #dd6b20; /* 👈 Cambiado de azul a naranja Foodies */
+  box-shadow: 0 0 0 3px rgba(221, 107, 32, 0.15); /* 👈 Sombra de foco en tono naranja */
+}
+
+.error-text {
+  display: block;
+  color: #e53e3e;
+  font-size: 0.8rem;
+  margin-top: 0.3rem;
+  font-weight: 500;
 }
 
 /* Grupo de Radio Buttons para los perfiles */
@@ -116,10 +178,10 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  background-color: #f7fafc;
+  background-color: #fffaf0; /* 👈 Fondo suave acorde al tema */
   padding: 12px 16px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #feebc8; /* 👈 Borde en tono naranja claro */
 }
 
 .radio-option {
@@ -130,10 +192,11 @@
   color: #2d3748;
   cursor: pointer;
   font-weight: 500;
+  margin-bottom: 0 !important;
 }
 
 .radio-option input[type="radio"] {
-  accent-color: #3182ce;
+  accent-color: #dd6b20; /* 👈 Cambiado de azul a naranja corporativo */
   cursor: pointer;
   width: 16px;
   height: 16px;
@@ -142,7 +205,7 @@
 /* Botón principal de acción (Crear Usuario) */
 .btn-primary-admin {
   grid-column: span 2;
-  background-color: #3182ce;
+  background-color: #dd6b20; /* 👈 Naranja fuerte corporativo */
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -151,11 +214,11 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: background-color 0.2s, transform 0.1s;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(221, 107, 32, 0.2);
 }
 
 .btn-primary-admin:hover:not(:disabled) {
-  background-color: #2b6cb0;
+  background-color: #c05621; /* 👈 Naranja un poco más oscuro al pasar el cursor */
 }
 
 .btn-primary-admin:disabled {
@@ -171,7 +234,7 @@
   border-radius: 12px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .usuarios-table {
@@ -181,14 +244,14 @@
 }
 
 .usuarios-table th {
-  background-color: #edf2f7;
-  color: #4a5568;
+  background-color: #fffaf0; /* 👈 Cabecera de tabla con sutil toque naranja */
+  color: #dd6b20;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 14px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid #feebc8;
 }
 
 .usuarios-table td {
@@ -203,7 +266,7 @@
 }
 
 .usuarios-table tr:hover {
-  background-color: #f8fafc;
+  background-color: #fffcf5; /* 👈 Hover de fila suave y cálido */
 }
 
 /* Insignias de Roles y Estados */
@@ -221,8 +284,9 @@
 }
 
 .badge-usuario {
-  background-color: #ebf8ff;
-  color: #2b6cb0;
+  background-color: #fffaf0; /* 👈 Cambiado de azul celeste a naranja clarito */
+  color: #dd6b20;           /* 👈 Texto naranja Foodies */
+  border: 1px solid #feebc8;
 }
 
 .badge-activo {
@@ -359,7 +423,7 @@
 }
 
 .btn-modal-confirmar {
-  background-color: #3182ce;
+  background-color: #dd6b20; /* 👈 Naranja Foodies para confirmar en modales */
   color: #ffffff;
   border: none;
   padding: 0.55rem 1.1rem;
@@ -370,5 +434,5 @@
 }
 
 .btn-modal-confirmar:hover {
-  background-color: #2b6cb0;
+  background-color: #c05621;
 }

@@ -1,290 +1,298 @@
-<!-- Barra de navegación superior unificada -->
-<header class="navbar">
-  <h2>Red Social de Recetas</h2>
-  <nav class="nav">
-    <button
-      class="btn-nav"
-      (click)="irDashboardEstadisticas()"
-      style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600"
-    >
-      📊 Estadísticas
-    </button>
-    <button
-      class="btn-nav active btn-admin"
-      style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600"
-    >
-      ⚙️ Panel Admin
-    </button>
-    <button class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
-    <button class="btn-nav" (click)="irMiPerfil()">Mi Perfil</button>
-    <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
-  </nav>
-</header>
-
-<div class="dashboard-container">
-  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-    <h2>Panel de Administración - Gestión de Usuarios</h2>
-  </div>
-
-  @if (errorMessage()) {
-    <div class="alert-danger">{{ errorMessage() }}</div>
-  }
-
-  <!-- SECCIÓN 1: Formulario de Registro por el Administrador -->
-  <div class="card-formulario">
-    <h3>Registrar Nuevo Usuario</h3>
-    <form [formGroup]="formRegistroAdmin" (ngSubmit)="crearUsuario()">
-      <!-- Nombre -->
-      <div class="form-group">
-        <label for="nombre">Nombre</label>
-        <input
-          id="nombre"
-          type="text"
-          formControlName="nombre"
-          class="form-control"
-          appInputError
-          placeholder="Ej. Juan"
-        />
-        @if (formRegistroAdmin.get('nombre')?.touched && formRegistroAdmin.get('nombre')?.errors) {
-          <small class="error-text">{{ formRegistroAdmin.get('nombre')?.errors | formError }}</small>
-        }
-      </div>
-
-      <!-- Apellido -->
-      <div class="form-group">
-        <label for="apellido">Apellido</label>
-        <input
-          id="apellido"
-          type="text"
-          formControlName="apellido"
-          class="form-control"
-          appInputError
-          placeholder="Ej. Pérez"
-        />
-        @if (formRegistroAdmin.get('apellido')?.touched && formRegistroAdmin.get('apellido')?.errors) {
-          <small class="error-text">{{ formRegistroAdmin.get('apellido')?.errors | formError }}</small>
-        }
-      </div>
-
-      <!-- Correo -->
-      <div class="form-group">
-        <label for="correo">Correo Electrónico</label>
-        <input
-          id="correo"
-          type="email"
-          formControlName="correo"
-          class="form-control"
-          appInputError
-          [appVerificarDuplicado]="'correo'"
-          placeholder="correo@ejemplo.com"
-        />
-        @if (formRegistroAdmin.get('correo')?.touched && formRegistroAdmin.get('correo')?.errors) {
-          <small class="error-text">
-            @if (formRegistroAdmin.get('correo')?.hasError('duplicado')) {
-              ⚠️ Este correo ya se encuentra registrado.
-            } @else {
-              {{ formRegistroAdmin.get('correo')?.errors | formError }}
-            }
-          </small>
-        }
-      </div>
-
-      <!-- Nombre de usuario -->
-      <div class="form-group">
-        <label for="usuario">Nombre de Usuario</label>
-        <input
-          id="usuario"
-          type="text"
-          formControlName="usuario"
-          class="form-control"
-          appInputError
-          [appVerificarDuplicado]="'usuario'"
-          placeholder="usuario123"
-        />
-        @if (formRegistroAdmin.get('usuario')?.touched && formRegistroAdmin.get('usuario')?.errors) {
-          <small class="error-text">
-            @if (formRegistroAdmin.get('usuario')?.hasError('duplicado')) {
-              ⚠️ Este nombre de usuario ya está en uso.
-            } @else {
-              {{ formRegistroAdmin.get('usuario')?.errors | formError }}
-            }
-          </small>
-        }
-      </div>
-
-      <!-- Contraseña -->
-      <div class="form-group">
-        <label for="password">Contraseña</label>
-        <input
-          id="password"
-          type="password"
-          formControlName="password"
-          class="form-control"
-          appInputError
-          placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número"
-        />
-        @if (formRegistroAdmin.get('password')?.touched && formRegistroAdmin.get('password')?.errors) {
-          <small class="error-text">{{ formRegistroAdmin.get('password')?.errors | formError }}</small>
-        }
-      </div>
-
-      <!-- Repetir Contraseña -->
-      <div class="form-group">
-        <label for="repetirPassword">Confirmar Contraseña</label>
-        <input
-          id="repetirPassword"
-          type="password"
-          formControlName="repetirPassword"
-          class="form-control"
-          appInputError
-          placeholder="Repite la contraseña"
-        />
-        @if (
-          formRegistroAdmin.get('repetirPassword')?.touched &&
-          (formRegistroAdmin.get('repetirPassword')?.errors || formRegistroAdmin.errors?.['passwordMismatch'])
-        ) {
-          <small class="error-text">
-            {{
-              formRegistroAdmin.get('repetirPassword')?.errors
-                ? (formRegistroAdmin.get('repetirPassword')?.errors | formError)
-                : 'Las contraseñas no coinciden.'
-            }}
-          </small>
-        }
-      </div>
-
-      <!-- Fecha de Nacimiento -->
-      <div class="form-group">
-        <label for="fechaNacimiento">Fecha de Nacimiento</label>
-        <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento" class="form-control" appInputError />
-        @if (
-          formRegistroAdmin.get('fechaNacimiento')?.touched &&
-          formRegistroAdmin.get('fechaNacimiento')?.errors
-        ) {
-          <small class="error-text">{{
-            formRegistroAdmin.get('fechaNacimiento')?.errors | formError
-          }}</small>
-        }
-      </div>
-
-      <!-- Descripción Breve -->
-      <div class="form-group" style="grid-column: span 2;">
-        <label for="descripcionBreve">Descripción Breve (Opcional)</label>
-        <textarea
-          id="descripcionBreve"
-          formControlName="descripcionBreve"
-          class="form-control"
-          rows="2"
-          placeholder="Cuéntanos algo sobre este usuario..."
-        ></textarea>
-      </div>
-
-      <!-- Grupo de Radio Buttons para elegir el perfil -->
-      <div class="radio-group-container" style="grid-column: span 2;">
-        <span style="font-weight: 600; font-size: 0.875rem; color: #4a5568">Asignar Perfil:</span>
-
-        <label class="radio-option">
-          <input type="radio" formControlName="perfil" value="usuario" />
-          <span>Usuario Regular</span>
-        </label>
-
-        <label class="radio-option">
-          <input type="radio" formControlName="perfil" value="administrador" />
-          <span>Administrador</span>
-        </label>
-      </div>
-
-      <!-- Botón de Envío -->
-      <button type="submit" [disabled]="formRegistroAdmin.invalid" class="btn-primary-admin" style="grid-column: span 2;">
-        Crear Usuario en el Sistema
-      </button>
-    </form>
-  </div>
-
-  <!-- SECCIÓN 2: Listado de Usuarios Registrados -->
-  <h3>Listado de Usuarios Registrados</h3>
-
-  @if (loading()) {
-    <div class="loading-text">Cargando usuarios desde la base de datos...</div>
-  } @else {
-    <div class="table-responsive">
-      <table class="usuarios-table">
-        <thead>
-          <tr>
-            <th>Usuario</th>
-            <th>Correo</th>
-            <th>Perfil</th>
-            <th>Estado</th>
-            <th>Acciones de Moderación</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (u of usuarios(); track u._id) {
-            <tr>
-              <td>
-                <strong>&#64;{{ u.usuario }}</strong>
-                <div style="font-size: 0.8rem; color: #718096">{{ u.nombre }} {{ u.apellido }}</div>
-              </td>
-              <td>{{ u.correo }}</td>
-              <td>
-                @if (u.perfil === 'administrador') {
-                  @if (u._id !== usuarioActualId()) {
-                    <button
-                      (click)="hacerUsuario(u._id)"
-                      class="badge-rol badge-admin"
-                      style="border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
-                      title="Hacer usuario regular"
-                    >
-                      Administrador 🔄
-                    </button>
-                  } @else {
-                    <span class="badge-rol badge-admin">Administrador (Tú)</span>
-                  }
-                } @else {
-                  <button
-                    (click)="hacerAdministrador(u._id)"
-                    class="badge-rol badge-usuario"
-                    style="border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
-                    title="Otorgar permisos de administrador"
-                  >
-                    Usuario 🔄
-                  </button>
-                }
-              </td>
-              <td>
-                @if (u.activo !== false) {
-                  <span class="badge-activo">● Activo</span>
-                } @else {
-                  <span class="badge-inactivo">● Deshabilitado</span>
-                }
-              </td>
-              <td>
-                @if (u._id === usuarioActualId()) {
-                  <span style="font-size: 0.85rem; color: #718096; font-style: italic;">Sesión actual</span>
-                } @else {
-                  @if (u.activo !== false) {
-                    <button (click)="deshabilitarUsuario(u._id)" class="btn-accion-deshabilitar">
-                      Deshabilitar
-                    </button>
-                  } @else {
-                    <button (click)="rehabilitarUsuario(u._id)" class="btn-accion-rehabilitar">
-                      Rehabilitar
-                    </button>
-                  }
-                }
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5" style="text-align: center; padding: 2rem; color: #a0aec0">
-                No hay usuarios registrados actualmente.
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+<div class="dashboard-usuarios">
+  <!-- Barra de navegación superior unificada -->
+  <header class="navbar">
+    <div class="navbar-brand">
+      <img src="assets/icons/Gorrito-chef-192x192.png" alt="Logo Foodies" class="navbar-logo" />
+      <h2>Foodies</h2>
     </div>
-  }
+
+    <nav class="nav">
+      <button
+        class="btn-nav"
+        (click)="irDashboardEstadisticas()"
+      >
+         Estadísticas
+      </button>
+      <button
+        class="btn-nav active btn-admin"
+      >
+         Panel Administrador
+      </button>
+      <button class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
+      <button class="btn-nav" (click)="irMiPerfil()">Mi Perfil</button>
+      <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
+    </nav>
+  </header>
+
+  <!-- Contenido principal centrado (Mismo ancho que el muro y estadísticas) -->
+  <main class="dashboard-content">
+    <div class="dashboard-header">
+      <div>
+        <h2>Panel de Administración - Gestión de Usuarios</h2>
+        <p class="subtitle">Registra nuevos miembros y administra los roles de la comunidad</p>
+      </div>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="alert-danger">{{ errorMessage() }}</div>
+    }
+
+    <!-- SECCIÓN 1: Formulario de Registro por el Administrador -->
+    <div class="card-formulario">
+      <h3>Registrar Nuevo Usuario</h3>
+      <form [formGroup]="formRegistroAdmin" (ngSubmit)="crearUsuario()">
+        <!-- Nombre -->
+        <div class="form-group">
+          <label for="nombre">Nombre</label>
+          <input
+            id="nombre"
+            type="text"
+            formControlName="nombre"
+            class="form-control"
+            appInputError
+            placeholder="Ej. Juan"
+          />
+          @if (formRegistroAdmin.get('nombre')?.touched && formRegistroAdmin.get('nombre')?.errors) {
+            <small class="error-text">{{ formRegistroAdmin.get('nombre')?.errors | formError }}</small>
+          }
+        </div>
+
+        <!-- Apellido -->
+        <div class="form-group">
+          <label for="apellido">Apellido</label>
+          <input
+            id="apellido"
+            type="text"
+            formControlName="apellido"
+            class="form-control"
+            appInputError
+            placeholder="Ej. Pérez"
+          />
+          @if (formRegistroAdmin.get('apellido')?.touched && formRegistroAdmin.get('apellido')?.errors) {
+            <small class="error-text">{{ formRegistroAdmin.get('apellido')?.errors | formError }}</small>
+          }
+        </div>
+
+        <!-- Correo -->
+        <div class="form-group">
+          <label for="correo">Correo Electrónico</label>
+          <input
+            id="correo"
+            type="email"
+            formControlName="correo"
+            class="form-control"
+            appInputError
+            [appVerificarDuplicado]="'correo'"
+            placeholder="correo@ejemplo.com"
+          />
+          @if (formRegistroAdmin.get('correo')?.touched && formRegistroAdmin.get('correo')?.errors) {
+            <small class="error-text">
+              @if (formRegistroAdmin.get('correo')?.hasError('duplicado')) {
+                ⚠️ Este correo ya se encuentra registrado.
+              } @else {
+                {{ formRegistroAdmin.get('correo')?.errors | formError }}
+              }
+            </small>
+          }
+        </div>
+
+        <!-- Nombre de usuario -->
+        <div class="form-group">
+          <label for="usuario">Nombre de Usuario</label>
+          <input
+            id="usuario"
+            type="text"
+            formControlName="usuario"
+            class="form-control"
+            appInputError
+            [appVerificarDuplicado]="'usuario'"
+            placeholder="usuario123"
+          />
+          @if (formRegistroAdmin.get('usuario')?.touched && formRegistroAdmin.get('usuario')?.errors) {
+            <small class="error-text">
+              @if (formRegistroAdmin.get('usuario')?.hasError('duplicado')) {
+                ⚠️ Este nombre de usuario ya está en uso.
+              } @else {
+                {{ formRegistroAdmin.get('usuario')?.errors | formError }}
+              }
+            </small>
+          }
+        </div>
+
+        <!-- Contraseña -->
+        <div class="form-group">
+          <label for="password">Contraseña</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            class="form-control"
+            appInputError
+            placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número"
+          />
+          @if (formRegistroAdmin.get('password')?.touched && formRegistroAdmin.get('password')?.errors) {
+            <small class="error-text">{{ formRegistroAdmin.get('password')?.errors | formError }}</small>
+          }
+        </div>
+
+        <!-- Repetir Contraseña -->
+        <div class="form-group">
+          <label for="repetirPassword">Confirmar Contraseña</label>
+          <input
+            id="repetirPassword"
+            type="password"
+            formControlName="repetirPassword"
+            class="form-control"
+            appInputError
+            placeholder="Repite la contraseña"
+          />
+          @if (
+            formRegistroAdmin.get('repetirPassword')?.touched &&
+            (formRegistroAdmin.get('repetirPassword')?.errors || formRegistroAdmin.errors?.['passwordMismatch'])
+          ) {
+            <small class="error-text">
+              {{
+                formRegistroAdmin.get('repetirPassword')?.errors
+                  ? (formRegistroAdmin.get('repetirPassword')?.errors | formError)
+                  : 'Las contraseñas no coinciden.'
+              }}
+            </small>
+          }
+        </div>
+
+        <!-- Fecha de Nacimiento -->
+        <div class="form-group" style="grid-column: span 2;">
+          <label for="fechaNacimiento">Fecha de Nacimiento</label>
+          <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento" class="form-control" appInputError />
+          @if (
+            formRegistroAdmin.get('fechaNacimiento')?.touched &&
+            formRegistroAdmin.get('fechaNacimiento')?.errors
+          ) {
+            <small class="error-text">{{
+              formRegistroAdmin.get('fechaNacimiento')?.errors | formError
+            }}</small>
+          }
+        </div>
+
+        <!-- Descripción Breve -->
+        <div class="form-group" style="grid-column: span 2;">
+          <label for="descripcionBreve">Descripción Breve (Opcional)</label>
+          <textarea
+            id="descripcionBreve"
+            formControlName="descripcionBreve"
+            class="form-control"
+            rows="2"
+            placeholder="Cuéntanos algo sobre este usuario..."
+          ></textarea>
+        </div>
+
+        <!-- Grupo de Radio Buttons para elegir el perfil -->
+        <div class="radio-group-container">
+          <span style="font-weight: 600; font-size: 0.875rem; color: #4a5568">Asignar Perfil:</span>
+
+          <label class="radio-option">
+            <input type="radio" formControlName="perfil" value="usuario" />
+            <span>Usuario Regular</span>
+          </label>
+
+          <label class="radio-option">
+            <input type="radio" formControlName="perfil" value="administrador" />
+            <span>Administrador</span>
+          </label>
+        </div>
+
+        <!-- Botón de Envío -->
+        <button type="submit" [disabled]="formRegistroAdmin.invalid" class="btn-primary-admin">
+          Crear Usuario en el Sistema
+        </button>
+      </form>
+    </div>
+
+    <!-- SECCIÓN 2: Listado de Usuarios Registrados -->
+    <h3>Listado de Usuarios Registrados</h3>
+
+    @if (loading()) {
+      <div class="loading-text">Cargando usuarios desde la base de datos...</div>
+    } @else {
+      <div class="table-responsive">
+        <table class="usuarios-table">
+          <thead>
+            <tr>
+              <th>Usuario</th>
+              <th>Correo</th>
+              <th>Perfil</th>
+              <th>Estado</th>
+              <th>Acciones de Moderación</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (u of usuarios(); track u._id) {
+              <tr>
+                <td>
+                  <strong>&#64;{{ u.usuario }}</strong>
+                  <div style="font-size: 0.8rem; color: #718096">{{ u.nombre }} {{ u.apellido }}</div>
+                </td>
+                <td>{{ u.correo }}</td>
+                <td>
+                  @if (u.perfil === 'administrador') {
+                    @if (u._id !== usuarioActualId()) {
+                      <button
+                        (click)="hacerUsuario(u._id)"
+                        class="badge-rol badge-admin"
+                        style="border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                        title="Hacer usuario regular"
+                      >
+                        Administrador 🔄
+                      </button>
+                    } @else {
+                      <span class="badge-rol badge-admin">Administrador (Tú)</span>
+                    }
+                  } @else {
+                    <button
+                      (click)="hacerAdministrador(u._id)"
+                      class="badge-rol badge-usuario"
+                      style="border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
+                      title="Otorgar permisos de administrador"
+                    >
+                      Usuario 🔄
+                    </button>
+                  }
+                </td>
+                <td>
+                  @if (u.activo !== false) {
+                    <span class="badge-activo">● Activo</span>
+                  } @else {
+                    <span class="badge-inactivo">● Deshabilitado</span>
+                  }
+                </td>
+                <td>
+                  @if (u._id === usuarioActualId()) {
+                    <span style="font-size: 0.85rem; color: #718096; font-style: italic;">Sesión actual</span>
+                  } @else {
+                    @if (u.activo !== false) {
+                      <button (click)="deshabilitarUsuario(u._id)" class="btn-accion-deshabilitar">
+                        Deshabilitar
+                      </button>
+                    } @else {
+                      <button (click)="rehabilitarUsuario(u._id)" class="btn-accion-rehabilitar">
+                        Rehabilitar
+                      </button>
+                    }
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" style="text-align: center; padding: 2rem; color: #a0aec0">
+                  No hay usuarios registrados actualmente.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </main>
 </div>
 
 <!-- Modal Personalizado (Confirmación e Información) -->

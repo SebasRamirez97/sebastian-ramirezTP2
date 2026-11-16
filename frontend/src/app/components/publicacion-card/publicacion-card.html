@@ -88,9 +88,10 @@
   </div>
 
   <!-- Acciones: Likes -->
+  <!-- Acciones: Likes -->
   <div class="card-footer">
-    <!-- Botones principales alineados (Me gusta y Comentar) -->
-    <div class="acciones-principales" style="display: flex; gap: 10px; margin-bottom: 12px">
+    <!-- Botones principales alineados -->
+    <div class="acciones-principales">
       <button
         class="btn-like"
         [class.liked]="usuarioDioLike"
@@ -100,16 +101,14 @@
         ❤️ {{ publicacion.likes?.length || 0 }} Me gusta
       </button>
 
-      <!-- Cambiamos el (click) para que emita la publicación completa al padre -->
       <button class="btn-comentar-toggle" (click)="abrirModalComentarios.emit(publicacion)">
         💬 Comentarios ({{ publicacion.comentarios?.length || 0 }})
       </button>
     </div>
 
-    <!-- Contenedor que se abre al hacer clic en Comentar -->
+    <!-- Contenedor desplegable de comentarios -->
     <div class="comentarios-container" *ngIf="mostrarCajaComentario()">
-      <!-- Casilla para redactar un nuevo comentario con su botón Publicar -->
-      <div class="input-comentario-box" style="display: flex; gap: 8px; margin-bottom: 15px">
+      <div class="input-comentario-box">
         <input
           type="text"
           [value]="nuevoComentario()"
@@ -117,7 +116,6 @@
           placeholder="Escribe un comentario..."
           [disabled]="cargandoComentario()"
           (keyup.enter)="enviarComentario()"
-          style="flex: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc"
         />
         <button
           class="btn-publicar"
@@ -128,7 +126,7 @@
         </button>
       </div>
 
-      <!-- Listado de comentarios por debajo -->
+      <!-- Listado de comentarios -->
       <div
         class="lista-comentarios"
         *ngIf="publicacion.comentarios && publicacion.comentarios.length > 0"
@@ -136,22 +134,16 @@
         <div
           *ngFor="let com of publicacion.comentarios"
           class="comentario-item"
-          style="padding: 8px 0; border-bottom: 1px solid #f0f0f0"
         >
-          <div
-            class="comentario-header"
-            style="display: flex; justify-content: space-between; font-size: 0.85rem; color: #666"
-          >
-            <!-- Nombre y Apellido -->
+          <div class="comentario-header">
             <span class="comentario-autor">
               <strong>{{ com.autor?.nombre }} {{ com.autor?.apellido }}</strong>
             </span>
-            <!-- Fecha y Hora -->
             <span class="comentario-fecha">
               {{ com.fecha | fechaArgentina }}
             </span>
           </div>
-          <div class="comentario-texto" style="margin-top: 4px; font-size: 0.95rem">
+          <div class="comentario-texto">
             {{ com.texto }}
           </div>
         </div>

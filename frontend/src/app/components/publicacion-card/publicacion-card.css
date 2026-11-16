@@ -1,23 +1,53 @@
+/* ==========================================
+   ESTILOS DE LA TARJETA DE PUBLICACIÓN (FOODIES)
+   ========================================== */
 .card-publicacion {
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 24px;
   overflow: hidden;
-  border: 1px solid #eaeaea;
-  transition: transform 0.2s ease;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card-publicacion:hover {
   transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09);
 }
 
+/* --- CABECERA --- */
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 14px 18px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.autor-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.autor-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fed7d7; /* Sutil marco cálido */
+}
+
+.avatar-default {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #edf2f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
 }
 
 .autor-info {
@@ -27,106 +57,119 @@
 
 .autor-nombre {
   font-weight: 600;
-  color: #333;
+  color: #1a202c;
   font-size: 0.95rem;
+}
+
+.autor-usuario {
+  font-size: 0.8rem;
+  color: #718096;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .fecha {
   font-size: 0.75rem;
-  color: #888;
+  color: #a0aec0;
 }
 
 .btn-eliminar {
   background: transparent;
   border: none;
   cursor: pointer;
-  font-size: 1.1rem;
-  padding: 4px;
+  font-size: 1rem;
+  padding: 6px;
   border-radius: 50%;
   transition: background 0.2s;
 }
 
 .btn-eliminar:hover {
-  background: #ffebee;
+  background: #fff5f5;
 }
 
+/* --- CUERPO --- */
 .card-body {
-  padding: 16px 18px;
+  padding: 18px;
 }
 
 .titulo {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #222;
+  color: #2d3748;
   margin-bottom: 12px;
+  letter-spacing: -0.3px;
 }
 
 .imagen-container {
   width: 100%;
-  max-height: 280px;         /* 👈 Reducimos la altura máxima para que sea más compacta (puedes probar con 250px o 300px) */
-  background-color: #f8f9fa; /* Fondo sutil para rellenar espacios si la imagen es muy vertical u horizontal */
+  max-height: 320px;
+  background-color: #f7fafc;
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  border-radius: 8px;
-  margin-bottom: 12px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  border: 1px solid #edf2f7;
 }
 
 .imagen-container img {
   width: 100%;
-  max-height: 280px;
-  object-fit: contain;       /* 👈 Clave: Muestra la foto entera de manera íntegra, sin recortar ningún borde */
+  max-height: 320px;
+  object-fit: contain;
   display: block;
 }
 
 .tiempo-prep {
   font-size: 0.85rem;
-  color: #e65100;
-  background: #fff3e0;
-  padding: 6px 10px;
-  border-radius: 6px;
+  color: #dd6b20; /* Naranja corporativo Foodies */
+  background: #fffaf0; /* Fondo crema/naranja muy suave */
+  border: 1px solid #feebc8;
+  padding: 6px 12px;
+  border-radius: 8px;
   display: inline-block;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  font-weight: 500;
 }
 
-/* --- WRAPPER PARA COLAPSAR SOLO LA DESCRIPCIÓN/RECETA --- */
+/* --- DESCRIPCIÓN Y EXPANSIÓN --- */
 .descripcion-wrapper {
-  max-height: 90px; /* 👈 Altura máxima inicial para mostrar solo las primeras líneas */
+  max-height: 85px;
   overflow: hidden;
   position: relative;
   transition: max-height 0.35s ease-in-out;
 }
 
-/* Efecto de degradado al final del texto cuando está contraído */
 .descripcion-wrapper:not(.expandida):after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 45px;
+  height: 40px;
   background: linear-gradient(transparent, #ffffff);
   pointer-events: none;
 }
 
-/* Cuando se expande, muestra toda la receta */
 .descripcion-wrapper.expandida {
-  max-height: 2000px; /* Permite desplegar recetas largas de forma fluida */
+  max-height: 2000px;
 }
 
 .descripcion {
   font-size: 0.95rem;
-  color: #555;
-  line-height: 1.5;
+  color: #4a5568;
+  line-height: 1.6;
   margin: 0;
-  white-space: pre-line; /* Respeta los saltos de línea de la receta */
+  white-space: pre-line;
   word-break: break-word;
 }
 
-/* Botón de expansión de la descripción */
 .card-expand-footer {
-  padding-top: 8px;
+  padding-top: 6px;
   background: #ffffff;
   text-align: center;
 }
@@ -134,7 +177,7 @@
 .btn-ver-mas {
   background: transparent;
   border: none;
-  color: #3182ce;
+  color: #dd6b20; /* Coherente con Foodies */
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
@@ -143,25 +186,32 @@
 }
 
 .btn-ver-mas:hover {
-  color: #2b6cb0;
+  color: #c05621;
   text-decoration: underline;
 }
 
+/* --- PIE DE TARJETA (ACCIONES Y COMENTARIOS) --- */
 .card-footer {
-  padding: 12px 18px;
-  background: #fafafa;
-  border-top: 1px solid #f0f0f0;
+  padding: 14px 18px;
+  background: #f8fafc;
+  border-top: 1px solid #edf2f7;
+}
+
+.acciones-principales {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0;
 }
 
 .btn-like {
-  background: #f1f3f5;
-  border: 1px solid #dcedc8;
-  color: #495057;
-  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  padding: 8px 16px;
   border-radius: 20px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   transition: all 0.2s;
   display: flex;
   align-items: center;
@@ -169,11 +219,119 @@
 }
 
 .btn-like:hover {
-  background: #e9ecef;
+  background: #edf2f7;
+  border-color: #cbd5e0;
 }
 
 .btn-like.liked {
-  background: #ffebee;
-  border-color: #ffcdd2;
-  color: #d32f2f;
+  background: #fff5f5;
+  border-color: #fed7d7;
+  color: #e53e3e;
+}
+
+.btn-comentar-toggle {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  color: #4a5568;
+  padding: 8px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+}
+
+.btn-comentar-toggle:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+}
+
+/* --- SECCIÓN DE COMENTARIOS DESPLEGABLES (EN LA TARJETA) --- */
+.comentarios-container {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #edf2f7;
+  animation: fadeIn 0.25s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.input-comentario-box {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.input-comentario-box input {
+  flex: 1;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e0;
+  font-size: 0.9rem;
+  outline: none;
+  background: #ffffff;
+  transition: border-color 0.2s;
+}
+
+.input-comentario-box input:focus {
+  border-color: #dd6b20;
+  box-shadow: 0 0 0 3px rgba(221, 107, 32, 0.12);
+}
+
+.btn-publicar {
+  background: #dd6b20;
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-publicar:hover:not(:disabled) {
+  background: #c05621;
+}
+
+.btn-publicar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.lista-comentarios {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.comentario-item {
+  padding: 8px 12px;
+  background: #ffffff;
+  border: 1px solid #edf2f7;
+  border-radius: 8px;
+}
+
+.comentario-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #718096;
+  margin-bottom: 2px;
+}
+
+.comentario-autor {
+  color: #2d3748;
+}
+
+.comentario-texto {
+  font-size: 0.9rem;
+  color: #4a5568;
+  margin-top: 2px;
 }
