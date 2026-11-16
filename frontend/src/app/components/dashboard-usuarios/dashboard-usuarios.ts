@@ -7,18 +7,19 @@ import { environment } from '../../../environments/environment';
 import { UserService } from '../../services/user.service';
 import { VerificarDuplicadoDirective } from '../../directives/verficar-duplicado.directive';
 import { InputErrorDirective } from '../../directives/input-error.directive';
+import { matchPasswordValidator } from '../../validators/match-password.validator'; // 👈 Importar validador de contraseñas
 
 @Component({
   selector: 'app-dashboard-usuarios',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, VerificarDuplicadoDirective,InputErrorDirective ],
+  imports: [CommonModule, ReactiveFormsModule, VerificarDuplicadoDirective, InputErrorDirective],
   templateUrl: './dashboard-usuarios.html',
   styleUrls: ['./dashboard-usuarios.css']
 })
 export class DashboardUsuariosComponent implements OnInit {
   private http = inject(HttpClient);
   private fb = inject(FormBuilder);
-  private API_URL = `${environment.apiUrl}/usuarios`; // 👈 Correcto: apunta a /usuarios
+  private API_URL = `${environment.apiUrl}/usuarios`;
   usuarioActualId = signal<string>('');
   private router = inject(Router);
   private userService = inject(UserService);
@@ -27,18 +28,23 @@ export class DashboardUsuariosComponent implements OnInit {
   loading = signal<boolean>(true);
   errorMessage = signal<string>('');
 
-  
+  // Patrón idéntico a registro.ts (Mínimo una mayúscula y un número)
+  private passwordPattern = /^(?=.*[A-Z])(?=.*\d)/;
+
   formRegistroAdmin: FormGroup;
 
   constructor() {
     this.formRegistroAdmin = this.fb.group({
-      nombre: ['', Validators.required],
-      apellido: ['', Validators.required],
+      nombre: ['', [Validators.required]],
+      apellido: ['', [Validators.required]],
       correo: ['', [Validators.required, Validators.email]],
-      usuario: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      usuario: ['', [Validators.required]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(this.passwordPattern)]],
+      repetirPassword: ['', [Validators.required]],
+      fechaNacimiento: ['', [Validators.required]],
+      descripcionBreve: [''],
       perfil: ['usuario', Validators.required]
-    });
+    }, { validators: matchPasswordValidator }); // 👈 Aplicamos la validación cruzada de contraseñas
   }
 
   ngOnInit(): void {
@@ -71,7 +77,10 @@ export class DashboardUsuariosComponent implements OnInit {
   }
 
   crearUsuario() {
-    if (this.formRegistroAdmin.invalid) return;
+    if (this.formRegistroAdmin.invalid) {
+      this.formRegistroAdmin.markAllAsTouched(); // 👈 Fuerza el despliegue de errores si faltan campos
+      return;
+    }
 
     this.http.post(this.API_URL, this.formRegistroAdmin.value, { withCredentials: true }).subscribe({
       next: () => {
@@ -84,6 +93,7 @@ export class DashboardUsuariosComponent implements OnInit {
       }
     });
   }
+
   hacerAdministrador(id: string) {
     if (!confirm('¿Estás seguro de otorgar permisos de Administrador a este usuario?')) return;
 
@@ -112,6 +122,7 @@ export class DashboardUsuariosComponent implements OnInit {
       }
     });
   }
+
   deshabilitarUsuario(id: string) {
     if (!confirm('¿Estás seguro de deshabilitar a este usuario? No podrá iniciar sesión.')) return;
 
@@ -134,7 +145,7 @@ export class DashboardUsuariosComponent implements OnInit {
   }
 
   irMiPerfil() {
-    this.router.navigate(['/mi-perfil']); // Ajusta la ruta de tu perfil si es distinta
+    this.router.navigate(['/mi-perfil']);
   }
 
   irDashboardEstadisticas() {
@@ -142,18 +153,16 @@ export class DashboardUsuariosComponent implements OnInit {
   }
 
   cerrarSesion() {
-  // Limpieza inmediata en el cliente por seguridad
-  localStorage.removeItem('token');
-  localStorage.clear();
+    localStorage.removeItem('token');
+    localStorage.clear();
 
-  this.userService.cerrarSesion().subscribe({
-    next: () => {
-      this.router.navigate(['/login']);
-    },
-    error: () => {
-      // Aunque el backend falle, nos aseguramos de mandar al login con el almacenamiento limpio
-      this.router.navigate(['/login']);
-    }
-  });
-}
+    this.userService.cerrarSesion().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.router.navigate(['/login']);
+      }
+    });
+  }
 }
