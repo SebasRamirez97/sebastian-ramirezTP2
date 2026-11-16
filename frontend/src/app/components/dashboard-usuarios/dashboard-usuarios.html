@@ -9,7 +9,6 @@
     >
       📊 Estadísticas
     </button>
-    <!-- El Panel Admin está activo porque nos encontramos aquí -->
     <button
       class="btn-nav active btn-admin"
       style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600"
@@ -21,16 +20,9 @@
     <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
   </nav>
 </header>
+
 <div class="dashboard-container">
-  <!-- Cabecera de la sección -->
-  <div
-    style="
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-    "
-  >
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
     <h2>Panel de Administración - Gestión de Usuarios</h2>
   </div>
 
@@ -240,13 +232,7 @@
                     <button
                       (click)="hacerUsuario(u._id)"
                       class="badge-rol badge-admin"
-                      style="
-                        border: none;
-                        cursor: pointer;
-                        display: inline-flex;
-                        align-items: center;
-                        gap: 4px;
-                      "
+                      style="border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
                       title="Hacer usuario regular"
                     >
                       Administrador 🔄
@@ -258,13 +244,7 @@
                   <button
                     (click)="hacerAdministrador(u._id)"
                     class="badge-rol badge-usuario"
-                    style="
-                      border: none;
-                      cursor: pointer;
-                      display: inline-flex;
-                      align-items: center;
-                      gap: 4px;
-                    "
+                    style="border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;"
                     title="Otorgar permisos de administrador"
                   >
                     Usuario 🔄
@@ -279,14 +259,18 @@
                 }
               </td>
               <td>
-                @if (u.activo !== false) {
-                  <button (click)="deshabilitarUsuario(u._id)" class="btn-accion-deshabilitar">
-                    Deshabilitar
-                  </button>
+                @if (u._id === usuarioActualId()) {
+                  <span style="font-size: 0.85rem; color: #718096; font-style: italic;">Sesión actual</span>
                 } @else {
-                  <button (click)="rehabilitarUsuario(u._id)" class="btn-accion-rehabilitar">
-                    Rehabilitar
-                  </button>
+                  @if (u.activo !== false) {
+                    <button (click)="deshabilitarUsuario(u._id)" class="btn-accion-deshabilitar">
+                      Deshabilitar
+                    </button>
+                  } @else {
+                    <button (click)="rehabilitarUsuario(u._id)" class="btn-accion-rehabilitar">
+                      Rehabilitar
+                    </button>
+                  }
                 }
               </td>
             </tr>
@@ -302,3 +286,25 @@
     </div>
   }
 </div>
+
+<!-- Modal Personalizado (Confirmación e Información) -->
+@if (modalVisible()) {
+  <div class="modal-overlay" (click)="cerrarModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ modalTitulo() }}</h3>
+      </div>
+      <div class="modal-body">
+        <p>{{ modalMensaje() }}</p>
+      </div>
+      <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+        @if (modalEsConfirmacion()) {
+          <button type="button" class="btn-modal-cancelar" (click)="cerrarModal()">Cancelar</button>
+          <button type="button" class="btn-modal-confirmar" (click)="confirmarAccionModal()">Confirmar</button>
+        } @else {
+          <button type="button" class="btn-modal-confirmar" (click)="cerrarModal()">Aceptar</button>
+        }
+      </div>
+    </div>
+  </div>
+}
