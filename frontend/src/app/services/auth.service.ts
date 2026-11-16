@@ -33,4 +33,3 @@ export class AuthService {
     return this.http.get<{ disponible: boolean }>(`${this.API_URL}/verificar`, { params });
   }
 }
-  // 👇 NUEVO MÉTODO: Valida si el token actual es correcto consultando el perfil protegido
