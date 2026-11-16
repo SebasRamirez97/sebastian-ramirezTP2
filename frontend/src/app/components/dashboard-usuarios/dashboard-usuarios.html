@@ -49,53 +49,153 @@
   <div class="card-formulario">
     <h3>Registrar Nuevo Usuario</h3>
     <form [formGroup]="formRegistroAdmin" (ngSubmit)="crearUsuario()">
-      <div>
-        <label>Nombre</label>
-        <input type="text" formControlName="nombre" class="form-control" placeholder="Ej. Juan" />
+      <!-- Nombre -->
+      <div class="form-group">
+        <label for="nombre">Nombre</label>
+        <input
+          id="nombre"
+          type="text"
+          formControlName="nombre"
+          class="form-control"
+          appInputError
+          placeholder="Ej. Juan"
+        />
+        @if (formRegistroAdmin.get('nombre')?.touched && formRegistroAdmin.get('nombre')?.errors) {
+          <small class="error-text">{{ formRegistroAdmin.get('nombre')?.errors | formError }}</small>
+        }
       </div>
 
-      <div>
-        <label>Apellido</label>
+      <!-- Apellido -->
+      <div class="form-group">
+        <label for="apellido">Apellido</label>
         <input
+          id="apellido"
           type="text"
           formControlName="apellido"
           class="form-control"
+          appInputError
           placeholder="Ej. Pérez"
         />
+        @if (formRegistroAdmin.get('apellido')?.touched && formRegistroAdmin.get('apellido')?.errors) {
+          <small class="error-text">{{ formRegistroAdmin.get('apellido')?.errors | formError }}</small>
+        }
       </div>
 
-      <div>
-        <label>Correo Electrónico</label>
+      <!-- Correo -->
+      <div class="form-group">
+        <label for="correo">Correo Electrónico</label>
         <input
+          id="correo"
           type="email"
           formControlName="correo"
           class="form-control"
+          appInputError
+          [appVerificarDuplicado]="'correo'"
           placeholder="correo@ejemplo.com"
         />
+        @if (formRegistroAdmin.get('correo')?.touched && formRegistroAdmin.get('correo')?.errors) {
+          <small class="error-text">
+            @if (formRegistroAdmin.get('correo')?.hasError('duplicado')) {
+              ⚠️ Este correo ya se encuentra registrado.
+            } @else {
+              {{ formRegistroAdmin.get('correo')?.errors | formError }}
+            }
+          </small>
+        }
       </div>
 
-      <div>
-        <label>Nombre de Usuario</label>
+      <!-- Nombre de usuario -->
+      <div class="form-group">
+        <label for="usuario">Nombre de Usuario</label>
         <input
+          id="usuario"
           type="text"
           formControlName="usuario"
           class="form-control"
+          appInputError
+          [appVerificarDuplicado]="'usuario'"
           placeholder="usuario123"
         />
+        @if (formRegistroAdmin.get('usuario')?.touched && formRegistroAdmin.get('usuario')?.errors) {
+          <small class="error-text">
+            @if (formRegistroAdmin.get('usuario')?.hasError('duplicado')) {
+              ⚠️ Este nombre de usuario ya está en uso.
+            } @else {
+              {{ formRegistroAdmin.get('usuario')?.errors | formError }}
+            }
+          </small>
+        }
       </div>
 
-      <div style="grid-column: span 2">
-        <label>Contraseña</label>
+      <!-- Contraseña -->
+      <div class="form-group">
+        <label for="password">Contraseña</label>
         <input
+          id="password"
           type="password"
           formControlName="password"
           class="form-control"
-          placeholder="Mínimo 6 caracteres"
+          appInputError
+          placeholder="Mínimo 8 caracteres, 1 mayúscula y 1 número"
         />
+        @if (formRegistroAdmin.get('password')?.touched && formRegistroAdmin.get('password')?.errors) {
+          <small class="error-text">{{ formRegistroAdmin.get('password')?.errors | formError }}</small>
+        }
       </div>
 
-      <!-- 👇 Grupo de Radio Buttons estilizados para elegir el perfil -->
-      <div class="radio-group-container">
+      <!-- Repetir Contraseña -->
+      <div class="form-group">
+        <label for="repetirPassword">Confirmar Contraseña</label>
+        <input
+          id="repetirPassword"
+          type="password"
+          formControlName="repetirPassword"
+          class="form-control"
+          appInputError
+          placeholder="Repite la contraseña"
+        />
+        @if (
+          formRegistroAdmin.get('repetirPassword')?.touched &&
+          (formRegistroAdmin.get('repetirPassword')?.errors || formRegistroAdmin.errors?.['passwordMismatch'])
+        ) {
+          <small class="error-text">
+            {{
+              formRegistroAdmin.get('repetirPassword')?.errors
+                ? (formRegistroAdmin.get('repetirPassword')?.errors | formError)
+                : 'Las contraseñas no coinciden.'
+            }}
+          </small>
+        }
+      </div>
+
+      <!-- Fecha de Nacimiento -->
+      <div class="form-group">
+        <label for="fechaNacimiento">Fecha de Nacimiento</label>
+        <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento" class="form-control" appInputError />
+        @if (
+          formRegistroAdmin.get('fechaNacimiento')?.touched &&
+          formRegistroAdmin.get('fechaNacimiento')?.errors
+        ) {
+          <small class="error-text">{{
+            formRegistroAdmin.get('fechaNacimiento')?.errors | formError
+          }}</small>
+        }
+      </div>
+
+      <!-- Descripción Breve -->
+      <div class="form-group" style="grid-column: span 2;">
+        <label for="descripcionBreve">Descripción Breve (Opcional)</label>
+        <textarea
+          id="descripcionBreve"
+          formControlName="descripcionBreve"
+          class="form-control"
+          rows="2"
+          placeholder="Cuéntanos algo sobre este usuario..."
+        ></textarea>
+      </div>
+
+      <!-- Grupo de Radio Buttons para elegir el perfil -->
+      <div class="radio-group-container" style="grid-column: span 2;">
         <span style="font-weight: 600; font-size: 0.875rem; color: #4a5568">Asignar Perfil:</span>
 
         <label class="radio-option">
@@ -110,7 +210,7 @@
       </div>
 
       <!-- Botón de Envío -->
-      <button type="submit" [disabled]="formRegistroAdmin.invalid" class="btn-primary-admin">
+      <button type="submit" [disabled]="formRegistroAdmin.invalid" class="btn-primary-admin" style="grid-column: span 2;">
         Crear Usuario en el Sistema
       </button>
     </form>
@@ -143,7 +243,6 @@
               <td>{{ u.correo }}</td>
               <td>
                 @if (u.perfil === 'administrador') {
-                  <!-- Si es administrador, permitimos quitarle el rol (hacer usuario) SÓLO SI NO ES EL USUARIO ACTUAL -->
                   @if (u._id !== usuarioActualId()) {
                     <button
                       (click)="hacerUsuario(u._id)"
@@ -160,11 +259,9 @@
                       Administrador 🔄
                     </button>
                   } @else {
-                    <!-- Si es el admin actual, solo se muestra el badge estático sin opción de auto-quitarse -->
                     <span class="badge-rol badge-admin">Administrador (Tú)</span>
                   }
                 } @else {
-                  <!-- Si es usuario regular, permitimos ascenderlo a administrador -->
                   <button
                     (click)="hacerAdministrador(u._id)"
                     class="badge-rol badge-usuario"
