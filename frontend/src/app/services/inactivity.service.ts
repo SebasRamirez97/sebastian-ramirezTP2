@@ -1,14 +1,14 @@
 // src/app/services/inactivity.service.ts
 import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from './auth.service';
+import { UserService } from './user.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class InactivityService {
   private router = inject(Router);
-  private authService = inject(AuthService);
+  private userService = inject(UserService);
 
   // Configuramos los tiempos:
   private readonly INACTIVITY_LIMIT = 25* 1000; 
@@ -86,7 +86,7 @@ export class InactivityService {
     console.warn('Sesión cerrada por inactividad.');
 
     // Llamamos al método que ya borra el localStorage y avisa al backend
-    this.authService.cerrarSesion().subscribe({
+    this.userService.cerrarSesion().subscribe({
       next: () => this.router.navigate(['/login']),
       error: () => this.router.navigate(['/login']) // Redirige incluso si falla la petición HTTP
     });
