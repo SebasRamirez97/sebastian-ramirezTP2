@@ -34,8 +34,9 @@ export class EstadisticasService {
 
   async publicacionesPorUsuario(lapso: string) {
     const rango = this.obtenerRangoFechas(lapso);
+    
+    // Filtramos opcionalmente por fecha si hay rango
     const matchStage: any = {};
-
     if (rango) {
       matchStage.createdAt = { $gte: rango.fechaInicio, $lte: rango.fechaFin };
     }
@@ -44,30 +45,45 @@ export class EstadisticasService {
       { $match: matchStage },
       {
         $group: {
-          _id: '$usuario',
+          // 👈 Usamos 'autor' en lugar de 'usuario' y convertimos a ObjectId por seguridad
+          _id: {
+            $cond: {
+              if: { $eq: [{ $type: '$autor' }, 'string'] },
+              then: { $toObjectId: '$autor' },
+              else: '$autor',
+            },
+          },
           totalPublicaciones: { $sum: 1 },
         },
       },
       {
         $lookup: {
-          from: 'usuarios',
+          from: 'usuarios', // Asegúrate de que tu colección de usuarios en Mongo se llame 'usuarios'
           localField: '_id',
           foreignField: '_id',
           as: 'usuarioInfo',
         },
       },
-      { $unwind: '$usuarioInfo' },
+      {
+        $unwind: {
+          path: '$usuarioInfo',
+          preserveNullAndEmptyArrays: true, // Evita que se pierdan datos si no encuentra el usuario
+        },
+      },
       {
         $project: {
-          usuario: '$usuarioInfo.usuario', // O '$usuarioInfo.correo'
+          // Buscamos el nombre de usuario o correo dentro del documento relacionado
+          usuario: { 
+            $ifNull: ['$usuarioInfo.usuario', { $ifNull: ['$usuarioInfo.correo', 'Anónimo'] }] 
+          },
           totalPublicaciones: 1,
         },
       },
+      { $sort: { totalPublicaciones: -1 } },
     ]);
 
-    // Transformar a { labels, valores } para Chart.js
     return {
-      labels: resultado.map((item: any) => `@${item.usuario || 'usuario'}`),
+      labels: resultado.map((item: any) => `@${item.usuario}`),
       valores: resultado.map((item: any) => item.totalPublicaciones),
     };
   }
@@ -77,7 +93,8 @@ export class EstadisticasService {
     const matchDateStage: any = {};
 
     if (rango) {
-      matchDateStage['comentarios.createdAt'] = { $gte: rango.fechaInicio, $lte: rango.fechaFin };
+      // 👈 Cambiamos a 'comentarios.fecha' según tu estructura real
+      matchDateStage['comentarios.fecha'] = { $gte: rango.fechaInicio, $lte: rango.fechaFin };
     }
 
     const resultado = await this.publicacionModel.aggregate([
@@ -86,7 +103,8 @@ export class EstadisticasService {
       {
         $group: {
           _id: {
-            $dateToString: { format: '%Y-%m-%d', date: '$comentarios.createdAt' },
+            // 👈 Usamos '$comentarios.fecha' para formatear la fecha del gráfico
+            $dateToString: { format: '%Y-%m-%d', date: '$comentarios.fecha' },
           },
           totalComentarios: { $sum: 1 },
         },

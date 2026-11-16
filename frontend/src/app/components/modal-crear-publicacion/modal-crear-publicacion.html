@@ -1,5 +1,5 @@
 <!-- 1. Barra estilo Facebook que aparece fija en el muro -->
-<div class="feed-trigger-card" (click)="abrirModal()">
+<div appResaltarHover appSombraHover class="feed-trigger-card" (click)="abrirModal()">
   <div class="trigger-content">
     
     <!-- Condicional para mostrar la imagen de perfil o el avatar predeterminado -->
@@ -40,14 +40,14 @@
 
         <!-- NUEVO: Campo para el tiempo de preparación -->
         <div class="form-group">
-          <label for="tiempoPreparacion">Tiempo de preparación</label>
+          <label for="tiempoPreparacion">Tiempo de preparación (en minutos) </label>
           <input 
             type="text" 
             id="tiempoPreparacion"
             [ngModel]="tiempoPreparacion()" 
             (ngModelChange)="tiempoPreparacion.set($event)"
             name="tiempoPreparacion" 
-            placeholder="Ej: 30 minutos" 
+            placeholder="Ej: 30" 
           />
         </div>
 

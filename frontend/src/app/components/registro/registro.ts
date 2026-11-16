@@ -7,7 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { InputErrorDirective } from '../../directives/input-error.directive';
 import { FormErrorPipe } from '../../pipes/form-error.pipe';
 import { matchPasswordValidator } from '../../validators/match-password.validator';
-import { VerificarDuplicadoDirective } from '../../directives/verficiar-duplicado.directive'; // 👈 Importar directiva
+import { VerificarDuplicadoDirective } from '../../directives/verficar-duplicado.directive'; // 👈 Importar directiva
 
 @Component({
   selector: 'app-registro',

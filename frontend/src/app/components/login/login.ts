@@ -1,5 +1,5 @@
 // src/app/pages/login/login.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -21,13 +21,14 @@ export class Login {
   private router = inject(Router);
   private inactivityService = inject(InactivityService);
 
-  showModal: boolean = false;
-  modalMessage: string = '';
-  loading: boolean = false;
+  // Convertimos el estado local a Signals
+  loading = signal<boolean>(false);
+  showModal = signal<boolean>(false);
+  modalMessage = signal<string>('');
 
   loginForm: FormGroup = this.fb.group({
     identificador: ['', [Validators.required]],
-    password: ['', [Validators.required, ]],
+    password: ['', [Validators.required]],
   });
 
   onSubmit() {
@@ -36,34 +37,33 @@ export class Login {
       return;
     }
 
-    this.loading = true;
+    this.loading.set(true);
     const credentials = this.loginForm.value;
 
     this.authService.login(credentials).subscribe({
       next: (response) => {
-        this.loading = false;
+        this.loading.set(false);
         localStorage.setItem('token', response.token);
         this.router.navigate(['/publicaciones']);
       },
       error: (err) => {
-        this.loading = false;
+        this.loading.set(false);
         console.error('Error al iniciar sesión', err);
 
-        // Activamos el modal con el mensaje correspondiente
+        let mensaje = 'Ocurrió un error al intentar conectar con el servidor. Inténtalo más tarde.';
         if (err.status === 401) {
-          this.modalMessage = 'Usuario o contraseña incorrectos. Por favor, verifíqualos.';
+          mensaje = 'Usuario o contraseña incorrectos. Por favor, verifíqualos.';
         } else if (err.error?.message) {
-          this.modalMessage = err.error.message;
-        } else {
-          this.modalMessage = 'Ocurrió un error al intentar conectar con el servidor. Inténtalo más tarde.';
+          mensaje = err.error.message;
         }
         
-        this.showModal = true;
+        this.modalMessage.set(mensaje);
+        this.showModal.set(true);
       },
     });
   }
 
   closeModal() {
-    this.showModal = false;
+    this.showModal.set(false);
   }
 }

@@ -5,16 +5,21 @@ import { Registro } from './components/registro/registro';
 import { Publicaciones } from './components/publicaciones/publicaciones';
 import { MiPerfil } from './components/mi-perfil/mi-perfil';
 import { DashboardUsuariosComponent } from './components/dashboard-usuarios/dashboard-usuarios';
-import { DashboardEstadisticasComponent } from './components/dashboard-estadisticas/dashboard-estadisticas'; // 👈 Importamos el componente
+import { DashboardEstadisticasComponent } from './components/dashboard-estadisticas/dashboard-estadisticas';
+import { StartupLoadingComponent } from './components/startup-loading/startup-loading';
+import { authGuard } from './guards/auth-guard'; // 👈 Importar el guard
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', component: StartupLoadingComponent },
   { path: 'login', component: Login },
   { path: 'registro', component: Registro },
-  { path: 'publicaciones', component: Publicaciones },
-  { path: 'publicaciones/:id', component: Publicaciones },
-  { path: 'mi-perfil', component: MiPerfil },
-  { path: 'dashboard/usuarios', component: DashboardUsuariosComponent },
-  { path: 'dashboard/estadisticas', component: DashboardEstadisticasComponent }, // 👈 Añadimos la ruta de estadísticas
+  
+  // 👇 Rutas protegidas con el Guard de Angular
+  { path: 'publicaciones', component: Publicaciones, canActivate: [authGuard] },
+  { path: 'publicaciones/:id', component: Publicaciones, canActivate: [authGuard] },
+  { path: 'mi-perfil', component: MiPerfil, canActivate: [authGuard] },
+  { path: 'dashboard/usuarios', component: DashboardUsuariosComponent, canActivate: [authGuard] },
+  { path: 'dashboard/estadisticas', component: DashboardEstadisticasComponent, canActivate: [authGuard] },
+  
   { path: '**', redirectTo: 'login' }, 
 ];

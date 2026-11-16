@@ -6,11 +6,15 @@ import { catchError, throwError } from 'rxjs';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
+  
+  // Si la petición es de autenticación (login/registro), no aplicamos la lógica de 401 global
+  if (req.url.includes('/autenticacion/')) {
+    return next(req);
+  }
+
   const token = localStorage.getItem('token');
-
-  console.log(`Interceptando petición a [${req.url}] - Token encontrado:`, token ? 'SÍ' : 'NO');
-
   let authReq = req;
+  
   if (token) {
     authReq = req.clone({
       setHeaders: {

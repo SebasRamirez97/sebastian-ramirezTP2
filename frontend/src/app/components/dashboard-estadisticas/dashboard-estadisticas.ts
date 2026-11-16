@@ -1,19 +1,28 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, inject, signal } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  ElementRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { EstadisticasService } from '../../services/estadisticas.service';
 import { UserService } from '../../services/user.service';
+import { FechaArgentinaPipe } from '../../pipes/fecha-argentina-pipe';
 
 Chart.register(...registerables); // Registramos los componentes de Chart.js
 
 @Component({
   selector: 'app-dashboard-estadisticas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, FechaArgentinaPipe],
   templateUrl: './dashboard-estadisticas.html',
-  styleUrls: ['./dashboard-estadisticas.css']
+  styleUrls: ['./dashboard-estadisticas.css'],
 })
 export class DashboardEstadisticasComponent implements OnInit, AfterViewInit {
   private estadisticasService = inject(EstadisticasService);
@@ -33,6 +42,8 @@ export class DashboardEstadisticasComponent implements OnInit, AfterViewInit {
   private comTiempoChartInstance: any;
   private comPubChartInstance: any;
 
+  private fechaPipe = new FechaArgentinaPipe();
+
   ngOnInit(): void {}
 
   ngAfterViewInit(): void {
@@ -48,17 +59,17 @@ export class DashboardEstadisticasComponent implements OnInit, AfterViewInit {
     const lapso = this.lapsoSeleccionado();
 
     // 1. Gráfico de Publicaciones por Usuario (Barras)
-    this.estadisticasService.obtenerPublicacionesPorUsuario(lapso).subscribe(data => {
+    this.estadisticasService.obtenerPublicacionesPorUsuario(lapso).subscribe((data) => {
       this.renderizarGraficoPublicaciones(data);
     });
 
     // 2. Gráfico de Comentarios en el tiempo (Líneas)
-    this.estadisticasService.obtenerComentariosEnTiempo(lapso).subscribe(data => {
+    this.estadisticasService.obtenerComentariosEnTiempo(lapso).subscribe((data) => {
       this.renderizarGraficoComentariosTiempo(data);
     });
 
     // 3. Gráfico de Comentarios por Publicación (Barras horizontales)
-    this.estadisticasService.obtenerComentariosPorPublicacion(lapso).subscribe(data => {
+    this.estadisticasService.obtenerComentariosPorPublicacion(lapso).subscribe((data) => {
       this.renderizarGraficoComentariosPub(data);
     });
   }
@@ -71,35 +82,45 @@ export class DashboardEstadisticasComponent implements OnInit, AfterViewInit {
       type: 'bar',
       data: {
         labels: data.labels, // ej: ['@chef_carlos', '@ana_cocina']
-        datasets: [{
-          label: 'Publicaciones realizadas',
-          data: data.valores, // ej: [12, 8]
-          backgroundColor: '#3182ce',
-          borderRadius: 6
-        }]
+        datasets: [
+          {
+            label: 'Publicaciones realizadas',
+            data: data.valores, // ej: [12, 8]
+            backgroundColor: '#3182ce',
+            borderRadius: 6,
+          },
+        ],
       },
-      options: { responsive: true, maintainAspectRatio: false }
+      options: { responsive: true, maintainAspectRatio: false },
     });
   }
 
   renderizarGraficoComentariosTiempo(data: any) {
     if (this.comTiempoChartInstance) this.comTiempoChartInstance.destroy();
 
+    // 1. Transformamos con el pipe y 2. Cortamos la cadena en la coma para quitar la hora
+    const labelsTransformados = data.labels.map((fechaStr: string) => {
+      const fechaFormateada = this.fechaPipe.transform(fechaStr); // Ej: '15/11/26, 22:55'
+      return fechaFormateada.split(',')[0]; // Ej: se queda solo con '15/11/26'
+    });
+
     const ctx = this.chartComTiempoRef.nativeElement.getContext('2d');
     this.comTiempoChartInstance = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: data.labels, // ej: ['Día 1', 'Día 2', ...]
-        datasets: [{
-          label: 'Comentarios en el lapso',
-          data: data.valores,
-          borderColor: '#6b46c1',
-          backgroundColor: 'rgba(107, 70, 193, 0.1)',
-          fill: true,
-          tension: 0.3
-        }]
+        labels: labelsTransformados, // 👈 Se muestran solo las fechas limpias en el eje X
+        datasets: [
+          {
+            label: 'Comentarios en el lapso',
+            data: data.valores,
+            borderColor: '#6b46c1',
+            backgroundColor: 'rgba(107, 70, 193, 0.1)',
+            fill: true,
+            tension: 0.3,
+          },
+        ],
       },
-      options: { responsive: true, maintainAspectRatio: false }
+      options: { responsive: true, maintainAspectRatio: false },
     });
   }
 
@@ -107,27 +128,37 @@ export class DashboardEstadisticasComponent implements OnInit, AfterViewInit {
     if (this.comPubChartInstance) this.comPubChartInstance.destroy();
 
     const ctx = this.chartComPubRef.nativeElement.getContext('2d');
-    
+
     // Paleta de colores variada para las porciones de la torta
     const coloresTorta = [
-      '#3182ce', '#38a169', '#d69e2e', '#e53e3e', '#6b46c1', 
-      '#319795', '#dd6b20', '#4a5568', '#f6ad55', '#fc8181'
+      '#3182ce',
+      '#38a169',
+      '#d69e2e',
+      '#e53e3e',
+      '#6b46c1',
+      '#319795',
+      '#dd6b20',
+      '#4a5568',
+      '#f6ad55',
+      '#fc8181',
     ];
 
     this.comPubChartInstance = new Chart(ctx, {
       type: 'pie', // 👈 Cambiado a gráfico de torta
       data: {
         labels: data.labels, // ej: ['Receta de Tarta', 'Pastel de Papa', ...]
-        datasets: [{
-          label: 'Cantidad de comentarios',
-          data: data.valores, // ej: [15, 8, 4]
-          backgroundColor: coloresTorta.slice(0, data.valores.length),
-          borderWidth: 1,
-          borderColor: '#ffffff'
-        }]
+        datasets: [
+          {
+            label: 'Cantidad de comentarios',
+            data: data.valores, // ej: [15, 8, 4]
+            backgroundColor: coloresTorta.slice(0, data.valores.length),
+            borderWidth: 1,
+            borderColor: '#ffffff',
+          },
+        ],
       },
-      options: { 
-        responsive: true, 
+      options: {
+        responsive: true,
         maintainAspectRatio: false,
         plugins: {
           legend: {
@@ -135,25 +166,46 @@ export class DashboardEstadisticasComponent implements OnInit, AfterViewInit {
             labels: {
               boxWidth: 15,
               font: {
-                size: 12
-              }
-            }
-          }
-        }
-      }
+                size: 12,
+              },
+            },
+          },
+        },
+      },
     });
   }
 
-  irDashboardUsuarios() { this.router.navigate(['dashboard/usuarios']); }
-  irPublicaciones() { this.router.navigate(['publicaciones']); }
-  irMiPerfil() { this.router.navigate(['mi-perfil']); }
-  cerrarSesion() { this.userService.cerrarSesion().subscribe(() => this.router.navigate(['login'])); }
+  irDashboardUsuarios() {
+    this.router.navigate(['dashboard/usuarios']);
+  }
+  irPublicaciones() {
+    this.router.navigate(['publicaciones']);
+  }
+  irMiPerfil() {
+    this.router.navigate(['mi-perfil']);
+  }
+
+  cerrarSesion() {
+    // Limpieza inmediata en el cliente por seguridad
+    localStorage.removeItem('token');
+    localStorage.clear();
+
+    this.userService.cerrarSesion().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        // Aunque el backend falle, nos aseguramos de mandar al login con el almacenamiento limpio
+        this.router.navigate(['/login']);
+      },
+    });
+  }
 
   seleccionarGrafico(tipo: string) {
-  this.graficoActivo.set(tipo);
-  // Como los canvas ya existen en el DOM, solo volvemos a cargar los datos para asegurar que se redibujen con el tamaño correcto
-  setTimeout(() => {
-    this.cargarDatosYRenderizar();
-  }, 50);
-}
+    this.graficoActivo.set(tipo);
+    // Como los canvas ya existen en el DOM, solo volvemos a cargar los datos para asegurar que se redibujen con el tamaño correcto
+    setTimeout(() => {
+      this.cargarDatosYRenderizar();
+    }, 50);
+  }
 }

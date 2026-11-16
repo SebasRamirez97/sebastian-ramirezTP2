@@ -1,26 +1,38 @@
 <div class="publicaciones-container">
   <!-- Barra de navegación superior -->
   <header class="navbar">
-    <h2>Red Social de Recetas</h2>
-    <nav class="nav">
-      @if (perfilUsuario() === 'administrador') {
-    <button class="btn-nav" (click)="irDashboardEstadisticas()" style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600;">
+  <h2>Red Social de Recetas</h2>
+  <nav class="nav">
+    <!-- Botón Estadísticas protegido con la directiva estructural -->
+    <button
+      *appPermisoRol="'administrador'"
+      appResaltarHover
+      appSombraHover
+      class="btn-nav"
+      (click)="irDashboardEstadisticas()"
+
+    >
       📊 Estadísticas
     </button>
-  }
-      @if (perfilUsuario() === 'administrador') {
-    <button class="btn-nav btn-admin" (click)="irDashboardUsuarios()" style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600;">
+
+    <!-- Botón Panel Admin protegido con la directiva estructural -->
+    <button
+      *appPermisoRol="'administrador'"
+      appResaltarHover
+      appSombraHover
+      class="btn-nav btn-admin"
+      (click)="irDashboardUsuarios()"
+    >
       ⚙️ Panel Admin
     </button>
-  }
-      <button class="btn-nav active">Publicaciones</button>
-      <button class="btn-nav" (click)="irMiPerfil()">Mi Perfil</button>
-      <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
-    </nav>
-  </header>
+
+    <button class="btn-nav active" appResaltarHover appSombraHover>Publicaciones</button>
+    <button class="btn-nav" (click)="irMiPerfil()"appResaltarHover appSombraHover>Mi Perfil</button>
+    <button class="btn-nav btn-logout" (click)="cerrarSesion()"appResaltarHover appSombraHover>Cerrar Sesión</button>
+  </nav>
+</header>
 
   <main class="content">
-    <!-- 👇 Actualizamos el encabezado del muro para incluir el botón de orden -->
     <div
       class="feed-header"
       style="
@@ -35,8 +47,8 @@
         <p class="subtitle" style="margin: 0">Descubre lo que la comunidad está cocinando</p>
       </div>
 
-      <!-- Botón dinámico para alternar el ordenamiento (Fecha vs Me gusta) -->
-      <button class="btn-ordenar" (click)="cambiarOrden()">
+      <!-- Botón dinámico para alternar el ordenamiento -->
+      <button class="btn-ordenar"appResaltarHover appSombraHover (click)="cambiarOrden()">
         @if (ordenActual() === 'fecha') {
           Ordenar por más likes
         } @else {
@@ -55,26 +67,43 @@
       <div class="alert alert-danger">{{ errorMessage() }}</div>
     }
 
-    <!-- Estado de carga -->
-    <!-- Estado de carga -->
+    <!-- Estado de carga con el Spinner y tu icono -->
+    <!-- Estado de carga con el efecto de aguja de reloj barriendo el icono -->
     @if (loading()) {
-      <p class="loading-text">Cargando publicaciones desde la base de datos...</p>
+      <div class="startup-container">
+        <div class="clock-reveal">
+          <!-- 1. Icono base de fondo (atenuado) -->
+          <img src="assets/icons/Gorrito-chef-192x192.png" alt="Base" class="clock-icon-base" />
+
+          <!-- 2. Icono superior a color que se va revelando de forma radial -->
+          <img
+            src="assets/icons/Gorrito-chef-192x192.png"
+            alt="Revelado"
+            class="clock-icon-reveal"
+          />
+        </div>
+        <h2>Red Social de Recetas</h2>
+        <p>Cargando publicaciones...</p>
+      </div>
     } @else {
-      <div class="grid-publicaciones">
+      <!-- Contenido normal del muro: Listado de tarjetas de publicaciones -->
+      <div class="lista-publicaciones" style="display: flex; flex-direction: column; gap: 20px">
         @for (pub of publicaciones(); track pub._id || pub.id) {
           <app-publicacion-card
             [publicacion]="pub"
             [usuarioActualId]="usuarioActualId()"
             [perfilUsuario]="perfilUsuario()"
-            (solicitarEliminacion)="abrirConfirmacionEliminacion(pub)"
             (abrirModalComentarios)="abrirModal(pub)"
+            (solicitarEliminacion)="abrirConfirmacionEliminacion(pub)"
           ></app-publicacion-card>
         } @empty {
-          <p class="no-data">No hay publicaciones todavía en la base de datos.</p>
+          <p style="text-align: center; color: #718096; padding: 2rem">
+            No hay publicaciones disponibles todavía.
+          </p>
         }
       </div>
 
-      <!-- 👇 Controles de Paginación -->
+      <!-- Controles de Paginación -->
       <div
         class="paginacion-container"
         style="
@@ -85,7 +114,6 @@
           margin: 30px 0;
         "
       >
-        <!-- El botón "Anterior" solo se muestra si NO estamos en la primera página (offset > 0) -->
         @if (offset() > 0) {
           <button class="btn-paginacion" (click)="paginaAnterior()" [disabled]="loading()">
             ⬅️ Anterior
@@ -96,7 +124,6 @@
           Página {{ paginaActual() }}
         </span>
 
-        <!-- El botón "Siguiente" solo se muestra si hay suficientes publicaciones para formar otra página -->
         @if (publicaciones().length === limit()) {
           <button class="btn-paginacion" (click)="paginaSiguiente()" [disabled]="loading()">
             Siguiente ➡️
@@ -105,10 +132,11 @@
       </div>
     }
   </main>
+
+  <!-- Modal de comentarios y detalle -->
   @if (publicacionSeleccionada()) {
     <div class="modal-backdrop" (click)="cerrarModal()">
       <div class="modal-publicacion-container" (click)="$event.stopPropagation()">
-        <!-- Lado izquierdo: Imagen grande de la receta -->
         <div class="modal-imagen-section">
           @if (publicacionSeleccionada()?.imagenUrl) {
             <img
@@ -120,9 +148,7 @@
           }
         </div>
 
-        <!-- Lado derecho: Contenido con scroll unificado -->
         <div class="modal-info-section">
-          <!-- Cabecera del autor -->
           <div class="modal-header">
             <div class="autor-info-modal" style="display: flex; align-items: center; gap: 10px">
               @if (
@@ -157,13 +183,13 @@
               <div class="autor-info" style="display: flex; flex-direction: column">
                 <span class="autor-nombre" style="font-weight: 600">
                   {{
-                    publicacionSeleccionada().usuario?.nombre ||
-                      publicacionSeleccionada().autor?.nombre ||
+                    (publicacionSeleccionada().usuario?.nombre | capitalizar) ||
+                      (publicacionSeleccionada().autor?.nombre | capitalizar) ||
                       'Usuario'
                   }}
                   {{
-                    publicacionSeleccionada().usuario?.apellido ||
-                      publicacionSeleccionada().autor?.apellido ||
+                    (publicacionSeleccionada().usuario?.apellido | capitalizar)||
+                    (publicacionSeleccionada().autor?.apellido | capitalizar)||
                       ''
                   }}
                 </span>
@@ -187,34 +213,29 @@
 
           <hr class="divider" style="margin: 0; border: 0; border-top: 1px solid #dbdbdb" />
 
-          <!-- 📜 CONTENEDOR CON SCROLL ÚNICO PARA DESCRIPCIÓN Y COMENTARIOS -->
           <div class="scrollable-content" style="flex: 1; overflow-y: auto; padding: 15px">
-            <!-- 1. Descripción de la publicación (parte superior del flujo) -->
             <div class="publicacion-descripcion-box" style="margin-bottom: 15px">
               <h3 class="modal-titulo" style="margin-top: 0; font-size: 1.1rem">
-                {{ publicacionSeleccionada()?.titulo }}
+                {{ publicacionSeleccionada()?.titulo | capitalizar }}
               </h3>
               <p class="descripcion-texto" style="font-size: 0.95rem; color: #262626">
-                {{ publicacionSeleccionada()?.descripcion }}
+                {{ publicacionSeleccionada()?.descripcion | capitalizar}}
               </p>
               @if (publicacionSeleccionada()?.tiempoPreparacion) {
                 <span class="tiempo-prep" style="font-size: 0.85rem; color: #8e8e8e"
-                  >⏱️ Preparación: {{ publicacionSeleccionada()?.tiempoPreparacion }}</span
+                  >⏱️ Preparación: {{ publicacionSeleccionada()?.tiempoPreparacion | minutosAHoras}}</span
                 >
               }
             </div>
 
             <hr class="divider" style="border: 0; border-top: 1px solid #efefef; margin: 15px 0" />
 
-            <!-- 2. Listado de comentarios debajo de la descripción -->
-            <!-- Listado de comentarios dentro del modal -->
             <div class="comentarios-list">
               @for (com of comentariosModal(); track com._id) {
                 <div
                   class="comentario-item"
                   style="display: flex; gap: 10px; margin-bottom: 14px; align-items: flex-start"
                 >
-                  <!-- 👇 Usamos la propiedad avatarUrl del autor del comentario individual -->
                   @if (com.autor?.avatarUrl) {
                     <img
                       [src]="com.autor.avatarUrl"
@@ -240,7 +261,6 @@
                   }
 
                   <div class="comentario-contenido" style="flex: 1">
-                    <!-- Cabecera del comentario -->
                     <div
                       class="comentario-sub-header"
                       style="
@@ -252,9 +272,8 @@
                     >
                       <div style="display: flex; align-items: center; gap: 6px">
                         <span class="comentario-usuario" style="font-weight: 600; color: #262626"
-                          >@{{ com.autor?.usuario }}</span
+                          >&#64;{{ com.autor?.usuario }}</span
                         >
-                        <!-- Leyenda de editado al lado del nombre de usuario -->
                         @if (com.modificado) {
                           <span class="editado-label" style="font-size: 0.7rem; color: #999"
                             >-editado</span
@@ -264,7 +283,6 @@
                       <span>{{ com.fecha | fechaArgentina }}</span>
                     </div>
 
-                    <!-- 🔄 CONDICIONAL: Si NO se está editando, mostramos el texto normal -->
                     @if (comentarioEnEdicionId() !== com._id) {
                       <p
                         class="comentario-texto"
@@ -273,7 +291,6 @@
                         {{ com.texto }}
                       </p>
                     } @else {
-                      <!-- ✍️ Si SÍ se está editando, el comentario se vuelve un cuadro de texto -->
                       <div style="display: flex; gap: 6px; margin: 6px 0">
                         <input
                           type="text"
@@ -318,7 +335,6 @@
                       </div>
                     }
 
-                    <!-- 📍 Botones "Editar" (solo autor) y "Eliminar" (autor o administrador) -->
                     @if (
                       com.autor?._id === usuarioActualId() ||
                       com.autor === usuarioActualId() ||
@@ -328,7 +344,6 @@
                         class="comentario-acciones"
                         style="display: flex; gap: 12px; margin-top: 2px; font-size: 0.75rem"
                       >
-                        <!-- El botón "Editar" SOLO aparece si el usuario logueado es el dueño del comentario -->
                         @if (
                           com.autor?._id === usuarioActualId() || com.autor === usuarioActualId()
                         ) {
@@ -349,7 +364,6 @@
                           }
                         }
 
-                        <!-- El botón "Eliminar" aparece si es el dueño O si es administrador -->
                         @if (comentarioEnEdicionId() !== com._id) {
                           <button
                             (click)="eliminarComentarioModal(com._id)"
@@ -372,7 +386,6 @@
               }
             </div>
 
-            <!-- Botón "Cargar más" al final del scroll de comentarios -->
             @if (hasMoreComentarios()) {
               <button
                 (click)="cargarMasComentarios()"
@@ -393,7 +406,6 @@
             }
           </div>
 
-          <!-- Caja de texto fija abajo (siempre visible) -->
           <div
             class="comentario-input-box"
             style="
@@ -430,7 +442,8 @@
       </div>
     </div>
   }
-  <!-- Modal Global de Eliminación (Flota perfectamente sobre toda la ventana) -->
+
+  <!-- Modal Global de Eliminación -->
   @if (publicacionAEliminar()) {
     <div class="modal-overlay-eliminar" (click)="cerrarConfirmacionEliminacion()">
       <div class="modal-box-eliminar" (click)="$event.stopPropagation()">

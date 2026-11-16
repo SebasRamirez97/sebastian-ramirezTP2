@@ -14,7 +14,7 @@
           placeholder="Ej: usuario123 o correo@ejemplo.com"
           appInputError
         />
-        @if (loginForm.get('identificador')?.touched && loginForm.get('identificador')?.errors) {
+        @if (loginForm.get('identificador')?.touched && loginForm.get('identificador')?.invalid) {
           <small class="error-text">
             {{ loginForm.get('identificador')?.errors | formError }}
           </small>
@@ -31,15 +31,16 @@
           placeholder="••••••••"
           appInputError
         />
-        @if (loginForm.get('password')?.touched && loginForm.get('password')?.errors) {
+        @if (loginForm.get('password')?.touched && loginForm.get('password')?.invalid) {
           <small class="error-text">
             {{ loginForm.get('password')?.errors | formError }}
           </small>
         }
       </div>
 
-      <button type="submit" [disabled]="loading" class="btn-submit">
-        {{ loading ? 'Cargando...' : 'Ingresar' }}
+      <!-- Botón de Envío -->
+      <button type="submit" [disabled]="loading()" class="btn-submit">
+        {{ loading() ? 'Cargando...' : 'Ingresar' }}
       </button>
     </form>
 
@@ -50,14 +51,14 @@
 </div>
 
 <!-- Modal de Error Personalizado -->
-@if (showModal) {
+@if (showModal()) {
   <div class="modal-overlay">
     <div class="modal-card">
       <div class="modal-header">
         <h3>¡Acceso Denegado!</h3>
       </div>
       <div class="modal-body">
-        <p>{{ modalMessage }}</p>
+        <p>{{ modalMessage() }}</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn-modal" (click)="closeModal()">Aceptar</button>

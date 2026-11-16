@@ -8,11 +8,27 @@ import { InactivityService } from '../../services/inactivity.service';
 import { PublicacionCard } from '../publicacion-card/publicacion-card';
 import { FechaArgentinaPipe } from '../../pipes/fecha-argentina-pipe';
 import { FormsModule } from '@angular/forms';
+import { ResaltarHoverDirective } from '../../directives/resaltar-hover.directive';
+import { SombraHoverDirective } from '../../directives/sombra-hover.directive';
+import { PermisoRolDirective } from '../../directives/permiso-rol.directive';
+import { CapitalizarPipe } from '../../pipes/capitalizar-pipe';
+import { MinutosAHorasPipe } from '../../pipes/minutos-a-horas-pipe';
 
 @Component({
   selector: 'app-publicaciones',
   standalone: true,
-  imports: [CommonModule, ModalCrearPublicacion, PublicacionCard, FechaArgentinaPipe, FormsModule],
+  imports: [
+    CommonModule,
+    ModalCrearPublicacion,
+    PublicacionCard,
+    FechaArgentinaPipe,
+    FormsModule,
+    PermisoRolDirective,
+    ResaltarHoverDirective,
+    SombraHoverDirective,
+    CapitalizarPipe,
+    MinutosAHorasPipe,
+  ],
   templateUrl: './publicaciones.html',
   styleUrl: './publicaciones.css',
 })
@@ -43,15 +59,15 @@ export class Publicaciones implements OnInit {
   usuarioActualId = signal<string>('');
   perfilUsuario = signal<string>('');
 
-  // Variables / Signals en publicaciones.component.ts
+  // Variables / Signals para comentarios
   publicacionSeleccionada = signal<any | null>(null);
   comentariosModal = signal<any[]>([]);
   offsetComentarios = signal<number>(0);
-  limitComentarios = signal<number>(3); // 👈 Empezamos trayendo de a 3 como acordamos
+  limitComentarios = signal<number>(3);
   hasMoreComentarios = signal<boolean>(false);
   nuevoComentarioTexto = signal<string>('');
   cargandoComentarioModal = signal<boolean>(false);
-  // 📝 Estados para controlar qué comentario se está editando
+
   comentarioEnEdicionId = signal<string | null>(null);
   textoEditado: string = '';
 
@@ -59,7 +75,6 @@ export class Publicaciones implements OnInit {
     this.cargarUsuarioActual();
     this.cargarPublicaciones();
 
-    // 👈 3. ESCUCHAR LA URL: Si la ruta tiene un ID, abrimos el modal automáticamente
     this.route.paramMap.subscribe((params) => {
       const pubId = params.get('id');
       if (pubId) {
@@ -82,24 +97,27 @@ export class Publicaciones implements OnInit {
     this.loading.set(true);
     this.ordenActual.set(orden);
 
-    this.publicacionService.obtenerPublicaciones(this.limit(), this.offset(), orden).subscribe({
-      next: (data) => {
-        this.publicaciones.set(data);
+    const peticionDatos = this.publicacionService
+      .obtenerPublicaciones(this.limit(), this.offset(), orden)
+      .toPromise();
+
+    const tiempoMinimo = new Promise((resolve) => setTimeout(resolve, 3000));
+
+    Promise.all([peticionDatos, tiempoMinimo])
+      .then(([data]) => {
+        // 👇 Añadimos '|| []' para evitar que se asigne undefined a la señal
+        this.publicaciones.set(data || []);
         this.loading.set(false);
-        console.log('Se actualizaron las publicaciones');
-        console.log(data);
-      },
-      error: (err) => {
+        console.log('Se actualizaron las publicaciones:', data);
+      })
+      .catch((err) => {
+        console.error('Error al cargar publicaciones:', err);
         this.errorMessage.set('No se pudieron cargar las publicaciones del servidor.');
         this.loading.set(false);
-        console.error(err);
-      },
-    });
+      });
   }
 
-  // Métodos para cambiar de página
   paginaSiguiente() {
-    // Solo avanzamos si hay suficientes publicaciones para llenar la página
     if (this.publicaciones().length === this.limit()) {
       const nuevoOffset = this.offset() + this.limit();
       this.offset.set(nuevoOffset);
@@ -117,7 +135,6 @@ export class Publicaciones implements OnInit {
     }
   }
 
-  // Métodos para manejar el modal de creación
   abrirModalCrear(): void {
     this.modalCrearAbierto.set(true);
   }
@@ -144,11 +161,8 @@ export class Publicaciones implements OnInit {
   }
 
   cambiarOrden() {
-    // Alternamos entre fecha y likes
     const nuevoOrden = this.ordenActual() === 'fecha' ? 'likes' : 'fecha';
     this.ordenActual.set(nuevoOrden);
-
-    // Llamamos a tu método que recarga las publicaciones enviando el nuevo parámetro de orden
     this.cargarPublicaciones(nuevoOrden);
   }
 
@@ -162,7 +176,6 @@ export class Publicaciones implements OnInit {
     });
   }
 
-  // Métodos para el Modal Global de Eliminación
   abrirConfirmacionEliminacion(pub: any): void {
     this.publicacionAEliminar.set(pub);
   }
@@ -181,7 +194,6 @@ export class Publicaciones implements OnInit {
     this.publicacionService.eliminarPublicacion(id).subscribe({
       next: () => {
         this.cargandoEliminacion.set(false);
-        // Filtramos la publicación eliminada de la lista local
         this.publicaciones.update((pubs) => pubs.filter((p) => (p._id || p.id) !== id));
         this.cerrarConfirmacionEliminacion();
       },
@@ -194,42 +206,34 @@ export class Publicaciones implements OnInit {
   }
 
   cerrarSesion() {
+    localStorage.removeItem('token');
+    localStorage.clear();
+
     this.userService.cerrarSesion().subscribe({
       next: () => {
-        this.inactivityService.detenerMonitoreo();
         this.router.navigate(['/login']);
       },
-      error: (err: any) => {
-        console.error('Error al cerrar sesión', err);
-        this.inactivityService.detenerMonitoreo();
+      error: () => {
         this.router.navigate(['/login']);
       },
     });
   }
 
-  // 1. Abrir el modal y hacer la carga inicial de comentarios
   async abrirModal(pub: any) {
     const pubId = pub._id || pub.id;
     this.publicacionSeleccionada.set(pub);
     this.offsetComentarios.set(0);
     await this.cargarComentariosModal(pubId, 0);
-
-    // Cambia la URL en el navegador a /publicaciones/ID
     this.router.navigate(['/publicaciones', pubId]);
   }
 
-  // 2. Cerrar el modal
   cerrarModal() {
     this.publicacionSeleccionada.set(null);
     this.comentariosModal.set([]);
-
-    // Limpia la URL volviendo a /publicaciones
     this.router.navigate(['/publicaciones']);
   }
 
-  // 3. Obtener comentarios desde el servicio con paginación
   async cargarComentariosModal(publicacionId: string, offset: number) {
-    // Llamas a tu servicio que conecta con el GET /publicaciones/:id/comentarios
     this.publicacionService
       .obtenerComentarios(publicacionId, this.limitComentarios(), offset)
       .subscribe({
@@ -237,7 +241,6 @@ export class Publicaciones implements OnInit {
           if (offset === 0) {
             this.comentariosModal.set(res.comentarios);
           } else {
-            // Si es "cargar más", acumulamos los nuevos comentarios sin perder los anteriores
             this.comentariosModal.update((actuales) => [...actuales, ...res.comentarios]);
           }
           this.hasMoreComentarios.set(res.hasMore);
@@ -246,7 +249,6 @@ export class Publicaciones implements OnInit {
       });
   }
 
-  // 4. Botón "Cargar más"
   async cargarMasComentarios() {
     const nuevoOffset = this.offsetComentarios() + this.limitComentarios();
     this.offsetComentarios.set(nuevoOffset);
@@ -254,8 +256,6 @@ export class Publicaciones implements OnInit {
     await this.cargarComentariosModal(pubId, nuevoOffset);
   }
 
-  // 5. Enviar un nuevo comentario desde la caja fija inferior
-  // 5. Enviar un nuevo comentario desde la caja fija inferior
   async enviarComentarioModal() {
     const texto = this.nuevoComentarioTexto().trim();
     if (!texto) return;
@@ -268,17 +268,13 @@ export class Publicaciones implements OnInit {
         this.nuevoComentarioTexto.set('');
         this.cargandoComentarioModal.set(false);
 
-        // 1. Recargamos los comentarios del modal para ver el nuevo reflejado arriba
         this.offsetComentarios.set(0);
         await this.cargarComentariosModal(pubId, 0);
 
-        // 2. Actualizamos la lista principal de publicaciones para que el contador de la tarjeta suba al instante
         this.publicaciones.update((pubs) =>
           pubs.map((pub) => {
             const idPubActual = pub._id || pub.id;
             if (idPubActual === pubId) {
-              // Dependiendo de cómo devuelva tu backend el comentario creado (res o res.comentario),
-              // lo agregamos al array local de comentarios de la publicación
               const nuevoComentario = res.comentario || res;
               return {
                 ...pub,
@@ -296,19 +292,16 @@ export class Publicaciones implements OnInit {
     });
   }
 
-  // Activar la edición cargando el texto actual en la variable temporal
   iniciarEdicion(com: any) {
     this.comentarioEnEdicionId.set(com._id);
     this.textoEditado = com.texto;
   }
 
-  // Cancelar el modo edición
   cancelarEdicion() {
     this.comentarioEnEdicionId.set(null);
     this.textoEditado = '';
   }
-  // 6. Editar un comentario propio
-  // Guardar llamando al servicio y refrescar el modal
+
   async guardarEdicionComentario(comentarioId: string) {
     if (!this.textoEditado.trim()) return;
 
@@ -323,17 +316,14 @@ export class Publicaciones implements OnInit {
     });
   }
 
-  // 7. Eliminar un comentario propio
   async eliminarComentarioModal(comentarioId: string) {
     const pubId = this.publicacionSeleccionada()._id;
 
     this.publicacionService.eliminarComentario(comentarioId).subscribe({
       next: async () => {
-        // 1. Recargamos los comentarios del modal (como ya lo hacías)
         this.offsetComentarios.set(0);
         await this.cargarComentariosModal(pubId, 0);
 
-        // 2. Actualizamos la lista principal de publicaciones para que el contador de la tarjeta baje al instante
         this.publicaciones.update((pubs) =>
           pubs.map((pub) => {
             const idPubActual = pub._id || pub.id;
@@ -350,6 +340,7 @@ export class Publicaciones implements OnInit {
       error: (err) => console.error('Error al eliminar comentario', err),
     });
   }
+
   puedeEliminar(pub: any): boolean {
     const esDueno = (pub.usuario?._id || pub.usuario) === this.usuarioActualId();
     const esAdmin = this.perfilUsuario() === 'administrador';

@@ -28,8 +28,8 @@
 
       <div class="autor-info" style="display: flex; flex-direction: column">
         <span class="autor-nombre" style="font-weight: 600">
-          {{ publicacion.usuario?.nombre || publicacion.autor?.nombre || 'Usuario' }}
-          {{ publicacion.usuario?.apellido || publicacion.autor?.apellido || '' }}
+          {{ (publicacion.usuario?.nombre | capitalizar ) || (publicacion.autor?.nombre | capitalizar ) || 'Usuario' }}
+          {{ (publicacion.usuario?.apellido | capitalizar) || (publicacion.autor?.apellido | capitalizar)|| '' }}
         </span>
         <span class="autor-usuario" style="font-size: 0.85rem; color: #666">
           &#64;{{ publicacion.usuario?.usuario || publicacion.autor?.usuario || 'anonimo' }}
@@ -55,7 +55,7 @@
 
   <!-- Cuerpo de la publicación -->
   <div class="card-body">
-    <h3 class="titulo">{{ publicacion.titulo }}</h3>
+    <h3 class="titulo">{{ publicacion.titulo | capitalizar}}</h3>
 
     <!-- 👇 1. La imagen SIEMPRE es visible y se muestra completa -->
     @if (publicacion.imagenUrl) {
@@ -66,7 +66,7 @@
 
     @if (publicacion.tiempoPreparacion) {
       <div class="tiempo-prep">
-        ⏱️ Tiempo de preparación: <strong>{{ publicacion.tiempoPreparacion }}</strong>
+        ⏱️ Tiempo de preparación: <strong>{{ publicacion.tiempoPreparacion | minutosAHoras }}</strong>
       </div>
     }
 

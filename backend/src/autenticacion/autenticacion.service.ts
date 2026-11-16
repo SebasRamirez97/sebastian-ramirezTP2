@@ -50,7 +50,6 @@ export class AutenticacionService {
     }
 
     // 4. Hashear la contraseña
-
     const saltRounds = Number(process.env.BCRYPT_SALT_ROUNDS) || 10;
     const hashedPassword = await bcrypt.hash(registroDto.password, saltRounds);
 
@@ -58,13 +57,13 @@ export class AutenticacionService {
     const newUser = await this.usuarioModel.create({
       nombre: registroDto.nombre,
       apellido: registroDto.apellido,
-      correo: registroDto.correo, // Mapea 'correo' del DTO a 'email' del modelo
-      usuario: registroDto.usuario, // Mapea 'usuario' del DTO a 'username' del modelo
+      correo: registroDto.correo,
+      usuario: registroDto.usuario,
       password: hashedPassword,
       fechaNacimiento: registroDto.fechaNacimiento,
       descripcionBreve: registroDto.descripcionBreve,
       avatarUrl: avatarUrl,
-      perfil: 'usuario', // Por defecto 'usuario' según los requisitos
+      perfil: 'usuario',
     });
 
     if (!newUser) {
@@ -76,7 +75,7 @@ export class AutenticacionService {
   }
 
   async login(loginDto: LoginDto) {
-    // 1. Busca por correo o por nombre de usuario usando la propiedad 'identificador' del LoginDto
+    // 1. Busca por correo o por nombre de usuario usando la propiedad 'identificador'
     const user = await this.usuarioModel.findOne({
       $or: [
         { correo: loginDto.identificador },
@@ -89,7 +88,7 @@ export class AutenticacionService {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
-    // 3. 👈 NUEVO: Validar si el usuario está deshabilitado (baja lógica)
+    // 3. Validar si el usuario está deshabilitado (baja lógica)
     if (user.activo === false) {
       throw new UnauthorizedException(
         'Tu cuenta ha sido deshabilitada. No tienes autorización para ingresar.',
@@ -117,19 +116,34 @@ export class AutenticacionService {
     };
     return this.jwtService.signAsync(payload);
   }
+
   async verificarDisponibilidad(correo?: string, usuario?: string) {
     const existe = await this.usuarioModel.findOne({
       $or: [...(correo ? [{ correo }] : []), ...(usuario ? [{ usuario }] : [])],
     });
     return { disponible: !existe };
   }
-  setTokenCookie(res: Response, token: string) {
+
+  // 🍪 Método auxiliar privado para unificar la configuración de la cookie
+  private getCookieOptions() {
     const isProduction = process.env.NODE_ENV === 'production';
-    res.cookie('token', token, {
+    return {
       httpOnly: true, // Evita ataques XSS
-      sameSite: isProduction ? 'none' : 'lax', // Evita ataques CSRF
-      secure: isProduction, // Cambiar a true si usas HTTPS en producción
+      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax', // Seguridad CSRF adaptada a producción/local
+      secure: isProduction, // Obligatorio en HTTPS (Vercel)
+      path: '/', // Aplica a todo el dominio
+    };
+  }
+
+  setTokenCookie(res: Response, token: string) {
+    res.cookie('token', token, {
+      ...this.getCookieOptions(),
       maxAge: 1000 * 60 * 60 * 24, // 1 día de expiración
     });
+  }
+
+  // 🧹 NUEVO: Método para borrar la cookie exactamente con los mismos parámetros
+  clearTokenCookie(res: Response) {
+    res.clearCookie('token', this.getCookieOptions());
   }
 }

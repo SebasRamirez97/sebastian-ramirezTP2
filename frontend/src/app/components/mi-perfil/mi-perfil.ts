@@ -7,11 +7,26 @@ import { ModalCrearPublicacion } from '../modal-crear-publicacion/modal-crear-pu
 import { PublicacionCard } from '../publicacion-card/publicacion-card';
 import { FechaArgentinaPipe } from '../../pipes/fecha-argentina-pipe';
 import { FormsModule } from '@angular/forms';
-
+import { ResaltarHoverDirective } from '../../directives/resaltar-hover.directive';
+import { SombraHoverDirective } from '../../directives/sombra-hover.directive';
+import { PermisoRolDirective } from '../../directives/permiso-rol.directive';
+import { CapitalizarPipe } from '../../pipes/capitalizar-pipe';
+import { MinutosAHorasPipe } from '../../pipes/minutos-a-horas-pipe';
 @Component({
   selector: 'app-mi-perfil',
   standalone: true,
-  imports: [CommonModule, ModalCrearPublicacion, PublicacionCard, FormsModule, FechaArgentinaPipe],
+  imports: [
+    CommonModule,
+    ModalCrearPublicacion,
+    PublicacionCard,
+    FormsModule,
+    FechaArgentinaPipe,
+    PermisoRolDirective,
+    ResaltarHoverDirective,
+    SombraHoverDirective,
+    CapitalizarPipe,
+    MinutosAHorasPipe,
+  ],
   templateUrl: './mi-perfil.html',
   styleUrls: ['./mi-perfil.css'],
 })
@@ -47,7 +62,7 @@ export class MiPerfil implements OnInit {
   comentarioEnEdicionId = signal<string | null>(null);
   textoEditado: string = '';
 
-   usuarioActualId = signal<string>('');
+  usuarioActualId = signal<string>('');
   perfilUsuario = signal<string>('');
   ngOnInit(): void {
     this.cargarUsuarioActual();
@@ -80,17 +95,26 @@ export class MiPerfil implements OnInit {
     this.loading.set(true);
     this.ordenActual.set(orden);
 
-    // 💡 Usamos el método específico para el perfil que ya preparaste en el servicio
-    this.publicacionService.obtenerMisPublicaciones(this.limit(), this.offset(), orden).subscribe({
-      next: (pubs) => {
-        this.misPublicaciones.set(pubs);
+    // 1. Convertimos la petición observable a Promesa usando .toPromise()
+    const peticionDatos = this.publicacionService
+      .obtenerMisPublicaciones(this.limit(), this.offset(), orden)
+      .toPromise();
+
+    // 2. Definimos el tiempo mínimo de espera visual (por ejemplo, 600ms para lucir la animación del icono)
+    const tiempoMinimo = new Promise((resolve) => setTimeout(resolve, 3000));
+
+    // 3. Ejecutamos ambas en paralelo asegurando que el spinner luzca fluido
+    Promise.all([peticionDatos, tiempoMinimo])
+      .then(([pubs]) => {
+        // Asignamos asegurando que nunca sea undefined
+        this.misPublicaciones.set(pubs || []);
         this.loading.set(false);
-      },
-      error: (err) => {
+        console.log('Se actualizaron mis publicaciones:', pubs);
+      })
+      .catch((err) => {
         console.error('Error al cargar mis publicaciones:', err);
         this.loading.set(false);
-      },
-    });
+      });
   }
 
   // Alternar criterio de ordenamiento (¡Reiniciamos el offset a 0 al cambiar de orden!)
@@ -171,7 +195,7 @@ export class MiPerfil implements OnInit {
       },
     });
   }
-  
+
   irPublicaciones() {
     this.router.navigate(['/publicaciones']);
   }
@@ -185,9 +209,18 @@ export class MiPerfil implements OnInit {
   }
 
   cerrarSesion() {
+    // Limpieza inmediata en el cliente por seguridad
+    localStorage.removeItem('token');
+    localStorage.clear();
+
     this.userService.cerrarSesion().subscribe({
-      next: () => this.router.navigate(['/login']),
-      error: () => this.router.navigate(['/login']),
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        // Aunque el backend falle, nos aseguramos de mandar al login con el almacenamiento limpio
+        this.router.navigate(['/login']);
+      },
     });
   }
 

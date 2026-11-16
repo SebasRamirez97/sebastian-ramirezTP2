@@ -1,16 +1,16 @@
 // backend/src/autenticacion/autenticacion.controller.ts
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  UseInterceptors, 
-  UploadedFile, 
-  Res, 
-  Get, 
-  Param, 
-  UseGuards, 
+import {
+  Controller,
+  Post,
+  Body,
+  UseInterceptors,
+  UploadedFile,
+  Res,
+  Get,
+  Param,
+  UseGuards,
   Req,
-  Query 
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
@@ -18,7 +18,7 @@ import { AutenticacionService } from './autenticacion.service.js';
 import { RegistroDto } from './dto/registro.dto.js';
 import { LoginDto } from './dto/login.dto.js';
 import type { Response, Request } from 'express';
-import { JwtAuthGuard } from './guards/jwt-auth.guard.js'; 
+import { JwtAuthGuard } from './guards/jwt-auth.guard.js';
 
 @Controller('autenticacion')
 export class AutenticacionController {
@@ -37,9 +37,9 @@ export class AutenticacionController {
   ) {
     const token = await this.autenticacionService.registrar(registroDto, file);
     this.autenticacionService.setTokenCookie(res, token);
-    return { 
-      message: 'Usuario registrado exitosamente', 
-      token 
+    return {
+      message: 'Usuario registrado exitosamente',
+      token,
     };
   }
 
@@ -50,18 +50,27 @@ export class AutenticacionController {
   ) {
     const token = await this.autenticacionService.login(loginDto);
     this.autenticacionService.setTokenCookie(res, token);
-    return { 
-      message: 'Inicio de sesión exitoso', 
-      token 
+    return {
+      message: 'Inicio de sesión exitoso',
+      token,
     };
   }
 
+  // En backend/src/autenticacion/autenticacion.controller.ts
+  @Post('logout')
+  async logout(@Res({ passthrough: true }) res: Response) {
+    this.autenticacionService.clearTokenCookie(res);
+    return { message: 'Sesión cerrada exitosamente' };
+  }
   @Get('verificar')
   async verificarDisponibilidad(
-    @Query('correo') correo?: string, 
-    @Query('usuario') usuario?: string
+    @Query('correo') correo?: string,
+    @Query('usuario') usuario?: string,
   ) {
-    return await this.autenticacionService.verificarDisponibilidad(correo, usuario);
+    return await this.autenticacionService.verificarDisponibilidad(
+      correo,
+      usuario,
+    );
   }
 
   @Get('perfil/:id')
@@ -86,15 +95,19 @@ export class AutenticacionController {
 
   @Post('refrescar')
   @UseGuards(JwtAuthGuard)
-  async refrescarToken(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  async refrescarToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const usuarioPayload = (req as any).user;
-    const nuevoToken = await this.autenticacionService.generateToken(usuarioPayload);
-    
+    const nuevoToken =
+      await this.autenticacionService.generateToken(usuarioPayload);
+
     this.autenticacionService.setTokenCookie(res, nuevoToken);
-    
-    return { 
+
+    return {
       message: 'Token refrescado exitosamente',
-      token: nuevoToken 
+      token: nuevoToken,
     };
   }
 }

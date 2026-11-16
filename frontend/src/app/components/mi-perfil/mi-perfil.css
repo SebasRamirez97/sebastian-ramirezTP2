@@ -656,3 +656,80 @@
   color: #b2dffc;
   cursor: default;
 }
+
+/* ==========================================
+   EFECTO REVELADO RADIAL (SOLO ICONO GRANDE)
+   ========================================== */
+.startup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.clock-reveal {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 1. Icono base de fondo (atenuado y grande) */
+.clock-icon-base {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  filter: grayscale(100%) opacity(0.2);
+  z-index: 1;
+}
+
+/* 2. Icono superior a color que se va revelando progresivamente con el efecto de cuña */
+.clock-icon-reveal {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  z-index: 2;
+  clip-path: polygon(50% 50%, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%);
+  animation: clockWedgeReveal 2s linear infinite;
+}
+
+.startup-container h2 {
+  font-size: 1.1rem;
+  color: #2d3748;
+  margin-bottom: 0.3rem;
+}
+
+.startup-container p {
+  color: #718096;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* --- ANIMACIÓN DE BARRIDO --- */
+
+@keyframes clockWedgeReveal {
+  0% {
+    clip-path: polygon(50% 50%, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%, 50% 0%);
+  }
+  25% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 50%, 100% 50%, 100% 50%, 100% 50%, 50% 50%);
+  }
+  50% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 50% 100%, 50% 100%, 50% 50%, 50% 50%);
+  }
+  75% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 50%, 50% 50%, 50% 50%);
+  }
+  100% {
+    clip-path: polygon(50% 50%, 50% 0%, 100% 0%, 100% 100%, 0% 100%, 0% 0%, 50% 0%, 50% 50%);
+  }
+}

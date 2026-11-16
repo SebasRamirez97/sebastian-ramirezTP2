@@ -3,19 +3,32 @@
   <header class="navbar">
     <h2>Red Social de Recetas</h2>
     <nav class="nav">
-         @if (perfilUsuario() === 'administrador') {
-    <button class="btn-nav" (click)="irDashboardEstadisticas()" style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600;">
+      
+   <button
+      *appPermisoRol="'administrador'"
+      appResaltarHover
+      appSombraHover
+      class="btn-nav"
+      (click)="irDashboardEstadisticas()"
+      style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600"
+    >
       📊 Estadísticas
     </button>
-  }
-      @if (perfilUsuario() === 'administrador') {
-    <button class="btn-nav btn-admin" (click)="irDashboardUsuarios()" style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600;">
-      ⚙️ Panel Admin
+
+    <button
+      *appPermisoRol="'administrador'"
+      appResaltarHover
+      appSombraHover
+      class="btn-nav"
+      (click)="irDashboardEstadisticas()"
+      style="background-color: #e9d8fd; color: #6b46c1; font-weight: 600"
+    >
+      📊 Estadísticas
     </button>
-  }
-      <button class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
-      <button class="btn-nav active">Mi Perfil</button>
-      <button class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
+    
+      <button appResaltarHover appSombraHover class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
+      <button appResaltarHover appSombraHover class="btn-nav active">Mi Perfil</button>
+      <button appResaltarHover appSombraHover class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
     </nav>
   </header>
 
@@ -92,7 +105,7 @@
           </p>
         </div>
 
-        <button class="btn-ordenar" (click)="cambiarOrden()">
+        <button class="btn-ordenar" appResaltarHover appSombraHover (click)="cambiarOrden()">
           @if (ordenActual() === 'fecha') {
             Ordenar por más likes
           } @else {
@@ -101,12 +114,28 @@
         </button>
       </div>
 
-      @if (loading()) {
-        <p class="loading-text">Cargando tus publicaciones...</p>
-      } @else {
+       @if (loading()) {
+      <div class="startup-container">
+        <div class="clock-reveal">
+          <!-- 1. Icono base de fondo (atenuado) -->
+          <img src="assets/icons/Gorrito-chef-192x192.png" alt="Base" class="clock-icon-base" />
+
+          <!-- 2. Icono superior a color que se va revelando de forma radial -->
+          <img
+            src="assets/icons/Gorrito-chef-192x192.png"
+            alt="Revelado"
+            class="clock-icon-reveal"
+          />
+        </div>
+        <h2>Red Social de Recetas</h2>
+        <p>Cargando publicaciones...</p>
+      </div>
+    } @else {
         <div class="grid-publicaciones">
           @for (pub of misPublicaciones(); track pub._id || pub.id) {
             <app-publicacion-card
+              appResaltarHover 
+              appSombraHover
               [publicacion]="pub"
               [usuarioActualId]="usuario()?._id || usuario()?.id"
               (solicitarEliminacion)="abrirConfirmacionEliminacion(pub)"
@@ -198,26 +227,26 @@
                   </div>
                 }
                 <div class="autor-info" style="display: flex; flex-direction: column">
-                  <span class="autor-nombre" style="font-weight: 600">
-                    {{
-                      publicacionSeleccionada().usuario?.nombre ||
-                        publicacionSeleccionada().autor?.nombre ||
-                        'Usuario'
-                    }}
-                    {{
-                      publicacionSeleccionada().usuario?.apellido ||
-                        publicacionSeleccionada().autor?.apellido ||
-                        ''
-                    }}
-                  </span>
-                  <span class="autor-usuario" style="font-size: 0.85rem; color: #666"
-                    >&#64;{{
-                      publicacionSeleccionada().usuario?.usuario ||
-                        publicacionSeleccionada().autor?.usuario ||
-                        'anonimo'
-                    }}</span
-                  >
-                </div>
+                <span class="autor-nombre" style="font-weight: 600">
+                  {{
+                    (publicacionSeleccionada().usuario?.nombre | capitalizar) ||
+                      (publicacionSeleccionada().autor?.nombre | capitalizar) ||
+                      'Usuario'
+                  }}
+                  {{
+                    (publicacionSeleccionada().usuario?.apellido | capitalizar)||
+                    (publicacionSeleccionada().autor?.apellido | capitalizar)||
+                      ''
+                  }}
+                </span>
+                <span class="autor-usuario" style="font-size: 0.85rem; color: #666">
+                  &#64;{{
+                    publicacionSeleccionada().usuario?.usuario ||
+                      publicacionSeleccionada().autor?.usuario ||
+                      'anonimo'
+                  }}
+                </span>
+              </div>
               </div>
               <button
                 class="btn-cerrar"
@@ -234,14 +263,14 @@
             <div class="scrollable-content" style="flex: 1; overflow-y: auto; padding: 15px">
               <div class="publicacion-descripcion-box" style="margin-bottom: 15px">
                 <h3 class="modal-titulo" style="margin-top: 0; font-size: 1.1rem">
-                  {{ publicacionSeleccionada()?.titulo }}
+                  {{ publicacionSeleccionada()?.titulo | capitalizar }}
                 </h3>
                 <p class="descripcion-texto" style="font-size: 0.95rem; color: #262626">
-                  {{ publicacionSeleccionada()?.descripcion }}
+                  {{ publicacionSeleccionada()?.descripcion | capitalizar  }}
                 </p>
                 @if (publicacionSeleccionada()?.tiempoPreparacion) {
                   <span class="tiempo-prep" style="font-size: 0.85rem; color: #8e8e8e"
-                    >⏱️ Preparación: {{ publicacionSeleccionada()?.tiempoPreparacion }}</span
+                    >⏱️ Preparación: {{ publicacionSeleccionada()?.tiempoPreparacion | minutosAHoras }}</span
                   >
                 }
               </div>

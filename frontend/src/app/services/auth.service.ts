@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs'; // 👈 Importamos 'of'
+import { map, catchError } from 'rxjs/operators'; // 👈 Importamos operadores
 import { environment } from '../../environments/environment';
 
 export interface LoginCredentials {
@@ -14,6 +15,8 @@ export interface LoginCredentials {
 export class AuthService {
   private http = inject(HttpClient);
   private API_URL = `${environment.apiUrl}/autenticacion`;
+  // Agregamos la URL base para el controlador de usuarios por si necesitamos consultar el perfil
+  private USUARIOS_URL = `${environment.apiUrl}/usuarios`;
 
   login(credenciales: LoginCredentials): Observable<any> {
     return this.http.post(`${this.API_URL}/login`, credenciales, { withCredentials: true });
@@ -30,3 +33,4 @@ export class AuthService {
     return this.http.get<{ disponible: boolean }>(`${this.API_URL}/verificar`, { params });
   }
 }
+  // 👇 NUEVO MÉTODO: Valida si el token actual es correcto consultando el perfil protegido

@@ -2,11 +2,14 @@ import { Component, Input, output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PublicacionService } from '../../services/publicacion.service';
 import { FechaArgentinaPipe } from '../../pipes/fecha-argentina-pipe';
+import { CapitalizarPipe } from '../../pipes/capitalizar-pipe';
+import { MinutosAHorasPipe } from '../../pipes/minutos-a-horas-pipe';
+
 
 @Component({
   selector: 'app-publicacion-card',
   standalone: true,
-  imports: [CommonModule, FechaArgentinaPipe],
+  imports: [CommonModule, FechaArgentinaPipe, CapitalizarPipe, MinutosAHorasPipe],
   templateUrl: './publicacion-card.html',
   styleUrls: ['./publicacion-card.css'],
 })

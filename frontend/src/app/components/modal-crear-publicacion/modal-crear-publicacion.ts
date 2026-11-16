@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PublicacionService } from '../../services/publicacion.service';
 import { UserService } from '../../services/user.service';
+import { SombraHoverDirective } from '../../directives/sombra-hover.directive';
+import { ResaltarHoverDirective } from '../../directives/resaltar-hover.directive';
+
 
 @Component({
   selector: 'app-modal-crear-publicacion',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SombraHoverDirective, ResaltarHoverDirective],
   templateUrl: './modal-crear-publicacion.html',
   styleUrls: ['./modal-crear-publicacion.css'],
 })

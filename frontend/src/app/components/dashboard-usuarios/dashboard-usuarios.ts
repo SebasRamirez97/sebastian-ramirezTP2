@@ -140,14 +140,18 @@ export class DashboardUsuariosComponent implements OnInit {
   }
 
   cerrarSesion() {
-    this.userService.cerrarSesion().subscribe({
-      next: () => {
-        this.router.navigate(['/login']);
-      },
-      error: (err) => {
-        console.error('Error al cerrar sesión:', err);
-        this.router.navigate(['/login']);
-      }
-    });
-  }
+  // Limpieza inmediata en el cliente por seguridad
+  localStorage.removeItem('token');
+  localStorage.clear();
+
+  this.userService.cerrarSesion().subscribe({
+    next: () => {
+      this.router.navigate(['/login']);
+    },
+    error: () => {
+      // Aunque el backend falle, nos aseguramos de mandar al login con el almacenamiento limpio
+      this.router.navigate(['/login']);
+    }
+  });
+}
 }
