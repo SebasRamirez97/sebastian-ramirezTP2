@@ -203,6 +203,16 @@ export class Publicaciones implements OnInit {
     this.modalRestriccionVisible.set(false);
   }
 
+  // 🛠️ Helper centralizado y robusto para extraer el mensaje de error de Angular / NestJS
+  private extraerMensajeError(err: any): string {
+    if (typeof err.error === 'string') return err.error;
+    if (err.error?.message) {
+      if (typeof err.error.message === 'string') return err.error.message;
+      if (Array.isArray(err.error.message)) return err.error.message.join(', ');
+    }
+    return err.message || '';
+  }
+
   confirmarEliminacionGlobal(): void {
     const pub = this.publicacionAEliminar();
     if (!pub || this.cargandoEliminacion()) return;
@@ -220,11 +230,12 @@ export class Publicaciones implements OnInit {
         this.cargandoEliminacion.set(false);
         this.cerrarConfirmacionEliminacion();
         
-        const errorMsg = err.error?.message || '';
-        if (errorMsg.includes('CUENTA_INHABILITADA')) {
+        const errorMsg = this.extraerMensajeError(err);
+        
+        if (errorMsg.includes('CUENTA_INHABILITADA') || (err.status === 403 && errorMsg.includes('deshabilitada'))) {
           this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Tu cuenta ha sido inhabilitada. No tienes permisos para eliminar publicaciones.');
-        } else if (errorMsg.includes('ROL_INSUFICIENTE_PUBLICACION')) {
-          this.abrirModalRestriccion('⚠️ Permiso Denegado', 'Una cuenta con perfil de usuario no puede eliminar publicaciones ajenas.');
+        } else if (errorMsg.includes('ROL_INSUFICIENTE_PUBLICACION') || err.status === 403) {
+          this.abrirModalRestriccion('⚠️ Permiso Denegado', 'Una cuenta con perfil de usuario no puede eliminar publicaciones que no son suyas.');
         } else {
           this.abrirModalRestriccion('❌ Error', errorMsg || 'No se pudo eliminar la publicación.');
         }
@@ -299,11 +310,12 @@ export class Publicaciones implements OnInit {
       },
       error: (err) => {
         this.cargandoComentarioModal.set(false);
-        const errorMsg = err.error?.message || '';
-        if (errorMsg.includes('CUENTA_INHABILITADA')) {
-          this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Las cuentas inhabilitadas no pueden realizar comentarios.');
+        const errorMsg = this.extraerMensajeError(err);
+        
+        if (errorMsg.includes('CUENTA_INHABILITADA') || err.status === 403) {
+          this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Tu cuenta se encuentra inhabilitada. No puedes realizar comentarios.');
         } else {
-          this.abrirModalRestriccion('❌ Error', 'No se pudo enviar el comentario.');
+          this.abrirModalRestriccion('❌ Error', errorMsg || 'No se pudo enviar el comentario.');
         }
       },
     });
@@ -330,11 +342,11 @@ export class Publicaciones implements OnInit {
         await this.cargarComentariosModal(pubId, 0);
       },
       error: (err) => {
-        const errorMsg = err.error?.message || '';
-        if (errorMsg.includes('CUENTA_INHABILITADA')) {
+        const errorMsg = this.extraerMensajeError(err);
+        if (errorMsg.includes('CUENTA_INHABILITADA') || err.status === 403) {
           this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Las cuentas inhabilitadas no pueden editar comentarios.');
         } else {
-          this.abrirModalRestriccion('❌ Error', 'No se pudo editar el comentario.');
+          this.abrirModalRestriccion('❌ Error', errorMsg || 'No se pudo editar el comentario.');
         }
       },
     });
@@ -349,13 +361,13 @@ export class Publicaciones implements OnInit {
         await this.cargarComentariosModal(pubId, 0);
       },
       error: (err) => {
-        const errorMsg = err.error?.message || '';
-        if (errorMsg.includes('CUENTA_INHABILITADA')) {
+        const errorMsg = this.extraerMensajeError(err);
+        if (errorMsg.includes('CUENTA_INHABILITADA') || (err.status === 403 && errorMsg.includes('deshabilitada'))) {
           this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Las cuentas inhabilitadas no pueden eliminar comentarios.');
-        } else if (errorMsg.includes('ROL_INSUFICIENTE_COMENTARIO')) {
+        } else if (errorMsg.includes('ROL_INSUFICIENTE_COMENTARIO') || err.status === 403) {
           this.abrirModalRestriccion('⚠️ Permiso Denegado', 'Una cuenta con perfil de usuario no puede eliminar comentarios que no son suyos.');
         } else {
-          this.abrirModalRestriccion('❌ Error', 'No se pudo eliminar el comentario.');
+          this.abrirModalRestriccion('❌ Error', errorMsg || 'No se pudo eliminar el comentario.');
         }
       },
     });
@@ -374,15 +386,17 @@ export class Publicaciones implements OnInit {
       },
       error: (err) => {
         console.error('Error al crear publicación:', err);
-        if (err.status === 403 || err.error?.message?.includes('deshabilitada')) {
+        const errorMsg = this.extraerMensajeError(err);
+        
+        if (err.status === 403 || errorMsg.includes('deshabilitada') || errorMsg.includes('CUENTA_INHABILITADA')) {
           this.modalErrorPublicacionTitulo.set('Cuenta Deshabilitada');
           this.modalErrorPublicacionMensaje.set(
-            err.error?.message || 'Tu cuenta ha sido deshabilitada. No puedes realizar publicaciones.',
+            errorMsg || 'Tu cuenta ha sido deshabilitada. No puedes realizar publicaciones.',
           );
         } else {
           this.modalErrorPublicacionTitulo.set('Error de Publicación');
           this.modalErrorPublicacionMensaje.set(
-            err.error?.message || 'No se pudo crear la publicación.',
+            errorMsg || 'No se pudo crear la publicación.',
           );
         }
         this.modalErrorPublicacionVisible.set(true);
