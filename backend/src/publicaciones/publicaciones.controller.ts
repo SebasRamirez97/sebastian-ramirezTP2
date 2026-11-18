@@ -69,12 +69,11 @@ export class PublicacionesController {
     return await this.publicacionesService.findOne(id);
   }
 
-  // Baja lógica de publicación (DELETE)
-  @Delete(':id')
+ @Delete(':id')
   async eliminar(@Param('id') id: string, @Req() req: any) {
     const usuarioId = req.user.sub;
-    const esAdmin = req.user.perfil === 'administrador'; // Ajusta según tu estructura de roles en el token
-    return await this.publicacionesService.bajaLogica(id, usuarioId, esAdmin);
+    const perfilUsuario = req.user.perfil; // 👈 Pasamos el perfil exacto ('administrador' o 'usuario')
+    return await this.publicacionesService.bajaLogica(id, usuarioId, perfilUsuario);
   }
 
   // Dar Me Gusta (POST)
