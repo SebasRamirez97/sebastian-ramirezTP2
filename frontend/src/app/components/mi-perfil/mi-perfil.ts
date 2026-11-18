@@ -329,6 +329,12 @@ export class MiPerfil implements OnInit {
     });
   }
 
+  // 🛡️ Validador seguro para comparar el autor del comentario con el usuario logueado
+  esDuenoComentario(com: any): boolean {
+    const autorId = com.autor?._id || com.autor?.id || com.autor;
+    return autorId === this.usuarioActualId();
+  }
+
   iniciarEdicion(com: any) {
     this.comentarioEnEdicionId.set(com._id);
     this.textoEditado = com.texto;
