@@ -13,6 +13,7 @@ import { SombraHoverDirective } from '../../directives/sombra-hover.directive';
 import { PermisoRolDirective } from '../../directives/permiso-rol.directive';
 import { CapitalizarPipe } from '../../pipes/capitalizar-pipe';
 import { MinutosAHorasPipe } from '../../pipes/minutos-a-horas-pipe';
+import { FechaPasadaDirective } from '../../directives/fecha-pasada.directive';
 
 @Component({
   selector: 'app-publicaciones',
@@ -28,6 +29,7 @@ import { MinutosAHorasPipe } from '../../pipes/minutos-a-horas-pipe';
     SombraHoverDirective,
     CapitalizarPipe,
     MinutosAHorasPipe,
+    FechaPasadaDirective,
   ],
   templateUrl: './publicaciones.html',
   styleUrl: './publicaciones.css',
@@ -114,10 +116,8 @@ export class Publicaciones implements OnInit {
 
     Promise.all([peticionDatos, tiempoMinimo])
       .then(([data]) => {
-        // 👇 Añadimos '|| []' para evitar que se asigne undefined a la señal
         this.publicaciones.set(data || []);
         this.loading.set(false);
-        console.log('Se actualizaron las publicaciones:', data);
       })
       .catch((err) => {
         console.error('Error al cargar publicaciones:', err);
@@ -192,6 +192,7 @@ export class Publicaciones implements OnInit {
   cerrarConfirmacionEliminacion(): void {
     this.publicacionAEliminar.set(null);
   }
+
   abrirModalRestriccion(titulo: string, mensaje: string) {
     this.modalRestriccionTitulo.set(titulo);
     this.modalRestriccionMensaje.set(mensaje);
@@ -201,7 +202,15 @@ export class Publicaciones implements OnInit {
   cerrarModalRestriccion() {
     this.modalRestriccionVisible.set(false);
   }
-  this.publicacionService.eliminarPublicacion(id).subscribe({
+
+  confirmarEliminacionGlobal(): void {
+    const pub = this.publicacionAEliminar();
+    if (!pub || this.cargandoEliminacion()) return;
+
+    const id = pub._id || pub.id;
+    this.cargandoEliminacion.set(true);
+
+    this.publicacionService.eliminarPublicacion(id).subscribe({
       next: () => {
         this.cargandoEliminacion.set(false);
         this.publicaciones.update((pubs) => pubs.filter((p) => (p._id || p.id) !== id));
@@ -222,6 +231,7 @@ export class Publicaciones implements OnInit {
       },
     });
   }
+
   cerrarSesion() {
     localStorage.removeItem('token');
     localStorage.clear();
@@ -281,7 +291,7 @@ export class Publicaciones implements OnInit {
     this.cargandoComentarioModal.set(true);
 
     this.publicacionService.comentarPublicacion(pubId, texto).subscribe({
-      next: async (res) => {
+      next: async () => {
         this.nuevoComentarioTexto.set('');
         this.cargandoComentarioModal.set(false);
         this.offsetComentarios.set(0);
@@ -298,6 +308,7 @@ export class Publicaciones implements OnInit {
       },
     });
   }
+
   iniciarEdicion(com: any) {
     this.comentarioEnEdicionId.set(com._id);
     this.textoEditado = com.texto;
@@ -356,21 +367,17 @@ export class Publicaciones implements OnInit {
     return esDueno || esAdmin;
   }
 
-  // Método que se ejecuta cuando el modal hijo emite o intenta crear
   manejarIntentoPublicacion(formData: FormData) {
     this.publicacionService.crearPublicacion(formData).subscribe({
       next: () => {
         this.cargarPublicaciones();
-        // Opcional: cerrar el modal de creación si lo manejas desde el padre
       },
       error: (err) => {
         console.error('Error al crear publicación:', err);
-        // Si el error es 403 o el backend indica que está deshabilitado
         if (err.status === 403 || err.error?.message?.includes('deshabilitada')) {
           this.modalErrorPublicacionTitulo.set('Cuenta Deshabilitada');
           this.modalErrorPublicacionMensaje.set(
-            err.error?.message ||
-              'Tu cuenta ha sido deshabilitada. No puedes realizar publicaciones.',
+            err.error?.message || 'Tu cuenta ha sido deshabilitada. No puedes realizar publicaciones.',
           );
         } else {
           this.modalErrorPublicacionTitulo.set('Error de Publicación');
