@@ -13,7 +13,6 @@ import { SombraHoverDirective } from '../../directives/sombra-hover.directive';
 import { PermisoRolDirective } from '../../directives/permiso-rol.directive';
 import { CapitalizarPipe } from '../../pipes/capitalizar-pipe';
 import { MinutosAHorasPipe } from '../../pipes/minutos-a-horas-pipe';
-import { FechaPasadaDirective } from '../../directives/fecha-pasada.directive';
 
 @Component({
   selector: 'app-publicaciones',
@@ -29,7 +28,6 @@ import { FechaPasadaDirective } from '../../directives/fecha-pasada.directive';
     SombraHoverDirective,
     CapitalizarPipe,
     MinutosAHorasPipe,
-    FechaPasadaDirective,
   ],
   templateUrl: './publicaciones.html',
   styleUrl: './publicaciones.css',

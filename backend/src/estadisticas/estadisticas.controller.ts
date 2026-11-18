@@ -4,12 +4,12 @@ import { JwtAuthGuard } from '../autenticacion/guards/jwt-auth.guard.js';
 import { EstadisticasService } from './estadisticas.service.js';
 
 @Controller('estadisticas')
-@UseGuards(JwtAuthGuard)
 export class EstadisticasController {
   constructor(private readonly estadisticasService: EstadisticasService) {}
 
   // 1. Cantidad de publicaciones por usuario según el lapso o rango de fechas
   @Get('publicaciones-usuario')
+  @UseGuards(JwtAuthGuard) // 👈 Blindaje individual en el método
   async getPublicacionesPorUsuario(
     @Query('lapso') lapso: string,
     @Query('fechaInicio') fechaInicio: string,
@@ -22,6 +22,7 @@ export class EstadisticasController {
 
   // 2. Cantidad de comentarios en el tiempo según el lapso o rango de fechas
   @Get('comentarios-tiempo')
+  @UseGuards(JwtAuthGuard) // 👈 Blindaje individual en el método
   async getComentariosEnTiempo(
     @Query('lapso') lapso: string,
     @Query('fechaInicio') fechaInicio: string,
@@ -34,6 +35,7 @@ export class EstadisticasController {
 
   // 3. Cantidad de comentarios en cada publicación según el lapso o rango de fechas
   @Get('comentarios-publicacion')
+  @UseGuards(JwtAuthGuard) // 👈 Blindaje individual en el método
   async getComentariosPorPublicacion(
     @Query('lapso') lapso: string,
     @Query('fechaInicio') fechaInicio: string,
@@ -46,7 +48,7 @@ export class EstadisticasController {
 
   // 🛡️ Helper privado para asegurar que solo los administradores accedan
   private validarEsAdmin(req: any) {
-    const perfil = req.user.perfil || req.user.role;
+    const perfil = req.user?.perfil || req.user?.role;
     if (perfil !== 'administrador' && perfil !== 'admin') {
       throw new ForbiddenException('Acceso denegado. Las estadísticas solo están disponibles para administradores.');
     }
