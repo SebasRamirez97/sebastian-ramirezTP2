@@ -263,6 +263,7 @@ export class MiPerfil implements OnInit {
   cerrarModal() {
     this.publicacionSeleccionada.set(null);
     this.comentariosModal.set([]);
+    this.router.navigate(['/mi-perfil']);
   }
 
   async cargarComentariosModal(publicacionId: string, offset: number) {
