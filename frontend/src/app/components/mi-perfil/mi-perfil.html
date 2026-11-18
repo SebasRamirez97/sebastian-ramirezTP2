@@ -398,20 +398,17 @@
                       }
 
                       <!-- 👇 Acciones de comentarios: Dueño o Administrador -->
+                      <!-- 👇 Usamos la función auxiliar para una validación segura -->
                       @if (
-                        com.autor?._id === usuarioActualId() ||
-                        com.autor === usuarioActualId() ||
+                        esDuenoComentario(com) ||
                         perfilUsuario() === 'administrador'
                       ) {
                         <div
                           class="comentario-acciones"
                           style="display: flex; gap: 12px; margin-top: 2px; font-size: 0.75rem"
                         >
-                          <!-- Editar: Exclusivo del dueño real -->
-                          @if (
-                            (com.autor?._id === usuarioActualId() || com.autor === usuarioActualId()) &&
-                            comentarioEnEdicionId() !== com._id
-                          ) {
+                          <!-- Editar: Exclusivo del dueño real del comentario -->
+                          @if (esDuenoComentario(com) && comentarioEnEdicionId() !== com._id) {
                             <button
                               (click)="iniciarEdicion(com)"
                               style="
