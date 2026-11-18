@@ -12,8 +12,7 @@ export class EstadisticasService {
     @InjectModel(Usuario.name) private userModel: Model<Usuario>,
   ) {}
 
-  // backend/src/estadisticas/estadisticas.service.ts
-  // backend/src/estadisticas/estadisticas.service.ts
+
   // 🛠️ Helper privado blindado para parsear fechas locales exactas sin desfase UTC
   private obtenerRangoFechas(lapso?: string, inicioPersonalizado?: string, finPersonalizado?: string) {
     if (inicioPersonalizado && finPersonalizado) {

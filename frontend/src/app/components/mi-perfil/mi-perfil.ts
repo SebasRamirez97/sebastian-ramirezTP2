@@ -368,25 +368,12 @@ export class MiPerfil implements OnInit {
   }
 
   async eliminarComentarioModal(comentarioId: string) {
-    const pubId = this.publicacionSeleccionada()._id || this.publicacionSeleccionada().id;
+    const pubId = this.publicacionSeleccionada()._id;
 
     this.publicacionService.eliminarComentario(comentarioId).subscribe({
       next: async () => {
         this.offsetComentarios.set(0);
         await this.cargarComentariosModal(pubId, 0);
-
-        this.misPublicaciones.update((pubs) =>
-          pubs.map((pub) => {
-            const idPubActual = pub._id || pub.id;
-            if (idPubActual === pubId) {
-              return {
-                ...pub,
-                comentarios: pub.comentarios.filter((c: any) => c._id !== comentarioId),
-              };
-            }
-            return pub;
-          }),
-        );
       },
       error: (err) => {
         const errorMsg = this.extraerMensajeError(err);

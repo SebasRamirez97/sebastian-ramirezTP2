@@ -302,9 +302,12 @@ async obtenerComentarios(publicacionId: string, limit: number = 3, offset: numbe
       throw new NotFoundException('Comentario no encontrado');
     }
 
-    // Validar que el usuario sea el dueño del comentario (o si prefieres permitir que el autor de la receta también lo borre)
-    if (comentario.autor.toString() !== usuarioId && publicacion.autor.toString() !== usuarioId) {
-      throw new ForbiddenException('No tienes permiso para eliminar este comentario');
+    const esDuenoComentario = comentario.autor.toString() === usuarioId;
+    const esAdmin = usuario.perfil === 'administrador' || usuario.perfil === 'admin'; // 👈 Obtenemos el rol directamente de la BD del usuario
+
+    // 🛡️ REGLA ESTRICTA: Solo el autor del comentario o un administrador pueden eliminarlo
+    if (!esDuenoComentario && !esAdmin) {
+      throw new ForbiddenException('ROL_INSUFICIENTE_COMENTARIO: Una cuenta con perfil de usuario solo puede eliminar sus propios comentarios.');
     }
 
     // Eliminamos el comentario del DocumentArray usando el método pull de Mongoose
