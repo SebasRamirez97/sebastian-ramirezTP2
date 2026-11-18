@@ -197,6 +197,7 @@ export class Publicaciones implements OnInit {
     this.modalRestriccionTitulo.set(titulo);
     this.modalRestriccionMensaje.set(mensaje);
     this.modalRestriccionVisible.set(true);
+    console.log('Abriendo modal de restricción:', titulo, mensaje);
   }
 
   cerrarModalRestriccion() {
