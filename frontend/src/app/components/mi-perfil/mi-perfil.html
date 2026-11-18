@@ -396,7 +396,7 @@
                         </div>
                       }
 
-                      <!-- 👇 Sincronizado exactamente con publicaciones.html para dueños y administradores -->
+                      <!-- 👇 Condición estricta: Solo el dueño o un administrador ven las acciones -->
                       @if (
                         com.autor?._id === usuarioActualId() ||
                         com.autor === usuarioActualId() ||
@@ -406,28 +406,27 @@
                           class="comentario-acciones"
                           style="display: flex; gap: 12px; margin-top: 2px; font-size: 0.75rem"
                         >
-                          <!-- Solo el dueño real puede editar el comentario -->
+                          <!-- Botón Editar: Exclusivo del dueño del comentario -->
                           @if (
-                            com.autor?._id === usuarioActualId() || com.autor === usuarioActualId()
+                            (com.autor?._id === usuarioActualId() || com.autor === usuarioActualId()) &&
+                            comentarioEnEdicionId() !== com._id
                           ) {
-                            @if (comentarioEnEdicionId() !== com._id) {
-                              <button
-                                (click)="iniciarEdicion(com)"
-                                style="
-                                  background: none;
-                                  border: none;
-                                  color: #8e8e8e;
-                                  cursor: pointer;
-                                  padding: 0;
-                                  font-weight: 600;
-                                "
-                              >
-                                Editar
-                              </button>
-                            }
+                            <button
+                              (click)="iniciarEdicion(com)"
+                              style="
+                                background: none;
+                                border: none;
+                                color: #8e8e8e;
+                                cursor: pointer;
+                                padding: 0;
+                                font-weight: 600;
+                              "
+                            >
+                              Editar
+                            </button>
                           }
 
-                          <!-- El dueño o el administrador pueden eliminar el comentario -->
+                          <!-- Botón Eliminar: Dueño del comentario O Administrador -->
                           @if (comentarioEnEdicionId() !== com._id) {
                             <button
                               (click)="eliminarComentarioModal(com._id)"
@@ -445,9 +444,6 @@
                           }
                         </div>
                       }
-                    </div>
-                  </div>
-                }
               </div>
 
               @if (hasMoreComentarios()) {
