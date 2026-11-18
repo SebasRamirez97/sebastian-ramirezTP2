@@ -124,9 +124,12 @@ export class PublicacionesService {
     return publicacion;
   }
 
-  // Baja lógica (DELETE)
-  async bajaLogica(id: string, usuarioId: string, esAdmin: boolean): Promise<{ message: string }> {
+
+ // Baja lógica (DELETE)
+  async bajaLogica(id: string, usuarioId: string, perfilUsuario: string): Promise<{ message: string }> {
+    // 🛡️ 1. Validar si el usuario está inhabilitado primero
     await this.validarUsuarioActivoYPermisos(usuarioId);
+
     if (!isValidObjectId(id)) {
       throw new BadRequestException('ID de publicación no válido');
     }
@@ -136,9 +139,12 @@ export class PublicacionesService {
       throw new NotFoundException('Publicación no encontrada');
     }
 
-    // Verificar si es el autor o admin
-    if (publicacion.autor.toString() !== usuarioId && !esAdmin) {
-      throw new ForbiddenException('No tienes permisos para eliminar esta publicación');
+    const esDueno = publicacion.autor.toString() === usuarioId;
+    const esAdmin = perfilUsuario === 'administrador' || perfilUsuario === 'admin';
+
+    // 🛡️ 2. Validar si un perfil usuario intenta eliminar algo que no es suyo
+    if (!esDueno && !esAdmin) {
+      throw new ForbiddenException('ROL_INSUFICIENTE_PUBLICACION: Una cuenta con perfil de usuario no puede eliminar publicaciones que no le pertenecen.');
     }
 
     publicacion.activo = false;
