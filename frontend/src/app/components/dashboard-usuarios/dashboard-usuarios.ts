@@ -9,11 +9,12 @@ import { VerificarDuplicadoDirective } from '../../directives/verficar-duplicado
 import { InputErrorDirective } from '../../directives/input-error.directive';
 import { matchPasswordValidator } from '../../validators/match-password.validator';
 import { FormErrorPipe } from '../../pipes/form-error.pipe';
+import { FechaPasadaDirective } from '../../directives/fecha-pasada.directive';
 
 @Component({
   selector: 'app-dashboard-usuarios',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, VerificarDuplicadoDirective, InputErrorDirective, FormErrorPipe],
+  imports: [CommonModule, ReactiveFormsModule, VerificarDuplicadoDirective, InputErrorDirective, FormErrorPipe, FechaPasadaDirective],
   templateUrl: './dashboard-usuarios.html',
   styleUrls: ['./dashboard-usuarios.css']
 })
@@ -34,6 +35,11 @@ export class DashboardUsuariosComponent implements OnInit {
   modalTitulo = signal<string>('');
   modalMensaje = signal<string>('');
   modalEsConfirmacion = signal<boolean>(false);
+
+  usuarioActivo = signal<boolean>(true);
+
+  private debeRedirigirAlCerrar = signal<boolean>(false);
+
   private accionConfirmadaCallback: (() => void) | null = null;
 
   private passwordPattern = /^(?=.*[A-Z])(?=.*\d)/;
@@ -86,6 +92,12 @@ export class DashboardUsuariosComponent implements OnInit {
   cerrarModal() {
     this.modalVisible.set(false);
     this.accionConfirmadaCallback = null;
+
+    // 💡 Si la alerta era porque perdió permisos, al cerrar lo mandamos a publicaciones
+    if (this.debeRedirigirAlCerrar()) {
+      this.debeRedirigirAlCerrar.set(false);
+      this.router.navigate(['/publicaciones']);
+    }
   }
 
   // --- Lógica de Usuarios ---
@@ -93,6 +105,8 @@ export class DashboardUsuariosComponent implements OnInit {
     this.userService.obtenerPerfil().subscribe({
       next: (user: any) => {
         this.usuarioActualId.set(user._id || user.id);
+        localStorage.setItem('perfil', user.perfil);
+        localStorage.setItem('activo', String(user.activo !== false));
       },
       error: (err) => console.error('Error al obtener usuario actual:', err),
     });
@@ -107,7 +121,13 @@ export class DashboardUsuariosComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al cargar usuarios:', err);
-        this.errorMessage.set('No se pudo cargar el listado de usuarios.');
+        // Si el listado falla por permisos de admin en backend
+        if (err.status === 403) {
+          this.debeRedirigirAlCerrar.set(true);
+          this.abrirModalInfo('Acción Denegada', err.error?.message || 'Tu cuenta ha sido deshabilitada o no posees privilegios.');
+        } else {
+          this.errorMessage.set('No se pudo cargar el listado de usuarios.');
+        }
         this.loading.set(false);
       }
     });
@@ -127,7 +147,12 @@ export class DashboardUsuariosComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error al crear usuario:', err);
-        this.abrirModalInfo('Error de Registro', err.error?.message || 'No se pudo registrar el usuario.');
+        if (err.status === 403) {
+          this.debeRedirigirAlCerrar.set(true);
+          this.abrirModalInfo('Acción Denegada', err.error?.message || 'Tu cuenta ha sido deshabilitada.');
+        } else {
+          this.abrirModalInfo('Error de Registro', err.error?.message || 'No se pudo registrar el usuario.');
+        }
       }
     });
   }
@@ -141,7 +166,12 @@ export class DashboardUsuariosComponent implements OnInit {
           next: () => this.cargarUsuarios(),
           error: (err) => {
             console.error('Error al cambiar rol:', err);
-            this.abrirModalInfo('Error', err.error?.message || 'No se pudo actualizar el rol del usuario.');
+            if (err.status === 403) {
+              this.debeRedirigirAlCerrar.set(true);
+              this.abrirModalInfo('Acción Denegada', err.error?.message || 'No tienes permisos activos.');
+            } else {
+              this.abrirModalInfo('Error', err.error?.message || 'No se pudo actualizar el rol del usuario.');
+            }
           }
         });
       }
@@ -162,7 +192,12 @@ export class DashboardUsuariosComponent implements OnInit {
           next: () => this.cargarUsuarios(),
           error: (err) => {
             console.error('Error al cambiar rol:', err);
-            this.abrirModalInfo('Error', err.error?.message || 'No se pudo actualizar el rol del usuario.');
+            if (err.status === 403) {
+              this.debeRedirigirAlCerrar.set(true);
+              this.abrirModalInfo('Acción Denegada', err.error?.message || 'No tienes permisos activos.');
+            } else {
+              this.abrirModalInfo('Error', err.error?.message || 'No se pudo actualizar el rol del usuario.');
+            }
           }
         });
       }
@@ -170,7 +205,6 @@ export class DashboardUsuariosComponent implements OnInit {
   }
 
   deshabilitarUsuario(id: string) {
-    // Protección para evitar auto-deshabilitación
     if (id === this.usuarioActualId()) {
       this.abrirModalInfo('Acción No Permitida', 'No puedes deshabilitar tu propia cuenta mientras tienes la sesión iniciada.');
       return;
@@ -184,7 +218,12 @@ export class DashboardUsuariosComponent implements OnInit {
           next: () => this.cargarUsuarios(),
           error: (err) => {
             console.error('Error al deshabilitar usuario:', err);
-            this.abrirModalInfo('Error', err.error?.message || 'No se pudo deshabilitar al usuario.');
+            if (err.status === 403) {
+              this.debeRedirigirAlCerrar.set(true);
+              this.abrirModalInfo('Acción Denegada', err.error?.message || 'No tienes permisos activos.');
+            } else {
+              this.abrirModalInfo('Error', err.error?.message || 'No se pudo deshabilitar al usuario.');
+            }
           }
         });
       }
@@ -200,7 +239,12 @@ export class DashboardUsuariosComponent implements OnInit {
           next: () => this.cargarUsuarios(),
           error: (err) => {
             console.error('Error al rehabilitar usuario:', err);
-            this.abrirModalInfo('Error', err.error?.message || 'No se pudo rehabilitar al usuario.');
+            if (err.status === 403) {
+              this.debeRedirigirAlCerrar.set(true);
+              this.abrirModalInfo('Acción Denegada', err.error?.message || 'No tienes permisos activos.');
+            } else {
+              this.abrirModalInfo('Error', err.error?.message || 'No se pudo rehabilitar al usuario.');
+            }
           }
         });
       }

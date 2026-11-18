@@ -1,27 +1,40 @@
+// src/app/services/estadisticas.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment';
+import { environment } from '../../environments/environment'; // O tu ruta de entorno
 
 @Injectable({
   providedIn: 'root'
 })
 export class EstadisticasService {
   private http = inject(HttpClient);
-  private API_URL = `${environment.apiUrl}/estadisticas`;
+  private apiUrl = `${environment.apiUrl || 'http://localhost:3000'}/estadisticas`; // Ajusta tu URL base
 
-  obtenerPublicacionesPorUsuario(lapso: string): Observable<any> {
-    const params = new HttpParams().set('lapso', lapso);
-    return this.http.get(`${this.API_URL}/publicaciones-usuario`, { withCredentials: true, params });
+  obtenerPublicacionesPorUsuario(lapso?: string, inicio?: string, fin?: string): Observable<any> {
+    let params = new HttpParams();
+    if (lapso) params = params.set('lapso', lapso);
+    if (inicio) params = params.set('fechaInicio', inicio);
+    if (fin) params = params.set('fechaFin', fin);
+
+    return this.http.get(`${this.apiUrl}/publicaciones-usuario`, { params });
   }
 
-  obtenerComentariosEnTiempo(lapso: string): Observable<any> {
-    const params = new HttpParams().set('lapso', lapso);
-    return this.http.get(`${this.API_URL}/comentarios-tiempo`, { withCredentials: true, params });
+  obtenerComentariosEnTiempo(lapso?: string, inicio?: string, fin?: string): Observable<any> {
+    let params = new HttpParams();
+    if (lapso) params = params.set('lapso', lapso);
+    if (inicio) params = params.set('fechaInicio', inicio);
+    if (fin) params = params.set('fechaFin', fin);
+
+    return this.http.get(`${this.apiUrl}/comentarios-tiempo`, { params });
   }
 
-  obtenerComentariosPorPublicacion(lapso: string): Observable<any> {
-    const params = new HttpParams().set('lapso', lapso);
-    return this.http.get(`${this.API_URL}/comentarios-publicacion`, { withCredentials: true, params });
+  obtenerComentariosPorPublicacion(lapso?: string, inicio?: string, fin?: string): Observable<any> {
+    let params = new HttpParams();
+    if (lapso) params = params.set('lapso', lapso);
+    if (inicio) params = params.set('fechaInicio', inicio);
+    if (fin) params = params.set('fechaFin', fin);
+
+    return this.http.get(`${this.apiUrl}/comentarios-publicacion`, { params });
   }
 }

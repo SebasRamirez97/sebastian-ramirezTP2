@@ -135,7 +135,7 @@
       <!-- Fecha de Nacimiento -->
       <div class="form-group">
         <label for="fechaNacimiento">Fecha de Nacimiento</label>
-        <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento" appInputError />
+        <input id="fechaNacimiento" type="date" formControlName="fechaNacimiento" appInputError appFechaPasada/>
         @if (
           registroForm.get('fechaNacimiento')?.touched &&
           registroForm.get('fechaNacimiento')?.errors

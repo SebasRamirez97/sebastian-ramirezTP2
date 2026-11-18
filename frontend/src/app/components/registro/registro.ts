@@ -8,7 +8,7 @@ import { InputErrorDirective } from '../../directives/input-error.directive';
 import { FormErrorPipe } from '../../pipes/form-error.pipe';
 import { matchPasswordValidator } from '../../validators/match-password.validator';
 import { VerificarDuplicadoDirective } from '../../directives/verficar-duplicado.directive'; // 👈 Importar directiva
-
+import { FechaPasadaDirective } from '../../directives/fecha-pasada.directive';
 @Component({
   selector: 'app-registro',
   standalone: true,
@@ -18,7 +18,8 @@ import { VerificarDuplicadoDirective } from '../../directives/verficar-duplicado
     RouterLink,
     InputErrorDirective,
     FormErrorPipe,
-    VerificarDuplicadoDirective // 👈 Agregar a imports
+    VerificarDuplicadoDirective, // 👈 Agregar a imports
+    FechaPasadaDirective
   ],
   templateUrl: './registro.html',
   styleUrl: './registro.css'

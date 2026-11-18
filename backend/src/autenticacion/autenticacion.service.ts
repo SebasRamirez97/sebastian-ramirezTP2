@@ -3,6 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
@@ -90,7 +91,7 @@ export class AutenticacionService {
 
     // 3. Validar si el usuario está deshabilitado (baja lógica)
     if (user.activo === false) {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         'Tu cuenta ha sido deshabilitada. No tienes autorización para ingresar.',
       );
     }

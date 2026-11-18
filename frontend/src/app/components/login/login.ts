@@ -21,9 +21,11 @@ export class Login {
   private router = inject(Router);
   private inactivityService = inject(InactivityService);
 
-  // Convertimos el estado local a Signals
   loading = signal<boolean>(false);
-  showModal = signal<boolean>(false);
+  
+  // 🛡️ Modales separados para cada situación
+  showModalCredenciales = signal<boolean>(false);
+  showModalDeshabilitado = signal<boolean>(false);
   modalMessage = signal<string>('');
 
   loginForm: FormGroup = this.fb.group({
@@ -50,20 +52,25 @@ export class Login {
         this.loading.set(false);
         console.error('Error al iniciar sesión', err);
 
-        let mensaje = 'Ocurrió un error al intentar conectar con el servidor. Inténtalo más tarde.';
-        if (err.status === 401) {
-          mensaje = 'Usuario o contraseña incorrectos. Por favor, verifíqualos.';
-        } else if (err.error?.message) {
-          mensaje = err.error.message;
+        const mensajeServidor = err.error?.message || 'Ocurrió un error inesperado.';
+
+        // 🛡️ Evaluamos por código HTTP limpio
+        if (err.status === 403) {
+          this.modalMessage.set(mensajeServidor);
+          this.showModalDeshabilitado.set(true);
+        } else if (err.status === 401) {
+          this.modalMessage.set('La contraseña o el usuario/correo son incorrectos. Por favor, verifícalos.');
+          this.showModalCredenciales.set(true);
+        } else {
+          this.modalMessage.set(mensajeServidor);
+          this.showModalCredenciales.set(true);
         }
-        
-        this.modalMessage.set(mensaje);
-        this.showModal.set(true);
       },
     });
   }
 
   closeModal() {
-    this.showModal.set(false);
+    this.showModalCredenciales.set(false);
+    this.showModalDeshabilitado.set(false);
   }
 }

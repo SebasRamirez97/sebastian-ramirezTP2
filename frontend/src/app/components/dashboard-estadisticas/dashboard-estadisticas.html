@@ -6,11 +6,7 @@
     </div>
 
     <nav class="nav">
-      <button
-        class="btn-nav active"
-      >
-         Estadísticas
-      </button>
+      <button class="btn-nav active">Estadísticas</button>
       <button class="btn-nav" (click)="irDashboardUsuarios()">Panel Administrador</button>
       <button class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
       <button class="btn-nav" (click)="irMiPerfil()">Mi Perfil</button>
@@ -18,7 +14,6 @@
     </nav>
   </header>
 
-  <!-- 👇 Cambiamos dashboard-container por dashboard-content -->
   <main class="dashboard-content">
     <div class="dashboard-header">
       <div>
@@ -26,30 +21,70 @@
         <p class="subtitle">Analiza la actividad y el rendimiento de la comunidad Foodies</p>
       </div>
 
-      <!-- Selector de Lapso de Tiempo -->
-      <div class="filtros-lapso">
-        <span style="font-size: 0.9rem; font-weight: 600; color: #4a5568; align-self: center;">Lapso:</span>
-        <button
-          class="btn-ordenar"
-          [class.active]="lapsoSeleccionado() === '7d'"
-          (click)="cambiarLapso('7d')"
-        >
-          Última Semana
-        </button>
-        <button
-          class="btn-ordenar"
-          [class.active]="lapsoSeleccionado() === '30d'"
-          (click)="cambiarLapso('30d')"
-        >
-          Último Mes
-        </button>
-        <button
-          class="btn-ordenar"
-          [class.active]="lapsoSeleccionado() === 'todo'"
-          (click)="cambiarLapso('todo')"
-        >
-          Histórico
-        </button>
+      <!-- Contenedor general de filtros (Lapsos + Rango Personalizado) -->
+      <div class="filtros-wrapper">
+        <!-- Selector de Lapso de Tiempo -->
+        <div class="filtros-lapso">
+          <span style="font-size: 0.9rem; font-weight: 600; color: #4a5568; align-self: center;">Lapso:</span>
+          <button
+            class="btn-ordenar"
+            [class.active]="lapsoSeleccionado() === '7d'"
+            (click)="cambiarLapso('7d')"
+          >
+            Última Semana
+          </button>
+          <button
+            class="btn-ordenar"
+            [class.active]="lapsoSeleccionado() === '30d'"
+            (click)="cambiarLapso('30d')"
+          >
+            Último Mes
+          </button>
+          <button
+            class="btn-ordenar"
+            [class.active]="lapsoSeleccionado() === 'todo'"
+            (click)="cambiarLapso('todo')"
+          >
+            Histórico
+          </button>
+        </div>
+
+        <!-- 👇 Selector de Rango Personalizado de Fechas -->
+        <div class="rango-personalizado-container" style="margin-top: 8px;">
+          <div class="inputs-fechas-grupo" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <div class="input-fecha-item" style="display: flex; align-items: center; gap: 4px;">
+              <label for="fechaInicio" style="font-size: 0.85rem; font-weight: 600; color: #4a5568;">Desde:</label>
+              <input 
+                appFechaPasada
+                id="fechaInicio" 
+                type="date" 
+                [ngModel]="fechaInicioPersonalizada()" 
+                (ngModelChange)="fechaInicioPersonalizada.set($event)" 
+                class="form-control-fecha" 
+              />
+            </div>
+            <div class="input-fecha-item" style="display: flex; align-items: center; gap: 4px;">
+              <label for="fechaFin" style="font-size: 0.85rem; font-weight: 600; color: #4a5568;">Hasta:</label>
+              <input 
+                appFechaPasada
+                id="fechaFin" 
+                type="date" 
+                [ngModel]="fechaFinPersonalizada()" 
+                (ngModelChange)="fechaFinPersonalizada.set($event)" 
+                class="form-control-fecha" 
+              />
+            </div>
+            <button class="btn-filtrar-rango" (click)="aplicarRangoPersonalizado()">
+              Filtrar Rango
+            </button>
+          </div>
+
+          @if (errorFechas()) {
+            <small class="error-fecha-text" style="color: #e53e3e; font-size: 0.75rem; display: block; margin-top: 4px; font-weight: 500; text-align: right;">
+              {{ errorFechas() }}
+            </small>
+          }
+        </div>
       </div>
     </div>
 

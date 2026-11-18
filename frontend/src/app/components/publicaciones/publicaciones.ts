@@ -71,6 +71,11 @@ export class Publicaciones implements OnInit {
   comentarioEnEdicionId = signal<string | null>(null);
   textoEditado: string = '';
 
+  // --- Signals para el Modal de Usuario Deshabilitado / Error de Publicación ---
+  modalErrorPublicacionVisible = signal<boolean>(false);
+  modalErrorPublicacionTitulo = signal<string>('Acción No Permitida');
+  modalErrorPublicacionMensaje = signal<string>('');
+
   ngOnInit(): void {
     this.cargarUsuarioActual();
     this.cargarPublicaciones();
@@ -345,5 +350,36 @@ export class Publicaciones implements OnInit {
     const esDueno = (pub.usuario?._id || pub.usuario) === this.usuarioActualId();
     const esAdmin = this.perfilUsuario() === 'administrador';
     return esDueno || esAdmin;
+  }
+
+  // Método que se ejecuta cuando el modal hijo emite o intenta crear
+  manejarIntentoPublicacion(formData: FormData) {
+    this.publicacionService.crearPublicacion(formData).subscribe({
+      next: () => {
+        this.cargarPublicaciones();
+        // Opcional: cerrar el modal de creación si lo manejas desde el padre
+      },
+      error: (err) => {
+        console.error('Error al crear publicación:', err);
+        // Si el error es 403 o el backend indica que está deshabilitado
+        if (err.status === 403 || err.error?.message?.includes('deshabilitada')) {
+          this.modalErrorPublicacionTitulo.set('Cuenta Deshabilitada');
+          this.modalErrorPublicacionMensaje.set(
+            err.error?.message ||
+              'Tu cuenta ha sido deshabilitada. No puedes realizar publicaciones.',
+          );
+        } else {
+          this.modalErrorPublicacionTitulo.set('Error de Publicación');
+          this.modalErrorPublicacionMensaje.set(
+            err.error?.message || 'No se pudo crear la publicación.',
+          );
+        }
+        this.modalErrorPublicacionVisible.set(true);
+      },
+    });
+  }
+
+  cerrarModalErrorPublicacion() {
+    this.modalErrorPublicacionVisible.set(false);
   }
 }

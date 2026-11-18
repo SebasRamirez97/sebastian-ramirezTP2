@@ -25,9 +25,14 @@ export class PermisoRolDirective implements OnInit, OnDestroy {
     // Nos suscribimos al perfil del usuario para validar de forma reactiva cuando cargue de la base de datos
     this.subscription = this.userService.obtenerPerfil().subscribe({
       next: (user: any) => {
-        // Guardamos el perfil obtenido de la base de datos en localStorage opcionalmente para sincronizar
-        if (user && user.perfil) {
-          localStorage.setItem('perfil', user.perfil);
+        if (user) {
+          if (user.perfil) {
+            localStorage.setItem('perfil', user.perfil);
+          }
+          // Guardamos también el estado activo del usuario para validarlo en la directiva
+          if (user.activo !== undefined) {
+            localStorage.setItem('activo', String(user.activo));
+          }
         }
         this.actualizarVista();
       },
@@ -38,10 +43,17 @@ export class PermisoRolDirective implements OnInit, OnDestroy {
   }
 
   private actualizarVista() {
-    // Obtenemos el perfil actualizado (ya sea de la base de datos o respaldado en localStorage)
+    // Obtenemos el perfil y el estado de habilitación
     const perfilUsuario = localStorage.getItem('perfil') || 'usuario';
+    const activoStr = localStorage.getItem('activo');
+    
+    // Si el campo activo es 'false', interpretamos que está deshabilitado
+    const estaActivo = activoStr !== 'false';
 
-    if (perfilUsuario === this.rolRequerido) {
+    // 🛡️ Condición estricta: debe coincidir el rol Y el usuario debe estar activo
+    const cumplePermiso = (perfilUsuario === this.rolRequerido) && estaActivo;
+
+    if (cumplePermiso) {
       if (!this.hasView) {
         this.viewContainer.createEmbeddedView(this.templateRef);
         this.hasView = true;

@@ -6,7 +6,6 @@ import { UserService } from '../../services/user.service';
 import { SombraHoverDirective } from '../../directives/sombra-hover.directive';
 import { ResaltarHoverDirective } from '../../directives/resaltar-hover.directive';
 
-
 @Component({
   selector: 'app-modal-crear-publicacion',
   standalone: true,
@@ -29,6 +28,7 @@ export class ModalCrearPublicacion implements OnInit {
   cargando = signal<boolean>(false);
 
   onPublicado = output<void>();
+  onIntentarPublicar = output<FormData>();
 
   ngOnInit(): void {
     this.userService.obtenerPerfil().subscribe({
@@ -67,7 +67,6 @@ export class ModalCrearPublicacion implements OnInit {
   crearPublicacion() {
     if (!this.titulo() || !this.contenido()) return;
 
-    this.cargando.set(true);
     const formData = new FormData();
     formData.append('titulo', this.titulo());
     formData.append('descripcion', this.contenido());
@@ -77,16 +76,8 @@ export class ModalCrearPublicacion implements OnInit {
       formData.append('imagen', this.imagenSeleccionada()!);
     }
 
-    this.publicacionesService.crearPublicacion(formData).subscribe({
-      next: () => {
-        this.cargando.set(false);
-        this.cerrarModal();
-        this.onPublicado.emit();
-      },
-      error: (err: any) => {
-        this.cargando.set(false);
-        console.error('Error al crear publicación:', err);
-      },
-    });
+    // 💡 Le pasamos el formData al componente padre y cerramos el modal de creación
+    this.onIntentarPublicar.emit(formData);
+    this.cerrarModal();
   }
 }

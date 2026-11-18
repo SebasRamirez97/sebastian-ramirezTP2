@@ -2,11 +2,7 @@
   <!-- Barra de navegación superior -->
   <header class="navbar">
     <div class="navbar-brand">
-      <img 
-        src="assets/icons/Gorrito-chef-192x192.png" 
-        alt="Logo Foodies" 
-        class="navbar-logo" 
-      />
+      <img src="assets/icons/Gorrito-chef-192x192.png" alt="Logo Foodies" class="navbar-logo" />
       <h2>Foodies</h2>
     </div>
 
@@ -19,7 +15,7 @@
         class="btn-nav"
         (click)="irDashboardEstadisticas()"
       >
-         Estadísticas
+        Estadísticas
       </button>
 
       <!-- Botón Panel Admin protegido con la directiva estructural -->
@@ -30,12 +26,16 @@
         class="btn-nav btn-admin"
         (click)="irDashboardUsuarios()"
       >
-         Panel Administrador
+        Panel Administrador
       </button>
 
-      <button appResaltarHover appSombraHover class="btn-nav" (click)="irPublicaciones()">Publicaciones</button>
+      <button appResaltarHover appSombraHover class="btn-nav" (click)="irPublicaciones()">
+        Publicaciones
+      </button>
       <button appResaltarHover appSombraHover class="btn-nav active">Mi Perfil</button>
-      <button appResaltarHover appSombraHover class="btn-nav btn-logout" (click)="cerrarSesion()">Cerrar Sesión</button>
+      <button appResaltarHover appSombraHover class="btn-nav btn-logout" (click)="cerrarSesion()">
+        Cerrar Sesión
+      </button>
     </nav>
   </header>
 
@@ -90,6 +90,7 @@
     <div class="crear-publicacion-wrapper">
       <app-modal-crear-publicacion
         (onPublicado)="cargarDatosPerfil()"
+        (onIntentarPublicar)="manejarIntentoPublicacion($event)"
       ></app-modal-crear-publicacion>
     </div>
 
@@ -121,27 +122,27 @@
         </button>
       </div>
 
-       @if (loading()) {
-      <div class="startup-container">
-        <div class="clock-reveal">
-          <!-- 1. Icono base de fondo (atenuado) -->
-          <img src="assets/icons/Gorrito-chef-192x192.png" alt="Base" class="clock-icon-base" />
+      @if (loading()) {
+        <div class="startup-container">
+          <div class="clock-reveal">
+            <!-- 1. Icono base de fondo (atenuado) -->
+            <img src="assets/icons/Gorrito-chef-192x192.png" alt="Base" class="clock-icon-base" />
 
-          <!-- 2. Icono superior a color que se va revelando de forma radial -->
-          <img
-            src="assets/icons/Gorrito-chef-192x192.png"
-            alt="Revelado"
-            class="clock-icon-reveal"
-          />
+            <!-- 2. Icono superior a color que se va revelando de forma radial -->
+            <img
+              src="assets/icons/Gorrito-chef-192x192.png"
+              alt="Revelado"
+              class="clock-icon-reveal"
+            />
+          </div>
+          <h2>Foodies</h2>
+          <p>Cargando recetas...</p>
         </div>
-        <h2>Foodies</h2>
-        <p>Cargando recetas...</p>
-      </div>
-    } @else {
+      } @else {
         <div class="grid-publicaciones">
           @for (pub of misPublicaciones(); track pub._id || pub.id) {
             <app-publicacion-card
-              appResaltarHover 
+              appResaltarHover
               appSombraHover
               [publicacion]="pub"
               [usuarioActualId]="usuario()?._id || usuario()?.id"
@@ -234,26 +235,26 @@
                   </div>
                 }
                 <div class="autor-info" style="display: flex; flex-direction: column">
-                <span class="autor-nombre" style="font-weight: 600">
-                  {{
-                    (publicacionSeleccionada().usuario?.nombre | capitalizar) ||
-                      (publicacionSeleccionada().autor?.nombre | capitalizar) ||
-                      'Usuario'
-                  }}
-                  {{
-                    (publicacionSeleccionada().usuario?.apellido | capitalizar)||
-                    (publicacionSeleccionada().autor?.apellido | capitalizar)||
-                      ''
-                  }}
-                </span>
-                <span class="autor-usuario" style="font-size: 0.85rem; color: #666">
-                  &#64;{{
-                    publicacionSeleccionada().usuario?.usuario ||
-                      publicacionSeleccionada().autor?.usuario ||
-                      'anonimo'
-                  }}
-                </span>
-              </div>
+                  <span class="autor-nombre" style="font-weight: 600">
+                    {{
+                      (publicacionSeleccionada().usuario?.nombre | capitalizar) ||
+                        (publicacionSeleccionada().autor?.nombre | capitalizar) ||
+                        'Usuario'
+                    }}
+                    {{
+                      (publicacionSeleccionada().usuario?.apellido | capitalizar) ||
+                        (publicacionSeleccionada().autor?.apellido | capitalizar) ||
+                        ''
+                    }}
+                  </span>
+                  <span class="autor-usuario" style="font-size: 0.85rem; color: #666">
+                    &#64;{{
+                      publicacionSeleccionada().usuario?.usuario ||
+                        publicacionSeleccionada().autor?.usuario ||
+                        'anonimo'
+                    }}
+                  </span>
+                </div>
               </div>
               <button
                 class="btn-cerrar"
@@ -273,11 +274,12 @@
                   {{ publicacionSeleccionada()?.titulo | capitalizar }}
                 </h3>
                 <p class="descripcion-texto" style="font-size: 0.95rem; color: #262626">
-                  {{ publicacionSeleccionada()?.descripcion | capitalizar  }}
+                  {{ publicacionSeleccionada()?.descripcion | capitalizar }}
                 </p>
                 @if (publicacionSeleccionada()?.tiempoPreparacion) {
                   <span class="tiempo-prep" style="font-size: 0.85rem; color: #8e8e8e"
-                    >⏱️ Preparación: {{ publicacionSeleccionada()?.tiempoPreparacion | minutosAHoras }}</span
+                    >⏱️ Preparación:
+                    {{ publicacionSeleccionada()?.tiempoPreparacion | minutosAHoras }}</span
                   >
                 }
               </div>
@@ -521,6 +523,18 @@
               Sí, eliminar
             }
           </button>
+        </div>
+      </div>
+    </div>
+  }
+  <!-- Modal Global de Error por Usuario Deshabilitado / Publicación -->
+  @if (modalErrorPublicacionVisible()) {
+    <div class="modal-backdrop" (click)="cerrarModalErrorPublicacion()">
+      <div class="modal-box-eliminar" (click)="$event.stopPropagation()">
+        <h4 style="color: #ed4956">{{ modalErrorPublicacionTitulo() }}</h4>
+        <p>{{ modalErrorPublicacionMensaje() }}</p>
+        <div class="modal-botones" style="justify-content: center">
+          <button class="btn-secundario" (click)="cerrarModalErrorPublicacion()">Entendido</button>
         </div>
       </div>
     </div>

@@ -2,11 +2,7 @@
   <!-- Barra de navegación superior -->
   <header class="navbar">
     <div class="navbar-brand">
-      <img 
-        src="assets/icons/Gorrito-chef-192x192.png" 
-        alt="Logo Foodies" 
-        class="navbar-logo" 
-      />
+      <img src="assets/icons/Gorrito-chef-192x192.png" alt="Logo Foodies" class="navbar-logo" />
       <h2>Foodies</h2>
     </div>
 
@@ -19,7 +15,7 @@
         class="btn-nav"
         (click)="irDashboardEstadisticas()"
       >
-         Estadísticas
+        Estadísticas
       </button>
 
       <!-- Botón Panel Admin protegido con la directiva estructural -->
@@ -30,12 +26,16 @@
         class="btn-nav btn-admin"
         (click)="irDashboardUsuarios()"
       >
-         Panel Administrador
+        Panel Administrador
       </button>
 
       <button class="btn-nav active" appResaltarHover appSombraHover>Publicaciones</button>
-      <button class="btn-nav" (click)="irMiPerfil()" appResaltarHover appSombraHover>Mi Perfil</button>
-      <button class="btn-nav btn-logout" (click)="cerrarSesion()" appResaltarHover appSombraHover>Cerrar Sesión</button>
+      <button class="btn-nav" (click)="irMiPerfil()" appResaltarHover appSombraHover>
+        Mi Perfil
+      </button>
+      <button class="btn-nav btn-logout" (click)="cerrarSesion()" appResaltarHover appSombraHover>
+        Cerrar Sesión
+      </button>
     </nav>
   </header>
 
@@ -55,7 +55,7 @@
       </div>
 
       <!-- Botón dinámico para alternar el ordenamiento -->
-      <button class="btn-ordenar"appResaltarHover appSombraHover (click)="cambiarOrden()">
+      <button class="btn-ordenar" appResaltarHover appSombraHover (click)="cambiarOrden()">
         @if (ordenActual() === 'fecha') {
           Ordenar por más likes
         } @else {
@@ -67,6 +67,7 @@
     <!-- Modal de creación de publicaciones -->
     <app-modal-crear-publicacion
       (onPublicado)="cargarPublicaciones()"
+      (onIntentarPublicar)="manejarIntentoPublicacion($event)"
     ></app-modal-crear-publicacion>
 
     <!-- Si hay error, lo mostramos -->
@@ -195,8 +196,8 @@
                       'Usuario'
                   }}
                   {{
-                    (publicacionSeleccionada().usuario?.apellido | capitalizar)||
-                    (publicacionSeleccionada().autor?.apellido | capitalizar)||
+                    (publicacionSeleccionada().usuario?.apellido | capitalizar) ||
+                      (publicacionSeleccionada().autor?.apellido | capitalizar) ||
                       ''
                   }}
                 </span>
@@ -226,11 +227,12 @@
                 {{ publicacionSeleccionada()?.titulo | capitalizar }}
               </h3>
               <p class="descripcion-texto" style="font-size: 0.95rem; color: #262626">
-                {{ publicacionSeleccionada()?.descripcion | capitalizar}}
+                {{ publicacionSeleccionada()?.descripcion | capitalizar }}
               </p>
               @if (publicacionSeleccionada()?.tiempoPreparacion) {
                 <span class="tiempo-prep" style="font-size: 0.85rem; color: #8e8e8e"
-                  >⏱️ Preparación: {{ publicacionSeleccionada()?.tiempoPreparacion | minutosAHoras}}</span
+                  >⏱️ Preparación:
+                  {{ publicacionSeleccionada()?.tiempoPreparacion | minutosAHoras }}</span
                 >
               }
             </div>
@@ -476,6 +478,19 @@
               Sí, eliminar
             }
           </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- 👇 AQUÍ COLOCAS EL MODAL DE ERROR POR USUARIO DESHABILITADO -->
+  @if (modalErrorPublicacionVisible()) {
+    <div class="modal-backdrop" (click)="cerrarModalErrorPublicacion()">
+      <div class="modal-box-eliminar" (click)="$event.stopPropagation()">
+        <h4 style="color: #ed4956">{{ modalErrorPublicacionTitulo() }}</h4>
+        <p>{{ modalErrorPublicacionMensaje() }}</p>
+        <div class="modal-botones" style="justify-content: center">
+          <button class="btn-secundario" (click)="cerrarModalErrorPublicacion()">Entendido</button>
         </div>
       </div>
     </div>

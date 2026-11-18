@@ -1,8 +1,8 @@
-// backend/src/publicaciones/publicaciones.service.ts
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, isValidObjectId, Types } from 'mongoose';
 import { Publicacion, PublicacionDocument } from './entities/publicacion.entity.js';
+import { Usuario, UsuarioDocument } from '../usuarios/entities/usuario.entity.js'; // 👈 Asegúrate de importar tu entidad/modelo de usuario
 import { CrearPublicacionDto } from './dto/crear-publicacion.dto.js';
 import { CloudinaryService } from '../cloudinary/cloudinary.service.js';
 
@@ -11,6 +11,8 @@ export class PublicacionesService {
   constructor(
     @InjectModel(Publicacion.name)
     private readonly publicacionModel: Model<PublicacionDocument>,
+    @InjectModel(Usuario.name) // 👈 Inyectamos el modelo de Usuario
+    private readonly usuarioModel: Model<UsuarioDocument>,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
 
@@ -21,6 +23,18 @@ export class PublicacionesService {
   ): Promise<PublicacionDocument> {
     if (!isValidObjectId(usuarioId)) {
       throw new BadRequestException('ID de usuario no válido');
+    }
+
+    // 🛡️ VALIDACIÓN NUEVA: Verificar si el usuario existe y está activo
+    const usuario = await this.usuarioModel.findById(usuarioId);
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+
+    // Comprobamos si tu campo de estado inhabilitado/activo se llama 'activo', 'estado', etc. 
+    // Ajusta la condición según la propiedad exacta de tu esquema de usuario (ej: usuario.activo === false)
+    if (usuario.activo === false) { 
+      throw new ForbiddenException('Tu cuenta ha sido deshabilitada. No puedes realizar publicaciones.');
     }
 
     let imagenUrl = '';
@@ -34,8 +48,8 @@ export class PublicacionesService {
       ...crearPublicacionDto,
       imagenUrl,
       autor: usuarioId,
-      activo: true, // Por defecto activa
-      likes: [],     // Array vacío de likes al crear
+      activo: true,
+      likes: [],
       comentarios: [],
     });
 
@@ -293,11 +307,4 @@ async obtenerComentarios(publicacionId: string, limit: number = 3, offset: numbe
       message: 'Comentario eliminado exitosamente',
     };
   }
-
-
-
-  
-
-  
-
 }

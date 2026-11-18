@@ -44,30 +44,31 @@ export class UsuariosController {
   // ==========================================
 
   // GET: Listar todos los usuarios (Solo Administrador)
+  // GET: Listar todos los usuarios
   @Get()
   async findAll(@Req() req: any) {
-    this.validarEsAdmin(req);
+    await this.validarEsAdmin(req); // 👈 Añadido await
     return await this.usuariosService.findAll();
   }
 
-  // POST: Alta de un nuevo usuario por el admin (definiendo si es 'usuario' o 'administrador')
+  // POST: Crear usuario
   @Post()
   async crearUsuario(@Body() createUserDto: any, @Req() req: any) {
-    this.validarEsAdmin(req);
+    await this.validarEsAdmin(req); // 👈 Añadido await
     return await this.usuariosService.crearPorAdmin(createUserDto);
   }
 
-  // DELETE: Baja lógica (deshabilitar usuario para que no pueda ingresar)
+  // DELETE: Deshabilitar usuario
   @Delete(':id')
   async deshabilitarUsuario(@Param('id') id: string, @Req() req: any) {
-    this.validarEsAdmin(req);
+    await this.validarEsAdmin(req); // 👈 Añadido await
     return await this.usuariosService.cambiarEstado(id, false);
   }
 
-  // PATCH: Alta lógica (rehabilitar un usuario previamente deshabilitado)
+  // PATCH: Rehabilitar usuario
   @Patch(':id/activar')
   async rehabilitarUsuario(@Param('id') id: string, @Req() req: any) {
-    this.validarEsAdmin(req);
+    await this.validarEsAdmin(req); // 👈 Añadido await
     return await this.usuariosService.cambiarEstado(id, true);
   }
 
@@ -81,10 +82,15 @@ export class UsuariosController {
   }
 
   // Método auxiliar privado para validar que el token pertenezca a un administrador
-  private validarEsAdmin(req: any) {
-    const perfil = req.user.perfil || req.user.role;
-    if (perfil !== 'administrador') {
-      throw new ForbiddenException('Acceso denegado. Se requiere perfil de administrador.');
+  // backend/src/usuarios/usuarios.controller.ts
+  // Modificamos el método auxiliar para que sea async y consulte la base de datos
+  // 👇 Método auxiliar asíncrono correcto (Sin romper NestJS)
+  private async validarEsAdmin(req: any) {
+    const userId = req.user.userId || req.user.sub;
+    const usuario = await this.usuariosService.findOne(userId);
+
+    if (!usuario || usuario.activo === false || usuario.perfil !== 'administrador') {
+      throw new ForbiddenException('Acceso denegado. Tu cuenta ha sido deshabilitada o ya no posees privilegios.');
     }
   }
 

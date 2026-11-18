@@ -58,3 +58,41 @@
     </div>
   </div>
 </div>
+
+<!-- ========================================== -->
+<!-- MODAL 1: Credenciales Incorrectas (401) -->
+<!-- ========================================== -->
+@if (showModalCredenciales()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="color: #ed4956;">⚠️ Error de Inicio de Sesión</h3>
+      </div>
+      <div class="modal-body">
+        <p>{{ modalMessage() }}</p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-modal-confirmar" (click)="closeModal()">Entendido</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ========================================== -->
+<!-- MODAL 2: Cuenta Deshabilitada (403) -->
+<!-- ========================================== -->
+@if (showModalDeshabilitado()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="color: #c53030;">🚫 Cuenta Deshabilitada</h3>
+      </div>
+      <div class="modal-body">
+        <p>{{ modalMessage() }}</p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-modal-confirmar" style="background-color: #c53030;" (click)="closeModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+}

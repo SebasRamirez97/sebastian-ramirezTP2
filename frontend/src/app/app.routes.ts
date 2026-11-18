@@ -8,6 +8,7 @@ import { DashboardUsuariosComponent } from './components/dashboard-usuarios/dash
 import { DashboardEstadisticasComponent } from './components/dashboard-estadisticas/dashboard-estadisticas';
 import { StartupLoadingComponent } from './components/startup-loading/startup-loading';
 import { authGuard } from './guards/auth-guard'; // 👈 Importar el guard
+import { adminGuard } from './guards/admin-guard.guard.ts-guard';
 
 export const routes: Routes = [
   { path: '', component: StartupLoadingComponent },
@@ -18,8 +19,8 @@ export const routes: Routes = [
   { path: 'publicaciones', component: Publicaciones, canActivate: [authGuard] },
   { path: 'publicaciones/:id', component: Publicaciones, canActivate: [authGuard] },
   { path: 'mi-perfil', component: MiPerfil, canActivate: [authGuard] },
-  { path: 'dashboard/usuarios', component: DashboardUsuariosComponent, canActivate: [authGuard] },
-  { path: 'dashboard/estadisticas', component: DashboardEstadisticasComponent, canActivate: [authGuard] },
+  { path: 'dashboard/usuarios', component: DashboardUsuariosComponent, canActivate: [authGuard, adminGuard] },
+  { path: 'dashboard/estadisticas', component: DashboardEstadisticasComponent, canActivate: [authGuard, adminGuard]},
   
   { path: '**', redirectTo: 'login' }, 
 ];
