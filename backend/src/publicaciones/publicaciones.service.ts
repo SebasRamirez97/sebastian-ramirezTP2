@@ -15,27 +15,24 @@ export class PublicacionesService {
     private readonly usuarioModel: Model<UsuarioDocument>,
     private readonly cloudinaryService: CloudinaryService,
   ) {}
-
+  // 🛡️ Validador auxiliar interno para verificar estado y rol de usuario
+  private async validarUsuarioActivoYPermisos(usuarioId: string) {
+    const usuario = await this.usuarioModel.findById(usuarioId);
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    if (usuario.activo === false) {
+      throw new ForbiddenException('CUENTA_INHABILITADA: Tu cuenta ha sido deshabilitada. No puedes realizar esta acción.');
+    }
+    return usuario;
+  }
+  
   async crear(
     crearPublicacionDto: CrearPublicacionDto,
     file: Express.Multer.File,
     usuarioId: string,
   ): Promise<PublicacionDocument> {
-    if (!isValidObjectId(usuarioId)) {
-      throw new BadRequestException('ID de usuario no válido');
-    }
-
-    // 🛡️ VALIDACIÓN NUEVA: Verificar si el usuario existe y está activo
-    const usuario = await this.usuarioModel.findById(usuarioId);
-    if (!usuario) {
-      throw new NotFoundException('Usuario no encontrado');
-    }
-
-    // Comprobamos si tu campo de estado inhabilitado/activo se llama 'activo', 'estado', etc. 
-    // Ajusta la condición según la propiedad exacta de tu esquema de usuario (ej: usuario.activo === false)
-    if (usuario.activo === false) { 
-      throw new ForbiddenException('Tu cuenta ha sido deshabilitada. No puedes realizar publicaciones.');
-    }
+    await this.validarUsuarioActivoYPermisos(usuarioId);
 
     let imagenUrl = '';
 
@@ -129,6 +126,7 @@ export class PublicacionesService {
 
   // Baja lógica (DELETE)
   async bajaLogica(id: string, usuarioId: string, esAdmin: boolean): Promise<{ message: string }> {
+    await this.validarUsuarioActivoYPermisos(usuarioId);
     if (!isValidObjectId(id)) {
       throw new BadRequestException('ID de publicación no válido');
     }
@@ -188,6 +186,8 @@ export class PublicacionesService {
     return { message: 'Me gusta removido', totalLikes: publicacion.likes.length };
   }
   async comentar(id: string, texto: string, usuarioId: string) {
+    await this.validarUsuarioActivoYPermisos(usuarioId);
+    
     if (!isValidObjectId(id)) {
       throw new BadRequestException('ID de publicación no válido');
     }
@@ -258,6 +258,7 @@ async obtenerComentarios(publicacionId: string, limit: number = 3, offset: numbe
 }
   // ✏️ 2. PUT: Modificar un comentario y marcarlo como modificado: true
   async editarComentario(comentarioId: string, nuevoTexto: string, usuarioId: string) {
+  await this.validarUsuarioActivoYPermisos(usuarioId);
   const publicacion = await this.publicacionModel.findOne({ 'comentarios._id': comentarioId });
   if (!publicacion) {
     throw new NotFoundException('Comentario o publicación no encontrados');
@@ -284,6 +285,7 @@ async obtenerComentarios(publicacionId: string, limit: number = 3, offset: numbe
 }
 
   async eliminarComentario(comentarioId: string, usuarioId: string) {
+    const usuario = await this.validarUsuarioActivoYPermisos(usuarioId);
     const publicacion = await this.publicacionModel.findOne({ 'comentarios._id': comentarioId });
     if (!publicacion) {
       throw new NotFoundException('Comentario o publicación no encontrados');
