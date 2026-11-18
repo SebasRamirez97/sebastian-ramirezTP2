@@ -185,6 +185,7 @@
         </div>
       }
     </div>
+
     <!-- 🪟 MODAL ESTILO INSTAGRAM (Vista ampliada y scroll unificado) -->
     @if (publicacionSeleccionada()) {
       <div class="modal-backdrop" (click)="cerrarModal()">
@@ -396,7 +397,7 @@
                         </div>
                       }
 
-                      <!-- 👇 Condición estricta: Solo el dueño o un administrador ven las acciones -->
+                      <!-- 👇 Acciones de comentarios: Dueño o Administrador -->
                       @if (
                         com.autor?._id === usuarioActualId() ||
                         com.autor === usuarioActualId() ||
@@ -406,7 +407,7 @@
                           class="comentario-acciones"
                           style="display: flex; gap: 12px; margin-top: 2px; font-size: 0.75rem"
                         >
-                          <!-- Botón Editar: Exclusivo del dueño del comentario -->
+                          <!-- Editar: Exclusivo del dueño real -->
                           @if (
                             (com.autor?._id === usuarioActualId() || com.autor === usuarioActualId()) &&
                             comentarioEnEdicionId() !== com._id
@@ -426,7 +427,7 @@
                             </button>
                           }
 
-                          <!-- Botón Eliminar: Dueño del comentario O Administrador -->
+                          <!-- Eliminar: Dueño del comentario O Administrador -->
                           @if (comentarioEnEdicionId() !== com._id) {
                             <button
                               (click)="eliminarComentarioModal(com._id)"
@@ -444,6 +445,9 @@
                           }
                         </div>
                       }
+                    </div>
+                  </div>
+                }
               </div>
 
               @if (hasMoreComentarios()) {
