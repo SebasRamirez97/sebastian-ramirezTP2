@@ -220,7 +220,7 @@ export class MiPerfil implements OnInit {
         if (errorMsg.includes('CUENTA_INHABILITADA') || (err.status === 403 && errorMsg.includes('deshabilitada'))) {
           this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Tu cuenta ha sido inhabilitada. No tienes permisos para eliminar publicaciones.');
         } else if (errorMsg.includes('ROL_INSUFICIENTE_PUBLICACION') || err.status === 403) {
-          this.abrirModalRestriccion('⚠️ Permiso Denegado', 'Una cuenta con perfil de usuario no puede eliminar publicaciones que no son suyas.');
+          this.abrirModalRestriccion('⚠️ Permiso Denegado', 'Una cuenta con perfil de usuario no puede eliminar publicaciones ajenas.');
         } else {
           this.abrirModalRestriccion('❌ Error', errorMsg || 'No se pudo eliminar la publicación.');
         }
