@@ -12,6 +12,7 @@ import { SombraHoverDirective } from '../../directives/sombra-hover.directive';
 import { PermisoRolDirective } from '../../directives/permiso-rol.directive';
 import { CapitalizarPipe } from '../../pipes/capitalizar-pipe';
 import { MinutosAHorasPipe } from '../../pipes/minutos-a-horas-pipe';
+
 @Component({
   selector: 'app-mi-perfil',
   standalone: true,
@@ -50,15 +51,16 @@ export class MiPerfil implements OnInit {
   paginaActual = signal<number>(1);
   ordenActual = signal<'fecha' | 'likes'>('fecha');
 
-  // Variables / Signals en publicaciones.component.ts
+  // Variables / Signals para comentarios
   publicacionSeleccionada = signal<any | null>(null);
   comentariosModal = signal<any[]>([]);
   offsetComentarios = signal<number>(0);
-  limitComentarios = signal<number>(3); // 👈 Empezamos trayendo de a 3 como acordamos
+  limitComentarios = signal<number>(3);
   hasMoreComentarios = signal<boolean>(false);
   nuevoComentarioTexto = signal<string>('');
   cargandoComentarioModal = signal<boolean>(false);
-  // 📝 Estados para controlar qué comentario se está editando
+
+  // Estados para controlar qué comentario se está editando
   comentarioEnEdicionId = signal<string | null>(null);
   textoEditado: string = '';
 
@@ -69,6 +71,12 @@ export class MiPerfil implements OnInit {
   modalErrorPublicacionVisible = signal<boolean>(false);
   modalErrorPublicacionTitulo = signal<string>('Acción No Permitida');
   modalErrorPublicacionMensaje = signal<string>('');
+
+  // --- Signals para el Modal de Restricciones Genéricas ---
+  modalRestriccionVisible = signal<boolean>(false);
+  modalRestriccionTitulo = signal<string>('');
+  modalRestriccionMensaje = signal<string>('');
+
   ngOnInit(): void {
     this.cargarUsuarioActual();
     this.cargarDatosPerfil();
@@ -95,26 +103,20 @@ export class MiPerfil implements OnInit {
     });
   }
 
-  // Método para cargar las publicaciones propias con soporte de paginación y ordenamiento
   cargarMisPublicaciones(orden: 'fecha' | 'likes' = this.ordenActual()): void {
     this.loading.set(true);
     this.ordenActual.set(orden);
 
-    // 1. Convertimos la petición observable a Promesa usando .toPromise()
     const peticionDatos = this.publicacionService
       .obtenerMisPublicaciones(this.limit(), this.offset(), orden)
       .toPromise();
 
-    // 2. Definimos el tiempo mínimo de espera visual (por ejemplo, 600ms para lucir la animación del icono)
     const tiempoMinimo = new Promise((resolve) => setTimeout(resolve, 3000));
 
-    // 3. Ejecutamos ambas en paralelo asegurando que el spinner luzca fluido
     Promise.all([peticionDatos, tiempoMinimo])
       .then(([pubs]) => {
-        // Asignamos asegurando que nunca sea undefined
         this.misPublicaciones.set(pubs || []);
         this.loading.set(false);
-        console.log('Se actualizaron mis publicaciones:', pubs);
       })
       .catch((err) => {
         console.error('Error al cargar mis publicaciones:', err);
@@ -122,21 +124,19 @@ export class MiPerfil implements OnInit {
       });
   }
 
-  // Alternar criterio de ordenamiento (¡Reiniciamos el offset a 0 al cambiar de orden!)
   cambiarOrden() {
     const nuevoOrden = this.ordenActual() === 'fecha' ? 'likes' : 'fecha';
-    this.offset.set(0); // 👈 Volvemos a la página 1 al ordenar distinto
+    this.offset.set(0);
     this.paginaActual.set(1);
     this.cargarMisPublicaciones(nuevoOrden);
   }
 
-  // Métodos para cambiar de página
   paginaSiguiente() {
     if (this.misPublicaciones().length === this.limit()) {
       const nuevoOffset = this.offset() + this.limit();
       this.offset.set(nuevoOffset);
       this.paginaActual.update((p) => p + 1);
-      this.cargarMisPublicaciones(); // Mantiene el ordenActual automáticamente
+      this.cargarMisPublicaciones();
     }
   }
 
@@ -145,11 +145,10 @@ export class MiPerfil implements OnInit {
       const nuevoOffset = Math.max(0, this.offset() - this.limit());
       this.offset.set(nuevoOffset);
       this.paginaActual.update((p) => p - 1);
-      this.cargarMisPublicaciones(); // Mantiene el ordenActual automáticamente
+      this.cargarMisPublicaciones();
     }
   }
 
-  // Método que se dispara al seleccionar un archivo de imagen para el avatar
   onAvatarSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;
@@ -171,13 +170,32 @@ export class MiPerfil implements OnInit {
     });
   }
 
-  // Métodos para el Modal Global de Eliminación
   abrirConfirmacionEliminacion(pub: any): void {
     this.publicacionAEliminar.set(pub);
   }
 
   cerrarConfirmacionEliminacion(): void {
     this.publicacionAEliminar.set(null);
+  }
+
+  abrirModalRestriccion(titulo: string, mensaje: string) {
+    this.modalRestriccionTitulo.set(titulo);
+    this.modalRestriccionMensaje.set(mensaje);
+    this.modalRestriccionVisible.set(true);
+  }
+
+  cerrarModalRestriccion() {
+    this.modalRestriccionVisible.set(false);
+  }
+
+  // 🛠️ Helper centralizado para extraer el mensaje de error de Angular / NestJS
+  private extraerMensajeError(err: any): string {
+    if (typeof err.error === 'string') return err.error;
+    if (err.error?.message) {
+      if (typeof err.error.message === 'string') return err.error.message;
+      if (Array.isArray(err.error.message)) return err.error.message.join(', ');
+    }
+    return err.message || '';
   }
 
   confirmarEliminacionGlobal(): void {
@@ -194,9 +212,18 @@ export class MiPerfil implements OnInit {
         this.cerrarConfirmacionEliminacion();
       },
       error: (err) => {
-        console.error('Error al eliminar publicación:', err);
         this.cargandoEliminacion.set(false);
         this.cerrarConfirmacionEliminacion();
+        
+        const errorMsg = this.extraerMensajeError(err);
+        
+        if (errorMsg.includes('CUENTA_INHABILITADA') || (err.status === 403 && errorMsg.includes('deshabilitada'))) {
+          this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Tu cuenta ha sido inhabilitada. No tienes permisos para eliminar publicaciones.');
+        } else if (errorMsg.includes('ROL_INSUFICIENTE_PUBLICACION') || err.status === 403) {
+          this.abrirModalRestriccion('⚠️ Permiso Denegado', 'Una cuenta con perfil de usuario no puede eliminar publicaciones que no son suyas.');
+        } else {
+          this.abrirModalRestriccion('❌ Error', errorMsg || 'No se pudo eliminar la publicación.');
+        }
       },
     });
   }
@@ -214,7 +241,6 @@ export class MiPerfil implements OnInit {
   }
 
   cerrarSesion() {
-    // Limpieza inmediata en el cliente por seguridad
     localStorage.removeItem('token');
     localStorage.clear();
 
@@ -223,26 +249,22 @@ export class MiPerfil implements OnInit {
         this.router.navigate(['/login']);
       },
       error: () => {
-        // Aunque el backend falle, nos aseguramos de mandar al login con el almacenamiento limpio
         this.router.navigate(['/login']);
       },
     });
   }
 
-  // 1. Abrir modal
   async abrirModal(pub: any) {
     this.publicacionSeleccionada.set(pub);
     this.offsetComentarios.set(0);
     await this.cargarComentariosModal(pub._id || pub.id, 0);
   }
 
-  // 2. Cerrar modal
   cerrarModal() {
     this.publicacionSeleccionada.set(null);
     this.comentariosModal.set([]);
   }
 
-  // 3. Cargar comentarios
   async cargarComentariosModal(publicacionId: string, offset: number) {
     this.publicacionService
       .obtenerComentarios(publicacionId, this.limitComentarios(), offset)
@@ -259,7 +281,6 @@ export class MiPerfil implements OnInit {
       });
   }
 
-  // 4. Cargar más
   async cargarMasComentarios() {
     const nuevoOffset = this.offsetComentarios() + this.limitComentarios();
     this.offsetComentarios.set(nuevoOffset);
@@ -267,7 +288,6 @@ export class MiPerfil implements OnInit {
     await this.cargarComentariosModal(pubId, nuevoOffset);
   }
 
-  // 5. Enviar comentario
   async enviarComentarioModal() {
     const texto = this.nuevoComentarioTexto().trim();
     if (!texto) return;
@@ -282,7 +302,6 @@ export class MiPerfil implements OnInit {
         this.offsetComentarios.set(0);
         await this.cargarComentariosModal(pubId, 0);
 
-        // Actualizar contador en la lista de mis publicaciones
         this.misPublicaciones.update((pubs) =>
           pubs.map((pub) => {
             const idPubActual = pub._id || pub.id;
@@ -298,13 +317,18 @@ export class MiPerfil implements OnInit {
         );
       },
       error: (err) => {
-        console.error('Error al comentar', err);
         this.cargandoComentarioModal.set(false);
+        const errorMsg = this.extraerMensajeError(err);
+        
+        if (errorMsg.includes('CUENTA_INHABILITADA') || err.status === 403) {
+          this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Tu cuenta se encuentra inhabilitada. No puedes realizar comentarios.');
+        } else {
+          this.abrirModalRestriccion('❌ Error', errorMsg || 'No se pudo enviar el comentario.');
+        }
       },
     });
   }
 
-  // 6. Edición de comentarios
   iniciarEdicion(com: any) {
     this.comentarioEnEdicionId.set(com._id);
     this.textoEditado = com.texto;
@@ -325,11 +349,17 @@ export class MiPerfil implements OnInit {
         this.offsetComentarios.set(0);
         await this.cargarComentariosModal(pubId, 0);
       },
-      error: (err) => console.error('Error al editar comentario', err),
+      error: (err) => {
+        const errorMsg = this.extraerMensajeError(err);
+        if (errorMsg.includes('CUENTA_INHABILITADA') || err.status === 403) {
+          this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Las cuentas inhabilitadas no pueden editar comentarios.');
+        } else {
+          this.abrirModalRestriccion('❌ Error', errorMsg || 'No se pudo editar el comentario.');
+        }
+      },
     });
   }
 
-  // 7. Eliminar comentario
   async eliminarComentarioModal(comentarioId: string) {
     const pubId = this.publicacionSeleccionada()._id || this.publicacionSeleccionada().id;
 
@@ -338,7 +368,6 @@ export class MiPerfil implements OnInit {
         this.offsetComentarios.set(0);
         await this.cargarComentariosModal(pubId, 0);
 
-        // Actualizar contador en la lista de mis publicaciones
         this.misPublicaciones.update((pubs) =>
           pubs.map((pub) => {
             const idPubActual = pub._id || pub.id;
@@ -352,30 +381,37 @@ export class MiPerfil implements OnInit {
           }),
         );
       },
-      error: (err) => console.error('Error al eliminar comentario', err),
+      error: (err) => {
+        const errorMsg = this.extraerMensajeError(err);
+        if (errorMsg.includes('CUENTA_INHABILITADA') || (err.status === 403 && errorMsg.includes('deshabilitada'))) {
+          this.abrirModalRestriccion('🚫 Cuenta Deshabilitada', 'Las cuentas inhabilitadas no pueden eliminar comentarios.');
+        } else if (errorMsg.includes('ROL_INSUFICIENTE_COMENTARIO') || err.status === 403) {
+          this.abrirModalRestriccion('⚠️ Permiso Denegado', 'Una cuenta con perfil de usuario no puede eliminar comentarios que no son suyos.');
+        } else {
+          this.abrirModalRestriccion('❌ Error', errorMsg || 'No se pudo eliminar el comentario.');
+        }
+      },
     });
   }
 
-  // Método que se ejecuta cuando el modal hijo emite o intenta crear
   manejarIntentoPublicacion(formData: FormData) {
     this.publicacionService.crearPublicacion(formData).subscribe({
       next: () => {
         this.cargarMisPublicaciones();
-        // Opcional: cerrar el modal de creación si lo manejas desde el padre
       },
       error: (err) => {
         console.error('Error al crear publicación:', err);
-        // Si el error es 403 o el backend indica que está deshabilitado
-        if (err.status === 403 || err.error?.message?.includes('deshabilitada')) {
+        const errorMsg = this.extraerMensajeError(err);
+        
+        if (err.status === 403 || errorMsg.includes('deshabilitada') || errorMsg.includes('CUENTA_INHABILITADA')) {
           this.modalErrorPublicacionTitulo.set('Cuenta Deshabilitada');
           this.modalErrorPublicacionMensaje.set(
-            err.error?.message ||
-              'Tu cuenta ha sido deshabilitada. No puedes realizar publicaciones.',
+            errorMsg || 'Tu cuenta ha sido deshabilitada. No puedes realizar publicaciones.',
           );
         } else {
           this.modalErrorPublicacionTitulo.set('Error de Publicación');
           this.modalErrorPublicacionMensaje.set(
-            err.error?.message || 'No se pudo crear la publicación.',
+            errorMsg || 'No se pudo crear la publicación.',
           );
         }
         this.modalErrorPublicacionVisible.set(true);
