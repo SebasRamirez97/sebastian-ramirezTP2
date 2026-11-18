@@ -145,7 +145,8 @@
               appResaltarHover
               appSombraHover
               [publicacion]="pub"
-              [usuarioActualId]="usuario()?._id || usuario()?.id"
+              [usuarioActualId]="usuarioActualId()"
+              [perfilUsuario]="perfilUsuario()"
               (solicitarEliminacion)="abrirConfirmacionEliminacion(pub)"
               (abrirModalComentarios)="abrirModal(pub)"
             >
