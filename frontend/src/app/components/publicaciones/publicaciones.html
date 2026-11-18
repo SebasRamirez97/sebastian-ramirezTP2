@@ -495,4 +495,24 @@
       </div>
     </div>
   }
+  <!-- ========================================== -->
+<!-- MODAL DE RESTRICCIONES Y ROLES (GENÉRICO) -->
+<!-- ========================================== -->
+@if (modalRestriccionVisible()) {
+  <div class="modal-overlay" (click)="cerrarModalRestriccion()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3 style="color: #c53030;">{{ modalRestriccionTitulo() }}</h3>
+      </div>
+      <div class="modal-body">
+        <p>{{ modalRestriccionMensaje() }}</p>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-modal-confirmar" style="background-color: #dd6b20;" (click)="cerrarModalRestriccion()">Entendido</button>
+      </div>
+    </div>
+  </div>
+}
+
+  
 </div>
