@@ -332,7 +332,7 @@
                       >
                         <div style="display: flex; align-items: center; gap: 6px">
                           <span class="comentario-usuario" style="font-weight: 600; color: #262626"
-                            >@{{ com.autor?.usuario }}</span
+                            >&#64;{{ com.autor?.usuario }}</span
                           >
                           @if (com.modificado) {
                             <span class="editado-label" style="font-size: 0.7rem; color: #999"
@@ -395,42 +395,53 @@
                         </div>
                       }
 
+                      <!-- 👇 Sincronizado exactamente con publicaciones.html para dueños y administradores -->
                       @if (
-                        (com.autor?._id === usuario()?._id ||
-                          com.autor?._id === usuario()?.id ||
-                          com.autor === usuario()?._id) &&
-                        comentarioEnEdicionId() !== com._id
+                        com.autor?._id === usuarioActualId() ||
+                        com.autor === usuarioActualId() ||
+                        perfilUsuario() === 'administrador'
                       ) {
                         <div
                           class="comentario-acciones"
                           style="display: flex; gap: 12px; margin-top: 2px; font-size: 0.75rem"
                         >
-                          <button
-                            (click)="iniciarEdicion(com)"
-                            style="
-                              background: none;
-                              border: none;
-                              color: #8e8e8e;
-                              cursor: pointer;
-                              padding: 0;
-                              font-weight: 600;
-                            "
-                          >
-                            Editar
-                          </button>
-                          <button
-                            (click)="eliminarComentarioModal(com._id)"
-                            style="
-                              background: none;
-                              border: none;
-                              color: #ed4956;
-                              cursor: pointer;
-                              padding: 0;
-                              font-weight: 600;
-                            "
-                          >
-                            Eliminar
-                          </button>
+                          <!-- Solo el dueño real puede editar el comentario -->
+                          @if (
+                            com.autor?._id === usuarioActualId() || com.autor === usuarioActualId()
+                          ) {
+                            @if (comentarioEnEdicionId() !== com._id) {
+                              <button
+                                (click)="iniciarEdicion(com)"
+                                style="
+                                  background: none;
+                                  border: none;
+                                  color: #8e8e8e;
+                                  cursor: pointer;
+                                  padding: 0;
+                                  font-weight: 600;
+                                "
+                              >
+                                Editar
+                              </button>
+                            }
+                          }
+
+                          <!-- El dueño o el administrador pueden eliminar el comentario -->
+                          @if (comentarioEnEdicionId() !== com._id) {
+                            <button
+                              (click)="eliminarComentarioModal(com._id)"
+                              style="
+                                background: none;
+                                border: none;
+                                color: #ed4956;
+                                cursor: pointer;
+                                padding: 0;
+                                font-weight: 600;
+                              "
+                            >
+                              Eliminar
+                            </button>
+                          }
                         </div>
                       }
                     </div>
@@ -527,6 +538,7 @@
       </div>
     </div>
   }
+
   <!-- Modal Global de Error por Usuario Deshabilitado / Publicación -->
   @if (modalErrorPublicacionVisible()) {
     <div class="modal-backdrop" (click)="cerrarModalErrorPublicacion()">
@@ -540,6 +552,7 @@
     </div>
   }
 
+  <!-- Modal de Restricciones Genérico -->
   @if (modalRestriccionVisible()) {
     <div class="modal-overlay" (click)="cerrarModalRestriccion()">
       <div class="modal-card" (click)="$event.stopPropagation()">
